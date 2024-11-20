@@ -38,7 +38,7 @@ jobs:
 
       - name: Create Debian Package
         run: |
-          cd UmatiGateway
+          cd UmatiGateway/UmatiGateway
           dotnet deb --configuration ${{ matrix.build_type }} --output ../umati-gateway.deb
 
       - name: Upload Debian Package
@@ -71,6 +71,7 @@ jobs:
 
       - name: Build UmatiGateway
         run: |
+          cd UmatiGateway
           msbuild UmatiGateway.sln /p:Configuration=${{ matrix.build_type }} /p:Platform=${{ matrix.arch }}
 
       - name: Upload Windows Executable
