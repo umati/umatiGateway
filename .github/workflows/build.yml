@@ -22,7 +22,7 @@ jobs:
           path: UmatiGateway
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0'
 
@@ -40,16 +40,10 @@ jobs:
           dotnet deb --configuration ${{ matrix.build_type }} --output ../umati-gateway.deb
 
       - name: Upload Debian Package
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: UmatiGateway-Debian
           path: umati-gateway.deb
-
-      - name: Upload Published Artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: UmatiGateway-Linux-${{ matrix.build_type }}-${{ matrix.os }}
-          path: UmatiGateway/bin/${{ matrix.build_type }}/net8.0/
 
   build-windows:
     strategy:
@@ -64,7 +58,7 @@ jobs:
             fetch-depth: 0
 
       - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
             dotnet-version: '8.0'
 
@@ -81,7 +75,7 @@ jobs:
         run: dotnet publish UmatiGateway.sln --configuration ${{ matrix.build_type }} --output ./publish
 
       - name: Upload Published Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
             name: UmatiGateway-Windows-${{ matrix.build_type }}
             path: ./publish
