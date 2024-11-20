@@ -62,6 +62,11 @@ jobs:
         with:
           path: UmatiGateway
 
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0'
+
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1
 
@@ -79,6 +84,7 @@ jobs:
   docker:
     permissions:
       packages: write
+      contents: read
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout Code
