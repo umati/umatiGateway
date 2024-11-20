@@ -37,13 +37,17 @@ jobs:
           dotnet tool install --global dotnet-deb
           export PATH="$PATH:/home/runner/.dotnet/tools"
           dotnet deb install
+
+      - name: build and package 
+        run:  |
+          cd UmatiGateway/UmatiGateway
           dotnet deb --configuration ${{ matrix.build_type }} --output ../umati-gateway.deb
 
       - name: Upload Debian Package
         uses: actions/upload-artifact@v4
         with:
           name: UmatiGateway-Debian
-          path: umati-gateway.deb
+          path: UmatiGateway/umati-gateway.deb
 
   build-windows:
     strategy:
