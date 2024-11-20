@@ -33,12 +33,9 @@ jobs:
 
       - name: Install deb packaging tool
         run: |
+          cd UmatiGateway/UmatiGateway
           dotnet tool install --global dotnet-deb
           export PATH="$PATH:/home/runner/.dotnet/tools"
-
-      - name: Create Debian Package
-        run: |
-          cd UmatiGateway/UmatiGateway
           dotnet deb --configuration ${{ matrix.build_type }} --output ../umati-gateway.deb
 
       - name: Upload Debian Package
@@ -58,7 +55,6 @@ jobs:
       matrix:
         os: [windows-2019, windows-2022]
         build_type: [Debug, Release]
-        arch: ["386", "amd64"]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout Code
@@ -72,18 +68,18 @@ jobs:
       - name: Build UmatiGateway
         run: |
           cd UmatiGateway
-          msbuild UmatiGateway.sln /p:Configuration=${{ matrix.build_type }} /p:Platform=${{ matrix.arch }}
+          msbuild UmatiGateway.sln /p:Configuration=${{ matrix.build_type }}
 
       - name: Upload Windows Executable
         uses: actions/upload-artifact@v3
         with:
-          name: UmatiGateway-Windows-${{ matrix.build_type }}-${{ matrix.os }}-${{ matrix.arch }}
+          name: UmatiGateway-Windows-${{ matrix.build_type }}-${{ matrix.os }}
           path: UmatiGateway/bin/${{ matrix.build_type }}/
 
   docker:
     permissions:
       packages: write
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
