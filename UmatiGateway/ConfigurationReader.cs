@@ -20,13 +20,14 @@ namespace UmatiGateway
                 {
 
                     configuration.gatewayConfigVersion = this.ReadAttribute(node, "version");
-                    if(configuration.gatewayConfigVersion == VERSION_1_0)
+                    if (configuration.gatewayConfigVersion == VERSION_1_0)
                     {
                         string autostart = this.ReadAttribute(node, "autostart");
-                        if(string.Equals(autostart, "true", StringComparison.OrdinalIgnoreCase))
+                        if (string.Equals(autostart, "true", StringComparison.OrdinalIgnoreCase))
                         {
                             configuration.autostart = true;
-                        } else
+                        }
+                        else
                         {
                             configuration.autostart = false;
                         }
@@ -61,21 +62,24 @@ namespace UmatiGateway
                         if (string.IsNullOrWhiteSpace(PollTime))
                         {
                             configuration.pollTime = 2000;
-                        } else
+                        }
+                        else
                         {
                             try
                             {
                                 configuration.pollTime = int.Parse(PollTime);
-                            } catch (Exception e)
+                            }
+                            catch (Exception e)
                             {
                                 Console.WriteLine(e.Message);
                             }
                         }
                         configuration.configFilePath = this.ReadAttribute(node, "file");
-                        if(string.IsNullOrWhiteSpace(configuration.configFilePath))
+                        if (string.IsNullOrWhiteSpace(configuration.configFilePath))
                         {
                             configuration.configFilePath = "";
-                        } else
+                        }
+                        else
                         {
                             this.ReadConfigFile(configuration);
                         }
@@ -85,7 +89,8 @@ namespace UmatiGateway
                 {
                     Console.WriteLine("Root Node not found!");
                 }
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 Console.WriteLine("Error on Loading ConfigurationFile." + ex.ToString());
             }
@@ -95,14 +100,16 @@ namespace UmatiGateway
         public string ReadAttribute(XmlNode node, string attributeName)
         {
             string? value = "";
-            if (node.Attributes != null) {
+            if (node.Attributes != null)
+            {
                 value = node.Attributes[attributeName]?.Value;
-                if(value == null)
+                if (value == null)
                 {
                     Console.WriteLine($"Error on Rerading Configuration: Attribute \"{node.Name}\" of node \"{attributeName}\" is missing.");
                     value = "";
                 }
-            } else
+            }
+            else
             {
                 Console.WriteLine($"Error on Reading Configuration: Attribute \"{attributeName}\" of node \"{node.Name}\" is missing. The node \"{node.Name}\" does not contain attributes.");
             }
@@ -199,14 +206,15 @@ namespace UmatiGateway
                     if (configuration.configVersion == CONFIG_VERSION_1_0)
                     {
                         XmlNode? opcNode = xmlDoc.SelectSingleNode("/Configuration/OPCConnection");
-                        if (opcNode!= null)
+                        if (opcNode != null)
                         {
                             configuration.opcServerEndpoint = this.ReadAttribute(opcNode, "serverendpoint");
                             configuration.opcAuthentication = this.ReadAttribute(opcNode, "authentication");
                             configuration.opcUser = this.ReadAttribute(opcNode, "user");
                             configuration.opcPassword = this.ReadAttribute(opcNode, "password");
 
-                        } else
+                        }
+                        else
                         {
                             Console.WriteLine("OPCNode not found!");
                         }
@@ -227,7 +235,7 @@ namespace UmatiGateway
                         XmlNodeList? publishedNodes = xmlDoc.SelectNodes("/Configuration/PublishedNodes/PublishedNode");
                         if (publishedNodes != null)
                         {
-                            foreach(XmlNode publishedNode in publishedNodes)
+                            foreach (XmlNode publishedNode in publishedNodes)
                             {
                                 PublishedNode published = new PublishedNode();
                                 published.type = this.ReadAttribute(publishedNode, "type");
@@ -241,7 +249,8 @@ namespace UmatiGateway
                             Console.WriteLine("No nodes to pubish found");
                         }
 
-                    } else
+                    }
+                    else
                     {
                         Console.WriteLine($"Wrong Version \"{configuration.gatewayConfigVersion}\".");
                     }
@@ -251,7 +260,8 @@ namespace UmatiGateway
                     Console.WriteLine("Root Node not found!");
                 }
 
-            } catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 Console.WriteLine($"Error on Loading ConfigurationFile \"{configuration.configFilePath}\"." + ex.ToString());
             }

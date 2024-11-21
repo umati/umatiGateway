@@ -25,7 +25,7 @@ namespace UmatiGateway
             useGMSResultEncoding.Value = configuration.useGMSResultEncoding.ToString();
             node.Attributes.Append(useGMSResultEncoding);
             xmlDocument.AppendChild(node);
-            XmlWriterSettings settings = new XmlWriterSettings{Indent = true, IndentChars = "  ", NewLineOnAttributes = false,Encoding = Encoding.UTF8};
+            XmlWriterSettings settings = new XmlWriterSettings { Indent = true, IndentChars = "  ", NewLineOnAttributes = false, Encoding = Encoding.UTF8 };
             XmlWriter writer = XmlWriter.Create("./Configuration/UmatiGatewayConfig.xml", settings);
             xmlDocument.Save(writer);
             writer.Close();

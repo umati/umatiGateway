@@ -8,7 +8,8 @@ using Opc.Ua.Configuration;
 
 namespace UmatiGateway.OPC
 {
-    public class ClientFactory{
+    public class ClientFactory
+    {
         public Dictionary<string, UmatiGatewayApp> clients = new Dictionary<string, UmatiGatewayApp>();
         UmatiGatewayApp client;
         public ClientFactory()
@@ -17,7 +18,8 @@ namespace UmatiGateway.OPC
             client = this.createClientAsync().Result;
             client.StartUp();
         }
-        public UmatiGatewayApp getClient(String sessionId){
+        public UmatiGatewayApp getClient(String sessionId)
+        {
             return this.client;
             /*Client? client;
             if(this.clients.TryGetValue(sessionId, out client))
@@ -28,13 +30,15 @@ namespace UmatiGateway.OPC
                 client = createClientAsync().Result;
                 clients.Add(sessionId, client);
                 return client;
-            }*/   
+            }*/
         }
 
-        private async Task<UmatiGatewayApp> createClientAsync(){
+        private async Task<UmatiGatewayApp> createClientAsync()
+        {
             var configSectionName = "GateWay";
             CertificatePasswordProvider PasswordProvider = new CertificatePasswordProvider(null);
-            ApplicationInstance application = new ApplicationInstance {
+            ApplicationInstance application = new ApplicationInstance
+            {
                 ApplicationName = "GatewayClient",
                 ApplicationType = ApplicationType.Client,
                 ConfigSectionName = configSectionName,
@@ -42,7 +46,8 @@ namespace UmatiGateway.OPC
             };
             var config = await application.LoadApplicationConfiguration("./OPC/Gateway.Config.xml", silent: false);
             await application.CheckApplicationInstanceCertificate(silent: false, minimumKeySize: 0);
-            UmatiGatewayApp client = new UmatiGatewayApp(config, Console.Out, ClientBase.ValidateResponse) {
+            UmatiGatewayApp client = new UmatiGatewayApp(config, Console.Out, ClientBase.ValidateResponse)
+            {
                 AutoAccept = true
             };
             return client;

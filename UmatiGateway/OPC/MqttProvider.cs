@@ -31,11 +31,13 @@ using System.Collections.Concurrent;
 using NLog;
 
 
-namespace UmatiGateway.OPC{
+namespace UmatiGateway.OPC
+{
     /// <summary>
     /// This class reads the data from the OPC UA Server and provides it via Mqtt.
     /// </summary>
-    public class MqttProvider : OpcUaEventListener{
+    public class MqttProvider : OpcUaEventListener
+    {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         private MqttClientFactory mqttFactory = new MqttClientFactory();
         private IMqttClient? mqttClient = null;
@@ -64,7 +66,7 @@ namespace UmatiGateway.OPC{
         public bool ConnectedOnce = false;
         public int PollTimer = 60000;
         public bool TimerSetup = false;
-        public Dictionary <NodeId, IList<string>> errors = new Dictionary<NodeId, IList<string>>();
+        public Dictionary<NodeId, IList<string>> errors = new Dictionary<NodeId, IList<string>>();
         private Dictionary<NodeId, MqttSubscription> subscriptions = new Dictionary<NodeId, MqttSubscription>();
         private Dictionary<NodeId, PublishedBrowsePaths> knownBrowsePaths = new Dictionary<NodeId, PublishedBrowsePaths>();
         public volatile JObject machine = new JObject();
@@ -74,9 +76,10 @@ namespace UmatiGateway.OPC{
         private JSONConverter jsonConverter = new JSONConverter();
         private bool shortenVariables = true;
         private BlockingCollection<NodeId> changedNodes = new BlockingCollection<NodeId>();
-        private List <MachineNode> machineNodes = new List<MachineNode>();
+        private List<MachineNode> machineNodes = new List<MachineNode>();
 
-        public MqttProvider(UmatiGatewayApp client){
+        public MqttProvider(UmatiGatewayApp client)
+        {
             this.client = client;
             this.mqttClient = mqttFactory.CreateMqttClient();
         }
@@ -92,7 +95,7 @@ namespace UmatiGateway.OPC{
         public void Connect()
         {
             if (!TimerSetup)
-            { 
+            {
                 aTimer.Interval = PollTimer;
                 aTimer.Elapsed += OnTimedEvent;
                 aTimer.AutoReset = true;
@@ -109,33 +112,41 @@ namespace UmatiGateway.OPC{
                 if (publishedNode.type == "Numeric")
                 {
                     this.onlineMachines.Add(new NodeId(Convert.ToUInt32(publishedNode.nodeId), (ushort)namespaceIndex));
-                } else if(publishedNode.type == "String")
+                }
+                else if (publishedNode.type == "String")
                 {
                     this.onlineMachines.Add(new NodeId(publishedNode.nodeId, (ushort)namespaceIndex));
                 }
             }
             // Todo use a switch case here and error handling
- 
+
             this.doPublish();
             this.client.ConnectEvents(this);
             aTimer.Start();
-            
+
         }
-        public void Reconnect() {
-            if(!connected) {
+        public void Reconnect()
+        {
+            if (!connected)
+            {
                 this.Connect(this.connectionString, this.connectionType, this.connectionPort, this.user, this.pwd);
             }
         }
-        public void Connect(string connectionString, string connectionType, string port, string user, string pwd) {
-            try {
+        public void Connect(string connectionString, string connectionType, string port, string user, string pwd)
+        {
+            try
+            {
                 this.connectionString = connectionString;
                 this.connectionType = connectionType;
                 this.connectionPort = port;
                 this.user = user;
                 this.pwd = pwd;
-                if(this.connectionType == TCP) {
+                if (this.connectionType == TCP)
+                {
                     this.Connect_Client_Using_Tcp();
-                } else if(this.connectionType == WEBSOCKET) {
+                }
+                else if (this.connectionType == WEBSOCKET)
+                {
                     if (this.connectionString.StartsWith("mqtt"))
                     {
                         this.Connect_Client_Using_Tcp();
@@ -144,16 +155,21 @@ namespace UmatiGateway.OPC{
                     {
                         this.Connect_Client_Using_WebSockets();
                     }
-                } else {
+                }
+                else
+                {
                     Console.Out.WriteLine("Unkonown Mqtt Connection Type");
                 }
                 connected = true;
-            } catch (Exception e) {
+            }
+            catch (Exception e)
+            {
                 Logger.Error($"Exception on Connecting to MqttBroker. {e}");
                 connected = false;
             }
         }
-        private void Connect_Client_Using_WebSockets() {
+        private void Connect_Client_Using_WebSockets()
+        {
             try
             {
                 if (this.mqttClient != null)
@@ -162,7 +178,7 @@ namespace UmatiGateway.OPC{
                     if (this.user != null && this.user != "" && this.pwd != null)
                     {
                         mqttClientOptions = new MqttClientOptionsBuilder()
-                        .WithWebSocketServer(options => { options.WithUri(this.connectionString);})
+                        .WithWebSocketServer(options => { options.WithUri(this.connectionString); })
                         .WithProtocolVersion(MQTTnet.Formatter.MqttProtocolVersion.V500)
                         .WithCredentials(this.user, this.pwd)
                         .WithTlsOptions(o => { })
@@ -181,13 +197,16 @@ namespace UmatiGateway.OPC{
                 {
                     Console.Out.WriteLine("m_mqttClient is null.");
                 }
-            } catch (Exception e)
+            }
+            catch (Exception e)
             {
                 Console.WriteLine(e.ToString());
             }
         }
-        private void Connect_Client_Using_Tcp() {
-            if(this.mqttClient != null) {
+        private void Connect_Client_Using_Tcp()
+        {
+            if (this.mqttClient != null)
+            {
                 MqttClientOptions mqttClientOptions;
                 int? port = null;
                 if (this.connectionPort != null)
@@ -196,9 +215,9 @@ namespace UmatiGateway.OPC{
                 }
                 if (this.connectionString != null)
                 {
-                    
+
                     int Index = this.connectionString.LastIndexOf(":");
-                    string server = this.connectionString.Substring(7, Index-7);
+                    string server = this.connectionString.Substring(7, Index - 7);
                     int port1 = int.Parse(this.connectionString.Substring(Index + 1));
                     if (this.user != null && this.user != "" && this.pwd != null)
                     {
@@ -212,32 +231,39 @@ namespace UmatiGateway.OPC{
                     else
                     {
                         mqttClientOptions = new MqttClientOptionsBuilder()
-                        .WithTcpServer(server, port1 )
+                        .WithTcpServer(server, port1)
                         .WithProtocolVersion(MQTTnet.Formatter.MqttProtocolVersion.V500)
                         .Build();
                     }
                     AsyncHelper.RunSync(() => this.mqttClient.ConnectAsync(mqttClientOptions, CancellationToken.None));
                 }
-            } else {
+            }
+            else
+            {
                 Console.Out.WriteLine("The MqttClient is null");
             }
         }
 
         //Publishing
 
-        public bool WriteMessage(JObject jObject, string machineId, String type) {
-            try {
+        public bool WriteMessage(JObject jObject, string machineId, String type)
+        {
+            try
+            {
                 JObject sortedJsonObj = this.SortJsonKeysRecursively(jObject);
                 string MyTopic = this.mqttPrefix + "/" + this.clientId + "/" + type + "/" + machineId;
                 MqttApplicationMessage applicationMessage = new MqttApplicationMessageBuilder()
                 .WithTopic(MyTopic)
                 .WithPayload(sortedJsonObj.ToString(Newtonsoft.Json.Formatting.Indented))
                 .Build();
-                if(this.mqttClient != null) {
+                if (this.mqttClient != null)
+                {
                     _ = this.mqttClient.PublishAsync(applicationMessage, CancellationToken.None).Result;
                 }
-                return true; 
-            } catch (Exception e) {
+                return true;
+            }
+            catch (Exception e)
+            {
                 Console.WriteLine(e.ToString());
                 this.connected = false;
                 throw;
@@ -262,7 +288,7 @@ namespace UmatiGateway.OPC{
             }
             catch (Exception e)
             {
-                Logger.Error ("Unable to publish Identification", e);
+                Logger.Error("Unable to publish Identification", e);
                 throw;
             }
         }
@@ -283,7 +309,8 @@ namespace UmatiGateway.OPC{
                         _ = this.mqttClient.PublishAsync(applicationMessage, CancellationToken.None).Result;
                     }
                 }
-            } catch (Exception e)
+            }
+            catch (Exception e)
             {
                 Console.WriteLine(e.ToString());
                 //this.connected = false;
@@ -305,7 +332,8 @@ namespace UmatiGateway.OPC{
                     if (this.mqttClient != null)
                     {
                         _ = this.mqttClient.PublishAsync(applicationMessage, CancellationToken.None).Result;
-                    } else 
+                    }
+                    else
                     {
                         //ToDo Add Error Handling
                     }
@@ -317,11 +345,13 @@ namespace UmatiGateway.OPC{
                 throw;
             }
         }
-        public bool publishBadList() {
-            try {
+        public bool publishBadList()
+        {
+            try
+            {
                 string MyTopic = this.mqttPrefix + "/" + this.clientId + "/" + "bad_list/errors";
                 JArray errorArray = new JArray();
-                foreach(KeyValuePair<NodeId, IList<string>> entry in this.errors)
+                foreach (KeyValuePair<NodeId, IList<string>> entry in this.errors)
                 {
                     JObject errorObject = new JObject();
                     errorObject.Add("NodeId", entry.Key.ToString());
@@ -337,12 +367,15 @@ namespace UmatiGateway.OPC{
                 .WithTopic(MyTopic)
                 .WithPayload(errorArray.ToString())
                 .Build();
-                if(this.mqttClient != null) {
+                if (this.mqttClient != null)
+                {
                     _ = this.mqttClient.PublishAsync(applicationMessage, CancellationToken.None).Result;
                 }
                 return true;
-            } catch(Exception e) {
-                Console.WriteLine ("Unable to publish BadList", e.ToString());
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Unable to publish BadList", e.ToString());
                 throw;
             }
         }
@@ -357,12 +390,12 @@ namespace UmatiGateway.OPC{
                     JObject machineErrorObject = new JObject();
                     machineErrorObject.Add("Machine", machineNode.NodeIdString.ToString());
                     JArray machineErrorArray = new JArray();
-                    foreach(KeyValuePair<NodeId, IList<string>> entry in machineNode.Errors)
+                    foreach (KeyValuePair<NodeId, IList<string>> entry in machineNode.Errors)
                     {
                         JObject errorNode = new JObject();
                         errorNode.Add("NodeId", entry.Value.ToString());
                         JArray errorMessages = new JArray();
-                        foreach(string error in entry.Value)
+                        foreach (string error in entry.Value)
                         {
                             errorMessages.Add(error);
                         }
@@ -477,7 +510,7 @@ namespace UmatiGateway.OPC{
         {
             try
             {
-                foreach(MachineNode machineNode in this.machineNodes)
+                foreach (MachineNode machineNode in this.machineNodes)
                 {
                     this.WriteMessage(machineNode.Data, machineNode.InstanceNamespace, machineNode.TypeBrowseName);
                 }
@@ -492,10 +525,10 @@ namespace UmatiGateway.OPC{
         private JToken createJSON(NodeId nodeId)
         {
             JObject jObject = new JObject();
-            if(nodeId != null)
+            if (nodeId != null)
             {
                 Node? childNode = this.client.ReadNode(nodeId);
-                if(childNode != null)
+                if (childNode != null)
                 {
                     if (childNode.NodeClass == NodeClass.Variable)
                     {
@@ -573,14 +606,14 @@ namespace UmatiGateway.OPC{
                         continue;
                     }
 
-                    
-                    switch(childNodeClass)
+
+                    switch (childNodeClass)
                     {
                         case NodeClass.Object:
                             if (placeHolderObject == null)
                             {
                                 jObject.Add(browseName, childObject);
-                                if(subscribe)this.addKnownBrowsePath(child, childObject, nodeId, machineNode);
+                                if (subscribe) this.addKnownBrowsePath(child, childObject, nodeId, machineNode);
                             }
                             else
                             {
@@ -616,7 +649,7 @@ namespace UmatiGateway.OPC{
                                     if (placeHolderObject == null)
                                     {
                                         jObject.Add(browseName, (JValue)dataValue);
-                                        if (subscribe) this.addKnownBrowsePath(child, (JValue) dataValue, nodeId, machineNode);
+                                        if (subscribe) this.addKnownBrowsePath(child, (JValue)dataValue, nodeId, machineNode);
                                     }
                                     else
                                     {
@@ -784,7 +817,8 @@ namespace UmatiGateway.OPC{
             try
             {
                 this.WriteIdentification(this.IdentificationArray, this.InstanceNSU, this.TypeBrowseName);
-            } catch(Exception e)
+            }
+            catch (Exception e)
             {
                 Console.WriteLine(e.ToString());
                 throw;
@@ -838,7 +872,8 @@ namespace UmatiGateway.OPC{
         /// </summary>
         /// <param name="nodeId"> The Node Id of the Node for that the DataValue is retrieved.</param>
         /// <returns>A JToken representing the DataValue.</returns>
-        public JToken getDataValueAsObject(NodeId nodeId) {
+        public JToken getDataValueAsObject(NodeId nodeId)
+        {
             try
             {
                 Node? node = this.client.ReadNode(nodeId);
@@ -890,7 +925,7 @@ namespace UmatiGateway.OPC{
                         ExtensionObjectEncoding encoding = eto.Encoding;
                         if (encoding == ExtensionObjectEncoding.Binary)
                         {
-                                jobject = this.decode(eto);
+                            jobject = this.decode(eto);
                         }
                         else if (encoding == ExtensionObjectEncoding.Json)
                         {
@@ -911,7 +946,7 @@ namespace UmatiGateway.OPC{
                         {
                             ExtensionObjectEncoding encodinga = extensionObject.Encoding;
                             if (encodinga == ExtensionObjectEncoding.Binary)
-                            {                               
+                            {
                                 jArray.Add(this.decode(extensionObject));
                             }
                             else if (encodinga == ExtensionObjectEncoding.Json)
@@ -956,7 +991,8 @@ namespace UmatiGateway.OPC{
                     case Opc.Ua.Range range: return this.jsonConverter.Convert(range);
                     default: this.AddError(nodeId, $"The type of the iEncodeable is not implemented {iEncodeable.GetType()}"); return new JObject();
                 }
-            } else
+            }
+            else
             {
                 this.AddError(nodeId, "The Encodeable Object is not of Type: IEncodeable");
                 return new JObject();
@@ -970,17 +1006,18 @@ namespace UmatiGateway.OPC{
         private void AddError(NodeId? nodeId, string message)
         {
             if (nodeId != null)
-            {   
+            {
                 if (this.errors.ContainsKey(nodeId))
                 {
                     this.errors.TryGetValue(nodeId, out var errorList);
                     if (errorList != null)
                     {
-                        if(!errorList.Contains(message))
+                        if (!errorList.Contains(message))
                         {
                             errorList.Add(message);
                         }
-                    } else
+                    }
+                    else
                     {
                         errorList = new List<string>();
                         errorList.Add(message);
@@ -997,10 +1034,11 @@ namespace UmatiGateway.OPC{
         {
             JObject jObject = new JObject();
             object obj = variant.Value;
-            if(obj is String)
+            if (obj is String)
             {
                 return (String)obj;
-            } else if (obj is ExtensionObject)
+            }
+            else if (obj is ExtensionObject)
             {
                 return decode((ExtensionObject)obj);
             }
@@ -1039,7 +1077,7 @@ namespace UmatiGateway.OPC{
             jObject.Add("SupportedParameter", array);
             length = binaryDecoder.ReadInt32("length");
             array = new JArray();
-            for(int i = 0; i < length; i++)
+            for (int i = 0; i < length; i++)
             {
                 array.Add(binaryDecoder.ReadString("SupportedAssignment"));
             }
@@ -1092,7 +1130,8 @@ namespace UmatiGateway.OPC{
             if (dataType != null)
             {
                 this.Debug("DataType NodeId:" + dataType.ToString());
-            } else
+            }
+            else
             {
                 dataType = etoId;
                 this.Debug("DataType NodeId:" + dataType.ToString() + "Took otherId as NodeId");
@@ -1149,7 +1188,7 @@ namespace UmatiGateway.OPC{
                         this.Debug("Decode:" + field.Name + " " + field.TypeName);
                         if (field.IsLengthField == true)
                         {
-                            if(field.Name == "ResultUri")
+                            if (field.Name == "ResultUri")
                             {
                                 this.Debug("Here");
                             }
@@ -1159,7 +1198,7 @@ namespace UmatiGateway.OPC{
                                 continue;
 
                             }
-                            if(previousInt32 == -1)
+                            if (previousInt32 == -1)
                             {
                                 previousInt32 = 0;
                             }
@@ -1195,17 +1234,19 @@ namespace UmatiGateway.OPC{
                                 {
                                     if (field.TypeName.StartsWith("ua:"))
                                     {
-                                        if(generatedDataClass.DataTypeDefinition != null && generatedDataClass.DataTypeDefinition.ua != null)
+                                        if (generatedDataClass.DataTypeDefinition != null && generatedDataClass.DataTypeDefinition.ua != null)
                                         {
                                             GeneratedDataClass? gdc2 = this.GetGeneratedDataClass(generatedDataClass.DataTypeDefinition.ua, field.TypeName.Substring(3));
-                                            if (gdc2 != null) {
+                                            if (gdc2 != null)
+                                            {
                                                 array.Add(decode(BinaryDecoder, gdc2));
                                             }
-                                        }   
+                                        }
                                     }
                                 }
                                 jObject.Add(field.Name, array);
-                            } else if (field.TypeName.StartsWith("ua:"))
+                            }
+                            else if (field.TypeName.StartsWith("ua:"))
                             {
                                 JArray array = new JArray();
                                 for (int i = 0; i < previousInt32; i++)
@@ -1404,7 +1445,7 @@ namespace UmatiGateway.OPC{
                                 {
                                     jObject.Add(field.Name, (String)value);
                                 }
-                                else if(value is JObject)
+                                else if (value is JObject)
                                 {
                                     jObject.Add(field.Name, (JObject)value);
                                 }
@@ -1416,7 +1457,7 @@ namespace UmatiGateway.OPC{
                                     GeneratedDataClass? gdc2 = this.GetGeneratedDataClass(generatedDataClass.DataTypeDefinition.ua, field.TypeName.Substring(3));
                                     if (gdc2 != null)
                                     {
-                                            jObject.Add(field.Name, decode(BinaryDecoder, gdc2));
+                                        jObject.Add(field.Name, decode(BinaryDecoder, gdc2));
                                     }
                                 }
                             }
@@ -1437,10 +1478,11 @@ namespace UmatiGateway.OPC{
                                     }
                                 }
                             }
-                            
+
                         }
                     }
-                } else if (generatedDataClass is GeneratedEnumeratedType)
+                }
+                else if (generatedDataClass is GeneratedEnumeratedType)
                 {
                     this.Debug("GeneratedEnum");
                 }
@@ -1452,7 +1494,7 @@ namespace UmatiGateway.OPC{
         {
             string ns = "";
             DataValue? dv = this.client.ReadValue(VariableIds.Server_NamespaceArray);
-            if(dv != null)
+            if (dv != null)
             {
                 String[] namespaces = (String[])dv.Value;
                 ns = namespaces[NamespaceIndex];
@@ -1482,7 +1524,8 @@ namespace UmatiGateway.OPC{
                     identifier = "s=" + ((string)machineId.Identifier).Replace(" ", "_20");
                 }
                 return nsuString + nameSpace + ";" + identifier;
-            } else
+            }
+            else
             {
                 return "";
             }
@@ -1515,7 +1558,7 @@ namespace UmatiGateway.OPC{
                                     this.machineNodes.Add(machineNode);
                                 }
                             }
-                            
+
                             Console.WriteLine("Read InstanceNsu and BrowseName");
                             this.ReadInstanceNsuAndBrowseName();
                             Console.WriteLine("Publish BadList MachineNodes");
@@ -1546,7 +1589,7 @@ namespace UmatiGateway.OPC{
                             firstReadFinished = true;
                         }
 
-                    } 
+                    }
                     else
                     {
                         //Detect OPC disconnect
@@ -1633,7 +1676,7 @@ namespace UmatiGateway.OPC{
                                 if (TypeDefinitionNode != null)
                                 {
                                     this.InstanceNSU = this.getInstanceNsu(machine);
-                                    this.TypeBrowseName = TypeDefinitionNode.BrowseName.Name ;
+                                    this.TypeBrowseName = TypeDefinitionNode.BrowseName.Name;
                                 }
                             }
                         }
@@ -1667,7 +1710,7 @@ namespace UmatiGateway.OPC{
 
         private void updateDataValue(MonitoredItem monitoredItem, MonitoredItemNotificationEventArgs monitoredItemsArgs)
         {
-            foreach(MachineNode machineNode in this.machineNodes)
+            foreach (MachineNode machineNode in this.machineNodes)
             {
                 Dictionary<NodeId, PublishedBrowsePaths> machineBrowsePaths = machineNode.KnownBrowsePaths;
                 if (machineBrowsePaths.TryGetValue(monitoredItem.ResolvedNodeId, out PublishedBrowsePaths? path))
@@ -1755,7 +1798,7 @@ namespace UmatiGateway.OPC{
             foreach (NodeId affectedNode in this.changedNodes.GetConsumingEnumerable())
             {
                 this.updateNode(affectedNode);
-                
+
             }
         }
         public void updateNode(NodeId affectedNode)
@@ -1796,7 +1839,8 @@ namespace UmatiGateway.OPC{
         public JObject parent;
         public String browseName;
 
-        public MqttSubscription(NodeId nodeId, JObject parent, String browseName, uint SubscriptionHandle) {
+        public MqttSubscription(NodeId nodeId, JObject parent, String browseName, uint SubscriptionHandle)
+        {
             this.NodeId = nodeId;
             this.parent = parent;
             this.browseName = browseName;
@@ -1816,7 +1860,7 @@ namespace UmatiGateway.OPC{
         public override string ToString()
         {
             string returnString = $"NodeId: {this.NodeId}";
-            foreach(KeyValuePair<String, JToken> entry in browsePaths)
+            foreach (KeyValuePair<String, JToken> entry in browsePaths)
             {
                 returnString += " Path: " + entry.Key + "\n";
             }
@@ -1833,7 +1877,7 @@ namespace UmatiGateway.OPC{
         public string NamespaceUrl { get; set; }
         public string TypeBrowseName { get; set; } = "";
         public string NodeIdType { get; set; } = "";
-        
+
         public NodeId? ResolvedNodeId { get; set; }
         public Dictionary<NodeId, PublishedBrowsePaths> KnownBrowsePaths { get; set; } = new Dictionary<NodeId, PublishedBrowsePaths>();
 

@@ -20,15 +20,16 @@ namespace UmatiGateway.Pages
         public void OnGet()
         {
             UmatiGatewayApp? client = this.getClient();
-            if(client != null)
+            if (client != null)
             {
                 client.BrowseRootNode();
                 this.BrowseTree = client.BrowseTree;
-            } else
+            }
+            else
             {
                 //Put an Error here that the Client is not connected
             }
-            
+
         }
         public IActionResult OnPostPublishNode(string uuid)
         {
@@ -47,9 +48,9 @@ namespace UmatiGateway.Pages
         }
         public IActionResult OnPostBrowseSelectedTreeNode(string uuid)
         {
-             UmatiGatewayApp? client = this.getClient();
-             if (client != null)
-             {
+            UmatiGatewayApp? client = this.getClient();
+            if (client != null)
+            {
                 this.BrowseTree = client.BrowseTree;
                 this.BrowseTree.SelectedTreeNode = uuid;
                 TreeNode? selectedTreeNode = this.GetForUid(uuid);
@@ -57,17 +58,18 @@ namespace UmatiGateway.Pages
                 {
                     selectedTreeNode.IsExpanded = true;
                     client.BrowseSelectedTreeNode(selectedTreeNode);
-                } else if(selectedTreeNode != null && selectedTreeNode.IsExpanded == true)
+                }
+                else if (selectedTreeNode != null && selectedTreeNode.IsExpanded == true)
                 {
                     selectedTreeNode.IsExpanded = false;
                     selectedTreeNode.children.Clear();
                 }
 
             }
-             else
-             {
-                 //Put an Error here that the Client is not connected
-             }
+            else
+            {
+                //Put an Error here that the Client is not connected
+            }
             return new PageResult();
         }
         private UmatiGatewayApp? getClient()
@@ -82,15 +84,15 @@ namespace UmatiGateway.Pages
         }
         public TreeNode? GetForUid(string? uid)
         {
-            if (uid == null) {  return null; }
+            if (uid == null) { return null; }
             UmatiGatewayApp? client = this.getClient();
             if (client != null)
             {
                 this.BrowseTree = client.BrowseTree;
-                if(this.BrowseTree.uids.TryGetValue(uid, out var node))
+                if (this.BrowseTree.uids.TryGetValue(uid, out var node))
                 {
                     //client.BrowseSelectedTreeNode(node);
-                    return node; 
+                    return node;
                 }
             }
             return null;

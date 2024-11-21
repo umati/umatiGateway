@@ -62,12 +62,13 @@ namespace UmatiGateway.OPC
                 {
                     string xmlString = Encoding.UTF8.GetString((byte[])dv.Value);
                     this.generateDataClasses(xmlString);
-                } else
+                }
+                else
                 {
                     Logger.Error($"Unable to read binaryTypeDictionary {binaryTypeDictionary}");
                 }
             };
-            if(ReadExtraLibs)
+            if (ReadExtraLibs)
             {
                 this.generateDataClasses(DI);
                 this.generateDataClasses(Machinery_Jobs);
@@ -187,19 +188,19 @@ namespace UmatiGateway.OPC
                                     this.errorMemmory.Add("The Name of the Field is null");
                                 }
                                 string? lengthField = reader.GetAttribute("LengthField");
-                                if(lengthField != null)
+                                if (lengthField != null)
                                 {
                                     generatedField.IsLengthField = true;
                                     generatedField.LengthField = lengthField;
                                 }
                                 string? length = reader.GetAttribute("Length");
-                                if(length != null)
+                                if (length != null)
                                 {
                                     generatedField.HasLength = true;
                                     generatedField.Length = UInt32.Parse(length);
                                 }
                                 string? switchfield = reader.GetAttribute("SwitchField");
-                                if(switchfield!= null)
+                                if (switchfield != null)
                                 {
                                     generatedField.IsSwitchField = true;
                                 }
@@ -291,7 +292,7 @@ namespace UmatiGateway.OPC
                 if (node != null)
                 {
                     dataTypes.Add(dataTypeNodeId, node);
-                   // Console.WriteLine(dataTypeNodeId);
+                    // Console.WriteLine(dataTypeNodeId);
                 }
                 else
                 {

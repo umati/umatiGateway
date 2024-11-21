@@ -177,7 +177,8 @@ namespace UmatiGateway.OPC
         {
             this.MqttProvider.clientId = MqttClientId;
         }
-        public List<PublishedNode> getPublishedNodes() {
+        public List<PublishedNode> getPublishedNodes()
+        {
             return this.MqttProvider.publishedNodes;
         }
         public void publishNode(NodeId nodeId)
@@ -251,7 +252,7 @@ namespace UmatiGateway.OPC
                     // Assign the created session
                     if (session != null && session.Connected)
                     {
-                        
+
                         m_session = session;
 
 
@@ -308,7 +309,8 @@ namespace UmatiGateway.OPC
                 {
                     this.blockingTransition = new BlockingTransition();
                 }
-            } else
+            }
+            else
             {
                 Console.WriteLine("Allready trying to Connect to OPC Server");
                 return false;
@@ -377,10 +379,14 @@ namespace UmatiGateway.OPC
         public Node? ReadNode(NodeId nodeId)
         {
             Node? node = null;
-            if (m_session != null && m_session.Connected) {
-                try {
+            if (m_session != null && m_session.Connected)
+            {
+                try
+                {
                     node = m_session.ReadNode(nodeId);
-                } catch (Exception e) {
+                }
+                catch (Exception e)
+                {
                     Console.Out.WriteLine(e.Message + " NodeId:" + nodeId);
                 }
             }
@@ -432,22 +438,23 @@ namespace UmatiGateway.OPC
                                 if (body is ModelChangeStructureDataType)
                                 {
                                     ModelChangeStructureDataType mcs = (ModelChangeStructureDataType)body;
-                                    if(mcs.Affected != null)
+                                    if (mcs.Affected != null)
                                     {
                                         Console.WriteLine($"Affected: {mcs.Affected}");
                                         Console.WriteLine($"AffectedType: {mcs.AffectedType}");
                                         Console.WriteLine($"Verb: {mcs.Verb}");
-                                        foreach(OpcUaEventListener listener in this.opcUaEventListeners)
+                                        foreach (OpcUaEventListener listener in this.opcUaEventListeners)
                                         {
                                             listener.ModelChangeEvent(mcs.Affected);
                                         }
-                                    }                                    
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 Console.WriteLine($"OnMonitoredItemNotification error: {ex.Message}");
             }
@@ -474,16 +481,16 @@ namespace UmatiGateway.OPC
                 ReferenceDescriptionCollection references = browseResult.References;
                 foreach (ReferenceDescription reference in references)
                 {
-                    
-                        NodeId innerNodeId = new NodeId(reference.NodeId.Identifier, reference.NodeId.NamespaceIndex);
-                        Node? node = this.ReadNode(innerNodeId);
-                        if(node != null)
+
+                    NodeId innerNodeId = new NodeId(reference.NodeId.Identifier, reference.NodeId.NamespaceIndex);
+                    Node? node = this.ReadNode(innerNodeId);
+                    if (node != null)
+                    {
+                        if (node.BrowseName == browseName)
                         {
-                            if (node.BrowseName == browseName)
-                            {
-                                return innerNodeId; 
-                            }
+                            return innerNodeId;
                         }
+                    }
                 }
             }
             return null;
@@ -496,7 +503,8 @@ namespace UmatiGateway.OPC
                 DataValue dv = m_session.ReadValue(VariableIds.Server_NamespaceArray);
                 String[] namespaces = (String[])dv.Value;
                 return new NamespaceTable(namespaces);
-            } else
+            }
+            else
             {
                 Logger.Error("Unable to Get NameSpaceTable! Sessions is not Connected");
             }
@@ -574,12 +582,12 @@ namespace UmatiGateway.OPC
             List<NodeId> nodeIds = new List<NodeId>();
             //Look for the Childs
             BrowseResultCollection browseResultCollection = BrowseNode(typeDefinition, BrowseDirection.Forward, 0, ReferenceTypeIds.HasComponent, true);
-            foreach(BrowseResult browseResult in browseResultCollection)
+            foreach (BrowseResult browseResult in browseResultCollection)
             {
                 BrowseDescriptionCollection browseDescriptions = new BrowseDescriptionCollection();
                 foreach (ReferenceDescription reference in browseResult.References)
                 {
-                    NodeId nodeId = (NodeId) reference.NodeId;
+                    NodeId nodeId = (NodeId)reference.NodeId;
                     browseDescriptions.Add(BrowseUtils.ModellingRuleBrowseDescription(nodeId));
                 }
                 if (browseDescriptions.Count > 0)
@@ -613,12 +621,14 @@ namespace UmatiGateway.OPC
         }
 
         public BrowseResultCollection Browse(BrowseDescription browseDescription)
-        {   if (m_session != null)
+        {
+            if (m_session != null)
             {
                 BrowseDescriptionCollection browseDescriptionCollection = new BrowseDescriptionCollection(new BrowseDescription[] { browseDescription });
                 m_session.Browse(null, null, 10000, browseDescriptionCollection, out BrowseResultCollection results, out DiagnosticInfoCollection diagnosticInfos);
                 return results;
-            } else
+            }
+            else
             {
                 throw new SystemException("Session was not Connected!");
             }
@@ -629,7 +639,8 @@ namespace UmatiGateway.OPC
             {
                 m_session.Browse(null, null, 10000, browseDescriptionCollection, out BrowseResultCollection results, out DiagnosticInfoCollection diagnosticInfos);
                 return results;
-            } else
+            }
+            else
             {
                 throw new SystemException("Session was not Connected");
             }
@@ -664,7 +675,8 @@ namespace UmatiGateway.OPC
                 nodesToBrowse.Add(nodeToBrowse);
                 m_session.Browse(null, null, 10000, nodesToBrowse, out BrowseResultCollection results, out DiagnosticInfoCollection diagnosticInfos);
                 return results;
-            } else
+            }
+            else
             {
                 throw new SystemException("Session not Connected");
             }
@@ -682,7 +694,7 @@ namespace UmatiGateway.OPC
                     this.BrowseTree.children.AddLast(treeNode);
                     this.BrowseTree.uids.Add(treeNode.uid, treeNode);
                     this.BrowseTree.Initialized = true;
-                    if(node.NodeClass == NodeClass.Variable)
+                    if (node.NodeClass == NodeClass.Variable)
                     {
                         nodeData.DataValue = this.decodeComplexType(node.NodeId);
                     }
@@ -693,7 +705,7 @@ namespace UmatiGateway.OPC
         private JObject decodeComplexType(NodeId nodeId)
         {
             JObject jObject = new JObject();
-            
+
             Node? node = this.ReadNode(nodeId);
             DataValue? dv = this.ReadValue(nodeId);
             if (dv != null)
@@ -705,11 +717,13 @@ namespace UmatiGateway.OPC
             }
             return jObject;
         }
-        public ExpandedNodeId getIndexedNodeId(ExpandedNodeId expandedNodeId) {
-            if(expandedNodeId.IsAbsolute)
+        public ExpandedNodeId getIndexedNodeId(ExpandedNodeId expandedNodeId)
+        {
+            if (expandedNodeId.IsAbsolute)
             {
                 return new ExpandedNodeId(expandedNodeId.Identifier, (ushort)(this.GetNamespaceTable().GetIndex(expandedNodeId.NamespaceUri)), expandedNodeId.NamespaceUri, expandedNodeId.ServerIndex);
-            } else
+            }
+            else
             {
                 return expandedNodeId;
             }
@@ -749,7 +763,8 @@ namespace UmatiGateway.OPC
                         }
                     }
                 }
-            } else
+            }
+            else
             {
                 throw new SystemException("Session not Connected");
             }
@@ -759,11 +774,12 @@ namespace UmatiGateway.OPC
             if (m_session != null)
             {
                 return m_session.ReadValue(nodeId);
-            } else
+            }
+            else
             {
                 throw new SystemException("Session Not Connected");
             }
-            
+
         }
 
         /// <summary>
@@ -829,7 +845,8 @@ namespace UmatiGateway.OPC
             {
                 m_output.WriteLine("Session not connected!");
                 return false;
-            } else
+            }
+            else
             {
                 return true;
             }
@@ -844,7 +861,7 @@ namespace UmatiGateway.OPC
         #endregion
         private void blockingTransitionChange(BlockingTransition blockingTransition)
         {
-            foreach(UmatiGatewayAppListener umatiGatewayAppListener in this.umatiGatewayAppListeners)
+            foreach (UmatiGatewayAppListener umatiGatewayAppListener in this.umatiGatewayAppListeners)
             {
                 try
                 {

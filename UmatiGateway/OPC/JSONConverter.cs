@@ -14,7 +14,8 @@ namespace UmatiGateway.OPC
     public class JSONConverter
     {
         //private readonly JToken defaultNullValue = JValue.CreateNull();
-        public JSONConverter() {
+        public JSONConverter()
+        {
         }
 
 
@@ -138,7 +139,7 @@ namespace UmatiGateway.OPC
         }
         public JToken Convert(UInt16? value)
         {
-            return value != null ? new JValue(value) : this.GetDefaultNullValue(); 
+            return value != null ? new JValue(value) : this.GetDefaultNullValue();
         }
         public JToken Convert(UInt32? value)
         {
@@ -146,7 +147,7 @@ namespace UmatiGateway.OPC
         }
         public JToken Convert(UInt32Collection? value)
         {
-            if(value == null) return this.GetDefaultNullValue();
+            if (value == null) return this.GetDefaultNullValue();
             JArray jArray = new JArray();
             foreach (UInt32 item in value)
             {
@@ -188,7 +189,7 @@ namespace UmatiGateway.OPC
         }
         public JToken Convert(Opc.Ua.Range? range)
         {
-            if(range == null) return this.GetDefaultNullValue();
+            if (range == null) return this.GetDefaultNullValue();
             JObject jObject = new JObject();
             jObject.Add("low", range.Low);
             jObject.Add("high", range.High);

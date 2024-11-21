@@ -11,7 +11,8 @@ namespace UmatiGateway
     public class SSEController : ControllerBase, UmatiGatewayAppListener
     {
         private readonly BlockingCollection<string> UpdateQueue = new BlockingCollection<string>();
-        public SSEController(ClientFactory ClientFactory) {
+        public SSEController(ClientFactory ClientFactory)
+        {
             UmatiGatewayApp app = this.getClient(ClientFactory);
             app.AddUmatiGatewayAppListener(this);
         }

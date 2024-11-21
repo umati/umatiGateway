@@ -38,11 +38,11 @@ services:
 
 ### Running standalone executable
 
-**--- TBD ---**
+ --- TBD ---
 
-### Biulding
+### Building
 
-**--- TBD ---**
+ --- TBD ---
 
 ### GUI
 
@@ -68,8 +68,8 @@ Go to [MqttConfiguration](http://localhost:8080/UmatiMqtt) page and make sure th
 
 ## Components
 
-**--- TBD ---**
+ --- TBD ---
 
 ## License
 
-**--- TBD ---**
+ --- TBD ---

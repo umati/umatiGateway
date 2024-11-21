@@ -5,7 +5,7 @@
         public String uid { get; set; }
         public NodeData NodeData { get; set; }
         public LinkedList<TreeNode> children { get; set; }
-        public Boolean IsExpanded { get; set;}
+        public Boolean IsExpanded { get; set; }
 
         public TreeNode(NodeData NodeData)
         {

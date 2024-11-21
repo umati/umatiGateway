@@ -11,7 +11,7 @@ namespace UmatiGateway.Pages
 {
     public class OPCConnectionModel : PageModel, UmatiGatewayAppListener
     {
-        public string LabelConnectionUrl { get;} = "Connection URL:";
+        public string LabelConnectionUrl { get; } = "Connection URL:";
         public string LabelSessionId { get; } = "SessionId:";
         public string LabelOPCSessionName { get; } = "OPCSessionName:";
         public string LabelOPCSessionId { get; } = "OPCSessionId:";
@@ -29,15 +29,16 @@ namespace UmatiGateway.Pages
             this.ClientFactory = ClientFactory;
             ResourceManager rm = new ResourceManager("UmatiGateway.Pages.TestPage", Assembly.GetExecutingAssembly());
             string? Label_ConnectionUrl_Translated = rm.GetString("TestPage_Label_ConnectionUrl");
-            if (Label_ConnectionUrl_Translated != null) { this.LabelConnectionUrl = Label_ConnectionUrl_Translated; } 
+            if (Label_ConnectionUrl_Translated != null) { this.LabelConnectionUrl = Label_ConnectionUrl_Translated; }
         }
 
         public IActionResult OnPostConnect(String ConnectionUrl)
         {
             this.ConnectionUrl = ConnectionUrl;
             UmatiGatewayApp client = this.getClient();
-            if (ConnectionUrl != null) {
-                _= client.ConnectAsync(this.ConnectionUrl).Result;
+            if (ConnectionUrl != null)
+            {
+                _ = client.ConnectAsync(this.ConnectionUrl).Result;
             }
             this.UpdateClientData();
             return new PageResult();
@@ -88,7 +89,7 @@ namespace UmatiGateway.Pages
                     this.OPCSessionId = client.Session.SessionId.ToString();
                     this.ConnectionStatus = client.Session.Connected.ToString();
                     this.OPCSessionName = client.Session.SessionName;
-                    
+
                 }
                 this.ConnectionUrl = client.getOpcConnectionUrl();
             }

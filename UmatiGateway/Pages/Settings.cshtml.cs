@@ -28,11 +28,12 @@ namespace UmatiGateway.Pages
             if (AutoStart == null)
             {
                 configuration.autostart = false;
-            } else
+            }
+            else
             {
                 configuration.autostart = true;
             }
-            if(UseGMSResultEncoding == null)
+            if (UseGMSResultEncoding == null)
             {
                 configuration.useGMSResultEncoding = false;
             }
@@ -49,7 +50,7 @@ namespace UmatiGateway.Pages
                 configuration.readExtraLibs = true;
             }
             configuration.configFilePath = configFilePath;
- 
+
             ConfigurationWriter configurationWriter = new ConfigurationWriter();
             configurationWriter.WriteConfiguration(configuration);
             return new PageResult();

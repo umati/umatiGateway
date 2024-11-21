@@ -14,7 +14,7 @@ namespace UmatiGateway.OPC
                         TaskCreationOptions.None,
                         TaskContinuationOptions.None,
                         TaskScheduler.Default);
- 
+
         /// <summary>
         /// Executes an async Task method which has a void return value synchronously
         /// USAGE: AsyncUtil.RunSync(() => AsyncMethod());
@@ -26,7 +26,7 @@ namespace UmatiGateway.OPC
                 .Unwrap()
                 .GetAwaiter()
                 .GetResult();
- 
+
         /// <summary>
         /// Executes an async Task<T> method which has a T return type synchronously
         /// USAGE: T result = AsyncUtil.RunSync(() => AsyncMethod<T>());

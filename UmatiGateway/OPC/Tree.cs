@@ -2,7 +2,7 @@
 {
     public class Tree
     {
-        public Dictionary<string, TreeNode> uids{ get; set; }
+        public Dictionary<string, TreeNode> uids { get; set; }
         public String? SelectedTreeNode { get; set; }
         public LinkedList<TreeNode> children { get; set; }
         public bool Initialized { get; set; } = false;
