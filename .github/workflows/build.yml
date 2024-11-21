@@ -27,7 +27,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0'
+          dotnet-version: "8.0"
 
       - name: Restore dependencies
         run: |
@@ -41,8 +41,8 @@ jobs:
           export PATH="$PATH:/home/runner/.dotnet/tools"
           dotnet deb install
 
-      - name: build and package 
-        run:  |
+      - name: build and package
+        run: |
           cd UmatiGateway/UmatiGateway
           dotnet deb --configuration ${{ matrix.build_type }} --output ../umati-gateway.deb
 
@@ -66,12 +66,12 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
-            fetch-depth: 0
+          fetch-depth: 0
 
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
         with:
-            dotnet-version: '8.0'
+          dotnet-version: "8.0"
 
       - name: Restore Dependencies
         run: dotnet restore UmatiGateway.sln
@@ -88,8 +88,8 @@ jobs:
       - name: Upload Published Artifacts
         uses: actions/upload-artifact@v4
         with:
-            name: UmatiGateway-${{ matrix.os }}-${{ matrix.build_type }}
-            path: ./publish
+          name: UmatiGateway-${{ matrix.os }}-${{ matrix.build_type }}
+          path: ./publish
 
   docker:
     permissions:
