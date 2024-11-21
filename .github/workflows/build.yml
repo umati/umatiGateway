@@ -1,3 +1,4 @@
+---
 name: build
 
 on:
@@ -6,14 +7,16 @@ on:
     branches: [main, develop]
   merge_group:
 
-permissions: read-all
-
 jobs:
   build-linux:
+    permissions:
+      packages: write
+      contents: read
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04]
+        os: [ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
         build_type: [Debug, Release]
+      fail-fast: false
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout Code
@@ -46,14 +49,18 @@ jobs:
       - name: Upload Debian Package
         uses: actions/upload-artifact@v4
         with:
-          name: UmatiGateway-Debian
+          name: UmatiGateway-${{ matrix.os }}-${{ matrix.build_type }}
           path: UmatiGateway/umati-gateway.deb
 
   build-windows:
+    permissions:
+      packages: write
+      contents: read
     strategy:
       matrix:
         os: [windows-2019, windows-2022]
         build_type: [Debug, Release]
+      fail-fast: false
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout Code
@@ -81,14 +88,14 @@ jobs:
       - name: Upload Published Artifacts
         uses: actions/upload-artifact@v4
         with:
-            name: UmatiGateway-Windows-${{ matrix.build_type }}
+            name: UmatiGateway-${{ matrix.os }}-${{ matrix.build_type }}
             path: ./publish
 
   docker:
     permissions:
       packages: write
       contents: read
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -118,7 +125,7 @@ jobs:
         with:
           context: ./UmatiGateway
           file: ./UmatiGateway/Dockerfile
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: |
             ghcr.io/${{ env.IMAGE_REPOSITORY }}:${{ env.IMAGE_TAG }}
