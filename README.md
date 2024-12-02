@@ -11,12 +11,12 @@ umati Gateway connects to an OPC UA server, subscribes to values from one or mor
 ### Configuration files
 
 * Download gateway configuration file ([UmatiGatewayConfig.xml](UmatiGateway/Configuration/UmatiGatewayConfig.xml))
-   * Optionally replace `autostart="False"` with `autostart="True"` for automatic deployments. In this case also make sure the connection settings and list of published nodes are specified (see below).
+  * Optionally replace `autostart="False"` with `autostart="True"` for automatic deployments. In this case also make sure the connection settings and list of published nodes are specified (see below).
 * Download connection configuration file ([LocalConfigUmatiApp.xml](UmatiGateway/Configuration/Files/LocalConfigUmatiApp.xml))
-   * Optionally set your OPC UA server settings in `OPCConnection` section (see also [GUI - OPC UA configuration](#opc-ua-configuration))
-   * Optionally change MQTT settings in `MqttConnection` section:
-     * `serverendpoint="wss://umati.app/ws" user="USERNAME" password="PASSWORD" clientId="USERNAME" prefix="umati/v2"` (see also [GUI - MQTT configuration](#mqtt-configuration))
-   * Optionally add machine nodes to be published in `PublishedNodes` section (see also [GUI - OPC UA Subscriptions](#opc-ua-subscriptions))
+  * Optionally set your OPC UA server settings in `OPCConnection` section (see also [GUI - OPC UA configuration](#opc-ua-configuration))
+  * Optionally change MQTT settings in `MqttConnection` section:
+    * `serverendpoint="wss://umati.app/ws" user="USERNAME" password="PASSWORD" clientId="USERNAME" prefix="umati/v2"` (see also [GUI - MQTT configuration](#mqtt-configuration))
+  * Optionally add machine nodes to be published in `PublishedNodes` section (see also [GUI - OPC UA Subscriptions](#opc-ua-subscriptions))
 
 ### Running in container
 
@@ -60,7 +60,7 @@ OPC UA connection is configured in [OPC Connection](http://localhost:8080/OPCCon
 
 #### OPC UA Subscriptions
 
-To select machine data to be published, go to [OPC Subscriptions](http://localhost:8080/OPCSubscriptions) page. Click _Root_ item in the _Address Space_ tree, navigate to your machine node (e. g. Root → Objects → Machines → MyMachine) and click _Publish_ button in the right panel.
+To select machine data to be published, go to [OPC Subscriptions](http://localhost:8080/OPCSubscriptions) page. Click _Root_ item in the _Address Space_ tree, navigate to your machine node (e.g. Root → Objects → Machines → MyMachine) and click _Publish_ button in the right panel.
 
 #### MQTT configuration
 
