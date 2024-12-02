@@ -48,7 +48,7 @@ services:
 
 Web-based interface is accessible on port 8080 by default. There the connection settings can be modified and applied on the fly, making it useful for initial setup and debugging.
 
-> When running the gateway an a remote machine you can create a tunnel to it via SSH:
+> When running the gateway on a remote machine you can create a tunnel to it via SSH:
 >
 > `ssh -L 8080:localhost:8080 user@remote-server`
 
