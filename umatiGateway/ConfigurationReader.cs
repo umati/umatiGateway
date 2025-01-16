@@ -14,8 +14,8 @@ namespace UmatiGateway
             XmlDocument xmlDoc = new();
             try
             {
-                xmlDoc.Load("./Configuration/UmatiGatewayConfig.xml");
-                XmlNode? node = xmlDoc.SelectSingleNode("/UmatiGatewayConfig");
+                xmlDoc.Load("./Configuration/umatiGatewayConfig.xml");
+                XmlNode? node = xmlDoc.SelectSingleNode("/umatiGatewayConfig");
                 if (node != null)
                 {
 

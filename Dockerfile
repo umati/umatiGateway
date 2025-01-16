@@ -6,12 +6,12 @@ WORKDIR /source
 
 # Copy the .sln file and restore dependencies
 COPY *.sln ./
-COPY UmatiGateway/*.csproj ./UmatiGateway/
+COPY umatiGateway/*.csproj ./umatiGateway/
 RUN dotnet restore
 
 # Copy the entire project and build it
-COPY UmatiGateway/. ./UmatiGateway/
-WORKDIR /source/UmatiGateway
+COPY umatiGateway/. ./umatiGateway/
+WORKDIR /source/umatiGateway
 RUN dotnet publish -c Release -o /app
 
 # Use the official .NET runtime image for the application
@@ -23,4 +23,4 @@ COPY --from=build /app ./
 EXPOSE 8080
 
 # Set the entry point to the application
-ENTRYPOINT ["dotnet", "UmatiGateway.dll"]
+ENTRYPOINT ["dotnet", "umatiGateway.dll"]

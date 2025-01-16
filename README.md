@@ -10,19 +10,19 @@ umati Gateway connects to an OPC UA server, subscribes to values from one or mor
 
 ### Configuration files
 
-* Download gateway configuration file ([UmatiGatewayConfig.xml](UmatiGateway/Configuration/UmatiGatewayConfig.xml))
-  * Optionally replace `autostart="False"` with `autostart="True"` for automatic deployments. In this case also make sure the connection settings and list of published nodes are specified (see below).
-* Download connection configuration file ([LocalConfigUmatiApp.xml](UmatiGateway/Configuration/Files/LocalConfigUmatiApp.xml))
-  * Optionally set your OPC UA server settings in `OPCConnection` section (see also [GUI - OPC UA configuration](#opc-ua-configuration))
-  * Optionally change MQTT settings in `MqttConnection` section:
-    * `serverendpoint="wss://umati.app/ws" user="USERNAME" password="PASSWORD" clientId="USERNAME" prefix="umati/v2"` (see also [GUI - MQTT configuration](#mqtt-configuration))
-  * Optionally add machine nodes to be published in `PublishedNodes` section (see also [GUI - OPC UA Subscriptions](#opc-ua-subscriptions))
+- Download gateway configuration file ([umatiGatewayConfig.xml](umatiGateway/Configuration/umatiGatewayConfig.xml))
+  - Optionally replace `autostart="False"` with `autostart="True"` for automatic deployments. In this case also make sure the connection settings and list of published nodes are specified (see below).
+- Download connection configuration file ([LocalConfigumatiApp.xml](umatiGateway/Configuration/Files/LocalConfigumatiApp.xml))
+  - Optionally set your OPC UA server settings in `OPCConnection` section (see also [GUI - OPC UA configuration](#opc-ua-configuration))
+  - Optionally change MQTT settings in `MqttConnection` section:
+    - `serverendpoint="wss://umati.app/ws" user="USERNAME" password="PASSWORD" clientId="USERNAME" prefix="umati/v2"` (see also [GUI - MQTT configuration](#mqtt-configuration))
+  - Optionally add machine nodes to be published in `PublishedNodes` section (see also [GUI - OPC UA Subscriptions](#opc-ua-subscriptions))
 
 ### Running in container
 
 Start the container directly with the configuration files mounted:
 
-`docker run -it -v ./LocalConfigUmatiApp.xml:/app/Configuration/Files/LocalConfigUmatiApp.xml -v ./UmatiGatewayConfig.xml:/app/Configuration/UmatiGatewayConfig.xml ghcr.io/umati/umatigateway`
+`docker run -it -v ./LocalConfigumatiApp.xml:/app/Configuration/Files/LocalConfigumatiApp.xml -v ./umatiGatewayConfig.xml:/app/Configuration/umatiGatewayConfig.xml ghcr.io/umati/umatigateway`
 
 or via Compose with this config:
 
@@ -32,17 +32,17 @@ services:
     image: ghcr.io/umati/umatigateway
     container_name: umatigateway
     volumes:
-      - ./LocalConfigUmatiApp.xml:/app/Configuration/Files/LocalConfigUmatiApp.xml
-      - ./UmatiGatewayConfig.xml:/app/Configuration/UmatiGatewayConfig.xml
+      - ./LocalConfigumatiApp.xml:/app/Configuration/Files/LocalConfigumatiApp.xml
+      - ./umatiGatewayConfig.xml:/app/Configuration/umatiGatewayConfig.xml
 ```
 
 ### Running standalone executable
 
- --- TBD ---
+--- TBD ---
 
 ### Building
 
- --- TBD ---
+--- TBD ---
 
 ### GUI
 
@@ -64,12 +64,12 @@ To select machine data to be published, go to [OPC Subscriptions](http://localho
 
 #### MQTT configuration
 
-Go to [MqttConfiguration](http://localhost:8080/UmatiMqtt) page and make sure the credentials are correct. You should see a list of the nodes you subscribed to in _Published Nodes_ panel on the right. When not using the autostart option, click _Connect_ to start publishing.
+Go to [MqttConfiguration](http://localhost:8080/umatiMqtt) page and make sure the credentials are correct. You should see a list of the nodes you subscribed to in _Published Nodes_ panel on the right. When not using the autostart option, click _Connect_ to start publishing.
 
 ## Components
 
- --- TBD ---
+--- TBD ---
 
 ## License
 
- --- TBD ---
+--- TBD ---

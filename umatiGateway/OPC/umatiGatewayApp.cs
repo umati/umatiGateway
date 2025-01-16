@@ -23,13 +23,13 @@ namespace UmatiGateway.OPC
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-        public List<UmatiGatewayAppListener> umatiGatewayAppListeners = new List<UmatiGatewayAppListener>();
+        public List<UmatiGatewayAppListener> UmatiGatewayAppListeners = new List<UmatiGatewayAppListener>();
         public BlockingTransition blockingTransition = new BlockingTransition("", "", "", false);
         #region Constructors
 
-        public void AddUmatiGatewayAppListener(UmatiGatewayAppListener umatiGatewayAppListener)
+        public void AddUmatiGatewayAppListener(UmatiGatewayAppListener UmatiGatewayAppListener)
         {
-            this.umatiGatewayAppListeners.Add(umatiGatewayAppListener);
+            this.UmatiGatewayAppListeners.Add(UmatiGatewayAppListener);
         }
         public UmatiGatewayApp(ApplicationConfiguration configuration, TextWriter writer, Action<IList, IList> validateResponse)
         {
@@ -861,11 +861,11 @@ namespace UmatiGateway.OPC
         #endregion
         private void blockingTransitionChange(BlockingTransition blockingTransition)
         {
-            foreach (UmatiGatewayAppListener umatiGatewayAppListener in this.umatiGatewayAppListeners)
+            foreach (UmatiGatewayAppListener UmatiGatewayAppListener in this.UmatiGatewayAppListeners)
             {
                 try
                 {
-                    umatiGatewayAppListener.blockingTransitionChanged(blockingTransition);
+                    UmatiGatewayAppListener.blockingTransitionChanged(blockingTransition);
                 }
                 catch (Exception ex)
                 {

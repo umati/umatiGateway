@@ -22,7 +22,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
-          path: UmatiGateway
+          path: umatiGateway
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -31,26 +31,26 @@ jobs:
 
       - name: Restore dependencies
         run: |
-          cd UmatiGateway
+          cd umatiGateway
           dotnet restore
 
       - name: Install deb packaging tool
         run: |
-          cd UmatiGateway/UmatiGateway
+          cd umatiGateway/umatiGateway
           dotnet tool install --global dotnet-deb
           export PATH="$PATH:/home/runner/.dotnet/tools"
           dotnet deb install
 
       - name: build and package
         run: |
-          cd UmatiGateway/UmatiGateway
+          cd umatiGateway/umatiGateway
           dotnet deb --configuration ${{ matrix.build_type }} --output ../umati-gateway.deb
 
       - name: Upload Debian Package
         uses: actions/upload-artifact@v4
         with:
-          name: UmatiGateway-${{ matrix.os }}-${{ matrix.build_type }}
-          path: UmatiGateway/umati-gateway.deb
+          name: umatiGateway-${{ matrix.os }}-${{ matrix.build_type }}
+          path: umatiGateway/umati-gateway.deb
 
   build-windows:
     permissions:
@@ -74,21 +74,21 @@ jobs:
           dotnet-version: "8.0"
 
       - name: Restore Dependencies
-        run: dotnet restore UmatiGateway.sln
+        run: dotnet restore umatiGateway.sln
 
       - name: Build Application
-        run: dotnet build UmatiGateway.sln --configuration ${{ matrix.build_type }}
+        run: dotnet build umatiGateway.sln --configuration ${{ matrix.build_type }}
 
       - name: Run Tests
-        run: dotnet test UmatiGateway.sln --configuration ${{ matrix.build_type }}
+        run: dotnet test umatiGateway.sln --configuration ${{ matrix.build_type }}
 
       - name: Publish Application
-        run: dotnet publish UmatiGateway.sln --configuration ${{ matrix.build_type }} --output ./publish
+        run: dotnet publish umatiGateway.sln --configuration ${{ matrix.build_type }} --output ./publish
 
       - name: Upload Published Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: UmatiGateway-${{ matrix.os }}-${{ matrix.build_type }}
+          name: umatiGateway-${{ matrix.os }}-${{ matrix.build_type }}
           path: ./publish
 
   docker:
@@ -100,7 +100,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
-          path: UmatiGateway
+          path: umatiGateway
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3.3.0
       - name: Set up Docker Buildx
@@ -123,8 +123,8 @@ jobs:
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v6.12.0
         with:
-          context: ./UmatiGateway
-          file: ./UmatiGateway/Dockerfile
+          context: ./umatiGateway
+          file: ./umatiGateway/Dockerfile
           platforms: linux/amd64
           push: true
           tags: |

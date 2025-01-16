@@ -46,7 +46,7 @@
     <Content Update="Pages\Shared\_ValidationScriptsPartial.cshtml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Update="Pages\UmatiMqtt.cshtml">
+    <Content Update="Pages\umatiMqtt.cshtml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Update="Pages\_ViewImports.cshtml">
@@ -136,7 +136,7 @@
     <None Update="Configuration\Files\LocalWhConfig.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Configuration\UmatiGatewayConfig.xml">
+    <None Update="Configuration\umatiGatewayConfig.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="OPC\Gateway.Config.xml">
