@@ -5,7 +5,6 @@ using System.Text;
 using System.Security.Authentication;
 using System.Threading.Tasks;
 using MQTTnet;
-using MQTTnet.Client;
 using System.Threading;
 using Newtonsoft.Json.Linq;
 using Opc.Ua;
@@ -13,7 +12,6 @@ using Opc.Ua.Client.ComplexTypes;
 using Microsoft.AspNetCore.Authentication;
 using Opc.Ua.Schema.Binary;
 using Org.BouncyCastle.Utilities.Encoders;
-using MQTTnet.Server;
 using System.Reflection.PortableExecutable;
 using Org.BouncyCastle.Crypto.IO;
 using static UmatiGateway.OPC.MqttProvider;
@@ -39,7 +37,7 @@ namespace UmatiGateway.OPC{
     /// </summary>
     public class MqttProvider : OpcUaEventListener{
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-        private MqttFactory mqttFactory = new MqttFactory();
+        private MqttClientFactory mqttFactory = new MqttClientFactory();
         private IMqttClient? mqttClient = null;
         private const string CLIENT_ID = "TestClient";
         private const string TCP = "tcp";
@@ -1741,7 +1739,7 @@ namespace UmatiGateway.OPC{
             }
             else if (token is JArray)
             {
-                // Für Arrays: Überprüfe, ob die einzelnen Elemente sortiert werden müssen
+                // Fï¿½r Arrays: ï¿½berprï¿½fe, ob die einzelnen Elemente sortiert werden mï¿½ssen
                 var array = (JArray)token;
                 return new JArray(array.Select(SortToken));
             }
