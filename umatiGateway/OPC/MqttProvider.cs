@@ -104,7 +104,7 @@ namespace UmatiGateway.OPC
                 aTimer.Enabled = true;
                 TimerSetup = true;
             }
-           
+
             this.ConnectedOnce = true;
             this.connectionType = WEBSOCKET;
             this.Connect(this.connectionString, this.connectionType, this.connectionPort, this.user, this.pwd);
@@ -1046,12 +1046,12 @@ namespace UmatiGateway.OPC
             ICustomEncoding? customEncoding = this.customEncodingManager.GetActiveEncodingForNodeId(eto.TypeId);
             if (customEncoding != null)
             {
-                
+
                 JObject? decoded = customEncoding.decode(eto);
                 if (decoded != null) return decoded;
                 else return new JObject();
 
-            } 
+            }
             JObject jObject = new JObject();
             this.Debug("Eto Expanded NodeId:" + eto.TypeId.ToString());
             NodeId etoId = ExpandedNodeId.ToNodeId(eto.TypeId, this.client.GetNamespaceTable());

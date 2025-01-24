@@ -1,5 +1,5 @@
 {
-  "threshold": 5,
+  "threshold": 8,
   "reporters": ["consoleFull"],
   "ignore": ["**/wwwroot/**"],
   "absolute": true

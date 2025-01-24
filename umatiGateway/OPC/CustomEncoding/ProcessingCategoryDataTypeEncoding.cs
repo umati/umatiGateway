@@ -16,7 +16,7 @@ namespace umatiGateway.OPC.CustomEncoding
         public JObject? decode(ExtensionObject eto)
         {
             ExtensionObjectEncoding encoding = eto.Encoding;
-            switch (encoding) 
+            switch (encoding)
             {
                 case ExtensionObjectEncoding.Binary: return this.decodeBinary(eto);
                 case ExtensionObjectEncoding.Xml: throw new CustomEncodingException($"Unable to decode ProcessingCategory. Xml decoding not implemented.");

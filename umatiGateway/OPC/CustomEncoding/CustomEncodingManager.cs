@@ -12,7 +12,7 @@ namespace UmatiGateway.OPC.CustomEncoding
     public class CustomEncodingManager
     {
         public IList<ManagedCustomEncoding> managedCustomEncodings { get; set; } = new List<ManagedCustomEncoding>();
-        public CustomEncodingManager() 
+        public CustomEncodingManager()
         {
             this.managedCustomEncodings.Add(new ManagedCustomEncoding(new GMSResultDataTypeEncoding()));
             this.managedCustomEncodings.Add(new ManagedCustomEncoding(new ProcessingCategoryDataTypeEncoding()));
@@ -31,7 +31,7 @@ namespace UmatiGateway.OPC.CustomEncoding
             foreach (ManagedCustomEncoding managedCustomEncoding in this.managedCustomEncodings)
             {
                 ICustomEncoding customEncoding = managedCustomEncoding.CustomEncoding;
-                if(customEncoding.NodeId == nodeId) return customEncoding;
+                if (customEncoding.NodeId == nodeId) return customEncoding;
             }
             return null;
         }
@@ -60,7 +60,7 @@ namespace UmatiGateway.OPC.CustomEncoding
                         if (name != null)
                         {
                             ManagedCustomEncoding? managedCustomEncoding = this.GetManagedCustomEncodingByName(name);
-                            if(managedCustomEncoding != null) managedCustomEncoding.IsActive = encodingActive;
+                            if (managedCustomEncoding != null) managedCustomEncoding.IsActive = encodingActive;
                         }
                     }
                 }
@@ -88,7 +88,7 @@ namespace UmatiGateway.OPC.CustomEncoding
                     customEncodingsNode = xmlDoc.CreateElement("CustomEncodings");
                     configurationNode.AppendChild(customEncodingsNode);
                 }
-            } 
+            }
             if (customEncodingsNode != null)
             {
                 customEncodingsNode.RemoveAll();
@@ -108,7 +108,7 @@ namespace UmatiGateway.OPC.CustomEncoding
             {
                 Console.WriteLine("Unable to save Custom ENcodings");
             }
-            
+
             XmlWriterSettings settings = new XmlWriterSettings { Indent = true, IndentChars = "  ", NewLineOnAttributes = false, Encoding = Encoding.UTF8 };
             XmlWriter writer = XmlWriter.Create(file, settings);
             xmlDoc.Save(writer);

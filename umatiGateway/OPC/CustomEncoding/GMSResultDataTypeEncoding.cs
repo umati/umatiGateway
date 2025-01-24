@@ -108,7 +108,7 @@ namespace UmatiGateway.OPC.CustomEncoding
                 if (hasResultEvaluation) resultMetaData.Add("ResultEvaluation", binaryDecoder.ReadInt32("ResultEvaluation"));
                 if (hasResultEvaluationCode) resultMetaData.Add("ResultEvaluationCode", binaryDecoder.ReadInt64("ResultEvaluationCode"));
                 if (hasResultEvaluationDetails) resultMetaData.Add("ResultEvaluationDetails", binaryDecoder.ReadLocalizedText("ResultEvaluationDetails").ToString());
-                if (hasFileFormat) 
+                if (hasFileFormat)
                 {
                     Int32 length = binaryDecoder.ReadInt32("length");
                     JArray fileFormat = new JArray(length);
@@ -119,7 +119,7 @@ namespace UmatiGateway.OPC.CustomEncoding
                     resultMetaData.Add("FileFormat", fileFormat);
                 }
                 if (hasResultContent)
-                {   
+                {
                     int length = binaryDecoder.ReadInt32("length");
                     for (int i = 0; i < length; i++)
                     {
@@ -128,7 +128,8 @@ namespace UmatiGateway.OPC.CustomEncoding
                     resultData.Add("ResultContent", resultContent);
                 }
                 return resultData;
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 throw new CustomEncodingException($"Exception on decoding ResultData. Partial decoded object {resultData}", ex);
             }
