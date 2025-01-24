@@ -11,7 +11,6 @@ namespace UmatiGateway
         public string gatewayConfigVersion = "";
         public string configFilePath = "";
         public bool autostart = false;
-        public bool useGMSResultEncoding = false;
         public bool readExtraLibs = false;
         public bool singleThreadPolling = false;
         public int pollTime = 2000;

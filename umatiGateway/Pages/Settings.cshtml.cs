@@ -21,7 +21,7 @@ namespace UmatiGateway.Pages
             UmatiGatewayApp client = this.getClient();
             this.configuration = client.configuration;
         }
-        public IActionResult OnPostSave(string configFilePath, bool? AutoStart, bool? UseGMSResultEncoding, bool? ReadExtraLibs)
+        public IActionResult OnPostSave(string configFilePath, bool? AutoStart, bool? ReadExtraLibs)
         {
             UmatiGatewayApp client = this.getClient();
             this.configuration = client.configuration;
@@ -32,14 +32,6 @@ namespace UmatiGateway.Pages
             else
             {
                 configuration.autostart = true;
-            }
-            if (UseGMSResultEncoding == null)
-            {
-                configuration.useGMSResultEncoding = false;
-            }
-            else
-            {
-                configuration.useGMSResultEncoding = true;
             }
             if (ReadExtraLibs == null)
             {

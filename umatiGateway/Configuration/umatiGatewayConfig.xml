@@ -1,4 +1,4 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<!-- <umatiGatewayConfig version="1.0" autostart="False" file="./Configuration/Files/LocalConfigumatiApp.xml" useGMSResultEncoding="False" ReadExtraLibs="False" singleThreadPolling="False" pollTime="10000" /> -->
-<umatiGatewayConfig version="1.0" autostart="False" file="./Configuration/Files/LocalConfigLocalSampleServer.xml" useGMSResultEncoding="False" ReadExtraLibs="False" singleThreadPolling="False" pollTime="10000" />
-<!-- <umatiGatewayConfig version="1.0" autostart="False" file="./Configuration/Files/LocalWHConfig.xml" useGMSResultEncoding="False" ReadExtraLibs="False" singleThreadPolling="False" pollTime="10000" />  -->
+<!-- <umatiGatewayConfig version="1.0" autostart="False" file="./Configuration/Files/LocalConfigumatiApp.xml" ReadExtraLibs="False" singleThreadPolling="False" pollTime="10000" /> -->
+<umatiGatewayConfig version="1.0" autostart="False" file="./Configuration/Files/LocalConfigLocalSampleServer.xml" ReadExtraLibs="False" singleThreadPolling="False" pollTime="10000" />
+<!-- <umatiGatewayConfig version="1.0" autostart="False" file="./Configuration/Files/LocalWHConfig.xml" ReadExtraLibs="False" singleThreadPolling="False" pollTime="10000" />  -->

@@ -64,7 +64,6 @@ namespace UmatiGateway.OPC
             this.MqttProvider.connectionString = this.configuration.mqttServerEndpopint;
             this.MqttProvider.user = this.configuration.mqttUser;
             this.MqttProvider.pwd = this.configuration.mqttPassword;
-            this.MqttProvider.useGMSResultEncoding = this.configuration.useGMSResultEncoding;
             this.MqttProvider.clientId = this.configuration.mqttClientId;
             this.MqttProvider.mqttPrefix = this.configuration.mqttPrefix;
             this.MqttProvider.singleThreadPolling = this.configuration.singleThreadPolling;
@@ -79,6 +78,8 @@ namespace UmatiGateway.OPC
                 machineNode.NodeIdType = publishedNode.type;
                 this.MqttProvider.publishedMachines.Add(machineNode);
             }
+            // Read Config for Custom DataTypes from here for now.
+            this.MqttProvider.customEncodingManager.ReadConfiguration(this.configuration.configFilePath);
             if (this.configuration.autostart == true)
             {
                 Console.WriteLine("Create OPC Connection");

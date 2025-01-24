@@ -29,6 +29,7 @@ using System.Reflection.Metadata;
 using Org.BouncyCastle.Tls.Crypto;
 using System.Collections.Concurrent;
 using NLog;
+using UmatiGateway.OPC.CustomEncoding;
 
 
 namespace UmatiGateway.OPC
@@ -44,6 +45,7 @@ namespace UmatiGateway.OPC
         private const string CLIENT_ID = "TestClient";
         private const string TCP = "tcp";
         private const string WEBSOCKET = "websocket";
+        public CustomEncodingManager customEncodingManager = new CustomEncodingManager();
         public string connectionType = "";
         public string connectionString = "";
         public string connectionPort = "";
@@ -102,7 +104,7 @@ namespace UmatiGateway.OPC
                 aTimer.Enabled = true;
                 TimerSetup = true;
             }
-
+           
             this.ConnectedOnce = true;
             this.connectionType = WEBSOCKET;
             this.Connect(this.connectionString, this.connectionType, this.connectionPort, this.user, this.pwd);
@@ -1044,84 +1046,17 @@ namespace UmatiGateway.OPC
             }
             return jObject;
         }
-        public JObject decodeProcessingCategory(ExtensionObject eto)
-        {
-            JObject jObject = new JObject();
-            BinaryDecoder binaryDecoder = new BinaryDecoder((byte[])eto.Body, ServiceMessageContext.GlobalContext);
-            jObject.Add("ID", binaryDecoder.ReadString("ID"));
-            jObject.Add("Description", binaryDecoder.ReadString("Description"));
-            int length = binaryDecoder.ReadInt32("length");
-            JArray array = new JArray();
-            for (int i = 0; i < length; i++)
-            {
-                JObject supPar = new JObject();
-                supPar.Add("Name", binaryDecoder.ReadString("Name"));
-                supPar.Add("Description", binaryDecoder.ReadString("Description"));
-                //ValueType
-                JObject valueType = new JObject();
-                valueType.Add("Name", binaryDecoder.ReadString("Name"));
-                valueType.Add("Description", binaryDecoder.ReadString("Description"));
-                valueType.Add("BaseUnit", binaryDecoder.ReadString("BaseUnit"));
-                valueType.Add("PossibleValue", binaryDecoder.ReadString("PossibleValue"));
-                supPar.Add("ValueType", valueType);
-                supPar.Add("TypicalValue", binaryDecoder.ReadString("TypicalValue"));
-                supPar.Add("Mandatory", binaryDecoder.ReadBoolean("Mandatory"));
-                //Eclass
-                JObject eclass = new JObject();
-                eclass.Add("ID", binaryDecoder.ReadString("ID"));
-                eclass.Add("Description", binaryDecoder.ReadString("Description"));
-                eclass.Add("EClass", binaryDecoder.ReadString("Eclass"));
-                supPar.Add("EClass", eclass);
-                array.Add(supPar);
-            }
-            jObject.Add("SupportedParameter", array);
-            length = binaryDecoder.ReadInt32("length");
-            array = new JArray();
-            for (int i = 0; i < length; i++)
-            {
-                array.Add(binaryDecoder.ReadString("SupportedAssignment"));
-            }
-            jObject.Add("SupportedAssignment", array);
-            length = binaryDecoder.ReadInt32("length");
-            array = new JArray();
-            for (int i = 0; i < length; i++)
-            {
-                JObject supVar = new JObject();
-                supVar.Add("Name", binaryDecoder.ReadString("Name"));
-                supVar.Add("Description", binaryDecoder.ReadString("Description"));
-                //ValueType
-                JObject valueType = new JObject();
-                valueType.Add("Name", binaryDecoder.ReadString("Name"));
-                valueType.Add("Description", binaryDecoder.ReadString("Description"));
-                valueType.Add("BaseUnit", binaryDecoder.ReadString("BaseUnit"));
-                valueType.Add("PossibleValue", binaryDecoder.ReadString("PossibleValue"));
-                supVar.Add("ValueType", valueType);
-                supVar.Add("TypicalValue", binaryDecoder.ReadString("TypicalValue"));
-                supVar.Add("Mandatory", binaryDecoder.ReadBoolean("Mandatory"));
-                //Eclass
-                JObject eclass = new JObject();
-                eclass.Add("ID", binaryDecoder.ReadString("ID"));
-                eclass.Add("Description", binaryDecoder.ReadString("Description"));
-                eclass.Add("EClass", binaryDecoder.ReadString("Eclass"));
-                supVar.Add("EClass", eclass);
-                array.Add(supVar);
-            }
-            jObject.Add("SupportedVariable", array);
-            jObject.Add("SupportsTransformation", binaryDecoder.ReadInt32("SupportsTransformation"));
-            jObject.Add("SupportsSubProcessing", binaryDecoder.ReadInt32("SupportsSubProcessing"));
-            return jObject;
-
-        }
         public JObject decode(ExtensionObject eto)
         {
-            if (eto.TypeId.IdType == IdType.Numeric && (uint)eto.TypeId.Identifier == 5007)
+            ICustomEncoding? customEncoding = this.customEncodingManager.GetActiveEncodingForNodeId(eto.TypeId);
+            if (customEncoding != null)
             {
-                return this.decodeProcessingCategory(eto);
-            }
-            if (eto.TypeId.IdType == IdType.Numeric && (uint)eto.TypeId.Identifier == 5032)
-            {
-                this.Debug("Here");
-            }
+                
+                JObject? decoded = customEncoding.decode(eto);
+                if (decoded != null) return decoded;
+                else return new JObject();
+
+            } 
             JObject jObject = new JObject();
             this.Debug("Eto Expanded NodeId:" + eto.TypeId.ToString());
             NodeId etoId = ExpandedNodeId.ToNodeId(eto.TypeId, this.client.GetNamespaceTable());

@@ -31,15 +31,6 @@ namespace UmatiGateway
                         {
                             configuration.autostart = false;
                         }
-                        string useGMSResultEncoding = this.ReadAttribute(node, "useGMSResultEncoding");
-                        if (string.Equals(useGMSResultEncoding, "true", StringComparison.OrdinalIgnoreCase))
-                        {
-                            configuration.useGMSResultEncoding = true;
-                        }
-                        else
-                        {
-                            configuration.useGMSResultEncoding = false;
-                        }
                         string readExtraLibs = this.ReadAttribute(node, "ReadExtraLibs");
                         if (string.Equals(readExtraLibs, "true", StringComparison.OrdinalIgnoreCase))
                         {

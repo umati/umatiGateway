@@ -1,0 +1,31 @@
+﻿@page
+@model umatiGateway.Pages.CustomEncodingsModel
+@{
+    ViewData["Title"] = "Custom Encodings";
+}
+<h1>Custom Encodings</h1>
+
+<p>Enable or Disable Custom Encodings</p>
+
+<form method="post">
+    <div style="float:left; width:49%">
+        <fieldset class="settings-fieldset">
+            <legend class="settings-legend">Custom Encoding Configuration</legend>
+            @{
+                foreach (var customEncoding in Model.CustomEncodingsManager.managedCustomEncodings)
+                {
+                    <label for=@customEncoding.CustomEncoding.FullFieldName class="settings-label">@customEncoding.CustomEncoding.FullFieldName</label>
+                    <div class="settings-on-off-label">
+                        <span class="off">Off</span>
+                        <label class="settings-switch">
+                            <input id=@customEncoding.CustomEncoding.FullFieldName type="checkbox" name=@customEncoding.CustomEncoding.FullFieldName value="true" @(@customEncoding.IsActive ? "checked" : "")>
+                            <span class="settings-slider"></span>
+                        </label>
+                        <span class="on">On</span>
+                    </div>
+                }
+                <button type="submit" asp-page-handler="Save" class="settings-button">Speichern</button>
+            }
+        </fieldset>
+    </div>
+</form>
