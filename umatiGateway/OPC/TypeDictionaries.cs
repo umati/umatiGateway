@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Logging;
+﻿// SPDX-License-Identifier: Apache-2.0
+// Copyright (c) 2025 FVA GmbH - interop4x. All rights reserved.
+using Microsoft.Extensions.Logging;
 using Opc.Ua;
 using Opc.Ua.Configuration;
 using System.Text;

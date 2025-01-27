@@ -1,4 +1,6 @@
-﻿namespace UmatiGateway.OPC.CustomEncoding
+﻿// SPDX-License-Identifier: Apache-2.0
+// Copyright (c) 2025 FVA GmbH - interop4x. All rights reserved.
+namespace UmatiGateway.OPC.CustomEncoding
 {
     /// <summary>
     /// This Exception is used if any error happened during Custom Decoding of an DataType.

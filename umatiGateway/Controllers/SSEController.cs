@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿// SPDX-License-Identifier: Apache-2.0
+// Copyright (c) 2025 FVA GmbH - interop4x. All rights reserved.
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;

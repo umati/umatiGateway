@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json.Linq;
+﻿// SPDX-License-Identifier: Apache-2.0
+// Copyright (c) 2025 FVA GmbH - interop4x. All rights reserved.
+using Newtonsoft.Json.Linq;
 using Opc.Ua;
 
 namespace UmatiGateway.OPC.CustomEncoding
