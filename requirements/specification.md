@@ -70,18 +70,17 @@ The image shows a part of an _AddressSpace_. Each _Object_ is mapped to a _DataS
 - ActiveProgram
 - State
 
-The properties _Name_, _NumberInList_, _Id_, and _Number_ are fields of the _DataSet_. The value of _CurrentState_ is mapped as a field of _State_ and has a _DataSet_ with its properties:
+The properties _Name_, _NumberInList_ are fields of one _DataSet_ (ActiceProgram) and _Id_, and _Number_ are fields of an other DataSet(State). The value of _CurrentState_ is mapped as a field of _State_ and has a _DataSet_ with its properties:
 
-- Production
-- ActiveProgram
-  - Name
-  - NumberInList
-  - State
-    - CurrentState
-- State
-- CurrentState
-  - Id
-  - Number
+- Production (DataSet)
+- ActiveProgram (DataSet)
+  - Name (Field)
+  - NumberInList (Field)
+- State (DataSet)
+  - CurrentState (Field)
+- CurrentState (DataSet)
+  - Id (Field)
+  - Number (Field)
 
 ### Explanation
 
@@ -89,7 +88,7 @@ A field can also contain properties but no other variables, even though the _Add
 
 ## Mapping of Events
 
-_Events_ are also mapped to a _DataSet_. Because _Events_ may have no _BrowsePath_, the _BrowsePath_ of the _SourceNam_ and the _EventName_ is used. The mapping itself is analogous to the mapping of objects.
+_Events_ are also mapped to a _DataSet_. Because _Events_ may have no _BrowsePath_, the _BrowsePath_ of the _SourceName_ and the _EventName_ is used. The mapping itself is analogous to the mapping of objects.
 
 ## Topic Structure of DataSet and DataSetMetaData
 
