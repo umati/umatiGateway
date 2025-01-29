@@ -31,6 +31,8 @@ services:
   umatigateway:
     image: ghcr.io/umati/umatigateway
     container_name: umatigateway
+    ports:
+      - 8080:8080
     volumes:
       - ./LocalConfigumatiApp.xml:/app/Configuration/Files/LocalConfigumatiApp.xml
       - ./umatiGatewayConfig.xml:/app/Configuration/umatiGatewayConfig.xml
