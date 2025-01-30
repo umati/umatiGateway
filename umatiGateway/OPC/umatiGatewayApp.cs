@@ -78,6 +78,7 @@ namespace UmatiGateway.OPC
                 //Publish to machine nodes
                 MachineNode machineNode = new MachineNode(publishedNode.nodeId, publishedNode.namespaceUrl);
                 machineNode.NodeIdType = publishedNode.type;
+                machineNode.BaseType = publishedNode.baseType;
                 this.MqttProvider.publishedMachines.Add(machineNode);
             }
             // Read Config for Custom DataTypes from here for now.

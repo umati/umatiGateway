@@ -473,7 +473,13 @@ namespace UmatiGateway.OPC
                                 Node? TypeDefinitionNode = this.client.ReadNode(typedefinition);
                                 if (TypeDefinitionNode != null)
                                 {
-                                    this.WriteMessage(body, this.getInstanceNsu(machineNodeId), TypeDefinitionNode.BrowseName.Name);
+                                    if (String.IsNullOrEmpty(machineNode.BaseType))
+                                    {
+                                        this.WriteMessage(body, this.getInstanceNsu(machineNodeId), TypeDefinitionNode.BrowseName.Name);
+                                    } else
+                                    {
+                                        this.WriteMessage(body, this.getInstanceNsu(machineNodeId), machineNode.BaseType);
+                                    }
                                     machineNode.Data = body;
                                 }
                             }
@@ -511,7 +517,13 @@ namespace UmatiGateway.OPC
             {
                 foreach (MachineNode machineNode in this.machineNodes)
                 {
-                    this.WriteMessage(machineNode.Data, machineNode.InstanceNamespace, machineNode.TypeBrowseName);
+                    if (string.IsNullOrEmpty(machineNode.BaseType))
+                    {
+                        this.WriteMessage(machineNode.Data, machineNode.InstanceNamespace, machineNode.TypeBrowseName);
+                    } else
+                    {
+                        this.WriteMessage(machineNode.Data, machineNode.InstanceNamespace, machineNode.BaseType);
+                    }
                 }
             }
             catch (Exception e)
@@ -847,13 +859,26 @@ namespace UmatiGateway.OPC
                                         data.Add("Data", ident);
                                         data.Add("MachineId", machineNode.InstanceNamespace);
                                         data.Add("ParentId", "nsu=http:_2F_2Fopcfoundation.org_2FUA_2FMachinery_2F;i=1001");
-                                        data.Add("Topic", this.mqttPrefix + "/" + this.clientId + "/" + machineNode.TypeBrowseName + "/" + machineNode.InstanceNamespace);
-                                        data.Add("TypeDefinition", machineNode.TypeBrowseName);
+                                        if (string.IsNullOrEmpty(machineNode.BaseType))
+                                        {
+                                            data.Add("Topic", this.mqttPrefix + "/" + this.clientId + "/" + machineNode.TypeBrowseName + "/" + machineNode.InstanceNamespace);
+                                            data.Add("TypeDefinition", machineNode.TypeBrowseName);
+                                        } else
+                                        {
+                                            data.Add("Topic", this.mqttPrefix + "/" + this.clientId + "/" + machineNode.BaseType + "/" + machineNode.InstanceNamespace);
+                                            data.Add("TypeDefinition", machineNode.BaseType);
+                                        }
                                         identificationArray.Add(data);
                                     }
                                 }
                             }
-                            this.WriteIdentification(identificationArray, machineNode.InstanceNamespace, machineNode.TypeBrowseName);
+                            if (string.IsNullOrEmpty(machineNode.BaseType))
+                            {
+                                this.WriteIdentification(identificationArray, machineNode.InstanceNamespace, machineNode.TypeBrowseName);
+                            } else
+                            {
+                                this.WriteIdentification(identificationArray, machineNode.InstanceNamespace, machineNode.BaseType);
+                            }
                             this.IdentificationArray = identificationArray;
                         }
                     }
@@ -1536,7 +1561,7 @@ namespace UmatiGateway.OPC
                         this.publishOnlineMachinesMachineNode();
                         Console.WriteLine("Publish Online Machines Machine Node finish.");
                         Console.WriteLine("Publish Identification Object");
-                        this.publishIdentificationObject();
+                        this.publishIdentificationMachineNodes();
                         Console.WriteLine("Publish Identification Object");
                         Console.WriteLine("Publish Maschine Object Machine Nodes");
                         this.publishNodeAfterSubscriptionMachineNodes();
@@ -1809,6 +1834,7 @@ namespace UmatiGateway.OPC
         public string NamespaceUrl { get; set; }
         public string TypeBrowseName { get; set; } = "";
         public string NodeIdType { get; set; } = "";
+        public string BaseType { get; set; } = "";
 
         public NodeId? ResolvedNodeId { get; set; }
         public Dictionary<NodeId, PublishedBrowsePaths> KnownBrowsePaths { get; set; } = new Dictionary<NodeId, PublishedBrowsePaths>();

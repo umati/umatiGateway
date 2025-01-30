@@ -50,18 +50,21 @@ btn-txt {
 
 /* Festlegen der Spaltenbreiten */
 .nodetable th:nth-child(1), .nodetable td:nth-child(1) {
-    width: 15%; /* Spalte für "Nummer" */
+    width: 10%; /* Spalte für "Nummer" */
 }
 
 .nodetable th:nth-child(2), .nodetable td:nth-child(2) {
-    width: 20%; /* Spalte für "Type" */
+    width: 25%; /* Spalte für "Type" */
 }
 
 .nodetable th:nth-child(3), .nodetable td:nth-child(3) {
-    width: 45%; /* Spalte für "URL" */
+    width: 40%; /* Spalte für "URL" */
 }
 
 .nodetable th:nth-child(4), .nodetable td:nth-child(4) {
+    width: 25%; /* Spalte für "ID" */
+}
+.nodetable th:nth-child(5), .nodetable td:nth-child(5) {
     width: 20%; /* Spalte für "ID" */
 }
 

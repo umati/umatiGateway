@@ -4,9 +4,9 @@
   <OPCConnection serverendpoint="opc.tcp://127.0.0.1:4840" authentication="None" user="" password="" />
   <MqttConnection serverendpoint="mqtt://localhost:1883" user="" password="" clientId="fva/matthias2" prefix="umati/v2" />
   <PublishedNodes>
-    <!-- <PublishedNode type="Numeric" namespaceurl="http://example.com/FullMachineTool/" nodeId="66382"/> -->
-    <!-- <PublishedNode type="Numeric" namespaceurl="http://example.com/BasicMachineTool/" nodeId="66382"/> -->
-    <!-- <PublishedNode type="Numeric" namespaceurl="http://www.3yourmind.com/BasicAMMachine/" nodeId="66382"/> -->
+    <!-- <PublishedNode type="Numeric" namespaceurl="http://example.com/FullMachineTool/" nodeId="66382" BaseType=""/> -->
+    <!-- <PublishedNode type="Numeric" namespaceurl="http://example.com/BasicMachineTool/" nodeId="66382" BaseType=""/> -->
+    <!-- <PublishedNode type="Numeric" namespaceurl="http://www.3yourmind.com/BasicAMMachine/" nodeId="66382" BaseType=""/> -->
     <PublishedNode type="Numeric" namespaceurl="http://www.isw.uni-stuttgart.de/BasicGMS/" nodeId="66382" />
   </PublishedNodes>
   <CustomEncodings>

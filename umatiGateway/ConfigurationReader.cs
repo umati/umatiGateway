@@ -158,6 +158,7 @@ namespace UmatiGateway
                                 published.type = this.ReadAttribute(publishedNode, "type");
                                 published.namespaceUrl = this.ReadAttribute(publishedNode, "namespaceurl");
                                 published.nodeId = this.ReadAttribute(publishedNode, "nodeId");
+                                published.baseType = this.ReadAttribute(publishedNode, "BaseType");
                                 configuration.publishedNodes.Add(published);
                             }
                         }
@@ -234,6 +235,7 @@ namespace UmatiGateway
                                 published.type = this.ReadAttribute(publishedNode, "type");
                                 published.namespaceUrl = this.ReadAttribute(publishedNode, "namespaceurl");
                                 published.nodeId = this.ReadAttribute(publishedNode, "nodeId");
+                                published.baseType = this.ReadAttribute(publishedNode, "BaseType");
                                 configuration.publishedNodes.Add(published);
                             }
                         }

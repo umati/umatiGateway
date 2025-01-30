@@ -35,5 +35,6 @@ namespace UmatiGateway
         public string type = "";
         public string namespaceUrl = "";
         public string nodeId = "";
+        public string baseType = "";
     }
 }
