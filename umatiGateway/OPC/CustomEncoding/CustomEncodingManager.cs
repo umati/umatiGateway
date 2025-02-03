@@ -33,7 +33,7 @@ namespace UmatiGateway.OPC.CustomEncoding
             foreach (ManagedCustomEncoding managedCustomEncoding in this.managedCustomEncodings)
             {
                 ICustomEncoding customEncoding = managedCustomEncoding.CustomEncoding;
-                if (customEncoding.NodeId == nodeId) return customEncoding;
+                if (customEncoding.NodeId == nodeId && managedCustomEncoding.IsActive == true) return customEncoding;
             }
             return null;
         }
