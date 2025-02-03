@@ -9,7 +9,7 @@
   <ItemGroup>
     <PackageReference Include="MQTTnet" Version="5.0.1.1416" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="NLog" Version="5.3.4" />
+    <PackageReference Include="NLog" Version="5.4.0" />
     <PackageReference Include="OPCFoundation.NetStandard.Opc.Ua" Version="1.5.375.443" />
     <PackageReference Include="OPCFoundation.NetStandard.Opc.Ua.Client.ComplexTypes.Debug" Version="1.5.375.443" />
   </ItemGroup>
