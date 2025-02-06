@@ -1,8 +1,8 @@
 {
     "$schema": "http://json-schema.org/draft-06/schema#",
-    "$ref": "#/definitions/Welcome4",
+    "$ref": "#/definitions/Welcome9",
     "definitions": {
-        "Welcome4": {
+        "Welcome9": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
@@ -29,7 +29,7 @@
                 "Notification",
                 "Production"
             ],
-            "title": "Welcome4"
+            "title": "Welcome9"
         },
         "Equipment": {
             "type": "object",
@@ -174,7 +174,7 @@
             "additionalProperties": false,
             "properties": {
                 "ReasonForLocking": {
-                    "type": "integer"
+                    "type": "string"
                 }
             },
             "required": [
@@ -512,11 +512,11 @@
             "type": "object",
             "additionalProperties": false,
             "properties": {
-                "EURange": {
-                    "$ref": "#/definitions/EURange"
-                },
                 "EngineeringUnits": {
                     "$ref": "#/definitions/EngineeringUnits"
+                },
+                "EURange": {
+                    "$ref": "#/definitions/EURange"
                 }
             },
             "required": [
@@ -529,16 +529,16 @@
             "type": "object",
             "additionalProperties": false,
             "properties": {
-                "High": {
+                "high": {
                     "type": "number"
                 },
-                "Low": {
+                "low": {
                     "type": "number"
                 }
             },
             "required": [
-                "High",
-                "Low"
+                "high",
+                "low"
             ],
             "title": "EURange"
         },
@@ -691,6 +691,9 @@
                 "$TypeDefinition": {
                     "type": "string"
                 },
+                "<ControlChannel>": {
+                    "$ref": "#/definitions/Messages"
+                },
                 "IsPartOfBase": {
                     "type": "boolean"
                 },
@@ -709,6 +712,7 @@
             },
             "required": [
                 "$TypeDefinition",
+                "<ControlChannel>",
                 "IsPartOfBase",
                 "NumberInList",
                 "SignalColor",
@@ -717,15 +721,24 @@
             ],
             "title": "Light"
         },
+        "Messages": {
+            "type": "object",
+            "additionalProperties": false,
+            "title": "Messages"
+        },
         "Notification": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
+                "Messages": {
+                    "$ref": "#/definitions/Messages"
+                },
                 "Prognoses": {
                     "$ref": "#/definitions/Prognoses"
                 }
             },
             "required": [
+                "Messages",
                 "Prognoses"
             ],
             "title": "Notification"
@@ -808,7 +821,8 @@
                     "$ref": "#/definitions/ComponentName"
                 },
                 "PredictedTime": {
-                    "type": "string"
+                    "type": "string",
+                    "format": "date-time"
                 },
                 "Location": {
                     "$ref": "#/definitions/ComponentName"
@@ -834,7 +848,8 @@
                     "type": "string"
                 },
                 "PredictedTime": {
-                    "type": "string"
+                    "type": "string",
+                    "format": "date-time"
                 }
             },
             "required": [
@@ -852,7 +867,8 @@
                     "type": "string"
                 },
                 "PredictedTime": {
-                    "type": "string"
+                    "type": "string",
+                    "format": "date-time"
                 },
                 "SourceIdentifier": {
                     "type": "string"
@@ -873,7 +889,8 @@
                     "type": "string"
                 },
                 "PredictedTime": {
-                    "type": "string"
+                    "type": "string",
+                    "format": "date-time"
                 },
                 "UtilityName": {
                     "type": "string"
@@ -911,7 +928,7 @@
                     "type": "string"
                 },
                 "JobNodeId": {
-                    "type": "integer"
+                    "type": "string"
                 },
                 "Name": {
                     "type": "string"
@@ -967,7 +984,7 @@
             "additionalProperties": false,
             "properties": {
                 "Id": {
-                    "type": "integer"
+                    "type": "string"
                 },
                 "Number": {
                     "type": "integer"
@@ -1026,6 +1043,9 @@
                 "PartSets": {
                     "$ref": "#/definitions/PartSets"
                 },
+                "ProductionPrograms": {
+                    "$ref": "#/definitions/ProductionPrograms"
+                },
                 "RunsCompleted": {
                     "type": "integer"
                 },
@@ -1041,6 +1061,7 @@
                 "Identifier",
                 "NumberInList",
                 "PartSets",
+                "ProductionPrograms",
                 "RunsCompleted",
                 "RunsPlanned",
                 "State"
@@ -1168,6 +1189,19 @@
                 "ProcessIrregularity"
             ],
             "title": "Part1_Class"
+        },
+        "ProductionPrograms": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "<OrderedObject>": {
+                    "$ref": "#/definitions/Messages"
+                }
+            },
+            "required": [
+                "<OrderedObject>"
+            ],
+            "title": "ProductionPrograms"
         },
         "RunsPlanned": {
             "type": "object",
