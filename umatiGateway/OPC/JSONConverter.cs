@@ -185,7 +185,7 @@ namespace UmatiGateway.OPC
             JObject jObject = new JObject();
             jObject.Add("NamespaceUri", this.Convert(euInformation.NamespaceUri));
             jObject.Add("UnitId", this.Convert(euInformation.UnitId));
-            jObject.Add("DisplayNmae", this.Convert(euInformation.DisplayName));
+            jObject.Add("DisplayName", this.Convert(euInformation.DisplayName));
             jObject.Add("Description", this.Convert(euInformation.Description));
             return jObject;
         }
