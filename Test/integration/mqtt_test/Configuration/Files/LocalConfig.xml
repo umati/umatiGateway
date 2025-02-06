@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Configuration version="1.0">
+	<OPCConnection serverendpoint="opc.tcp://opcuaserver:4840" authentication="None" user ="" password=""/>
+	<MqttConnection serverendpoint="mqtt://mqtt_broker:1883" user="umati/mqtt_test" password="umati/mqtt_test" clientId="umati/mqtt_test" prefix="umati/v2"/>
+	<PublishedNodes>
+		<PublishedNode type="Numeric" namespaceurl="http://example.com/FullMachineTool/" nodeId="66382"/>
+		<PublishedNode type="Numeric" namespaceurl="http://example.com/BasicMachineTool/" nodeId="66382"/>
+		<PublishedNode type="Numeric" namespaceurl="http://example.com/FullMachineTool/" nodeId="66382"/>
+	</PublishedNodes>
+</Configuration>
