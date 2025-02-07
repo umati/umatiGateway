@@ -131,7 +131,6 @@ jobs:
             ghcr.io/${{ env.IMAGE_REPOSITORY }}:${{ env.IMAGE_TAG }}
           provenance: false
       - name: Run integration test mqtt
-        if: ${{env.IS_NOT_PR == 'true'}}
         run: |
           #! /bin/bash
           python -m pip install --upgrade pip
