@@ -13,6 +13,8 @@ import paho.mqtt.client as mqtt
 
 
 class TestMqttSampleServer(unittest.TestCase):
+    """Class repesenting a Testcase"""
+
     client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
 
     @classmethod
@@ -39,21 +41,23 @@ class TestMqttSampleServer(unittest.TestCase):
         ret = cls.client.disconnect()
         assert ret == 0
 
-    def test_clientOnline_status(self):
+    def test_client_online_status(self):
         """Tests if the client online status message is as expected."""
         received_msg = self.receive_message("umati/v2/umati/mqtt_test/clientOnline")
         self.assertEqual(received_msg, b"1")
 
-    def test_BaseMachineTool(self) -> None:
+    def test_basemachinetool(self) -> None:
         """
         This test function test if the BaseMachineTool is send correct to the mqtt broker
         """
         # Use the helper method to receive the message as JSON
-        topic = "umati/v2/umati/mqtt_test/MachineToolType/nsu=http:_2F_2Fexample.com_2FBasicMachineTool_2F;i=66382"
+        topic = "umati/v2/umati/mqtt_test/MachineToolType/nsu=http:_2F_2Fexample.com_2FBasicMachineTool_2F;i=66382"  # pylint: disable=line-too-long
         json_msg = self.receive_message_as_json(topic)
 
         # Load the JSON schema from a file.
-        with open("schemas/SampleServer/BaseMachineTool.json", "r", encoding="utf-8") as f:
+        with open(
+            "schemas/SampleServer/BaseMachineTool.json", "r", encoding="utf-8"
+        ) as f:
             schema = json.load(f)
 
         # Validate the received message against the JSON schema.
@@ -64,17 +68,20 @@ class TestMqttSampleServer(unittest.TestCase):
             print(e)
             self.fail(f"Message is of {topic} is not correct!")
 
-    def test_FullMachineTool(self) -> None:
+    def test_fullmachinetool(self) -> None:
         """
         This test function test if the FullMachineTool is send correct to the mqtt broker
         """
         # Use the helper method to receive the message as JSON
-        topic = "umati/v2/umati/mqtt_test/MachineToolType/nsu=http:_2F_2Fexample.com_2FFullMachineTool_2F;i=66382"
+        topic = "umati/v2/umati/mqtt_test/MachineToolType/nsu=http:_2F_2Fexample.com_2FFullMachineTool_2F;i=66382"  # pylint: disable=line-too-long
         json_msg = self.receive_message_as_json(topic)
 
         # Load the JSON schema from a file.
-        # you can use https://codebeautify.org/json-to-json-schema-generator to generate a schema from a example json
-        with open("schemas/SampleServer/FullMachineTool.json", "r",encoding="utf-8") as f:
+        # you can use https://codebeautify.org/json-to-json-schema-generator
+        # to generate a schema from a example json
+        with open(
+            "schemas/SampleServer/FullMachineTool.json", "r", encoding="utf-8"
+        ) as f:
             schema = json.load(f)
 
         # Validate the received message against the JSON schema.
@@ -100,7 +107,7 @@ class TestMqttSampleServer(unittest.TestCase):
         received_msg = None
 
         def on_message(client, userdata, msg):
-             # pylint: disable=unused-argument
+            # pylint: disable=unused-argument
             nonlocal received_msg
             if msg.topic == topic:
                 received_msg = msg.payload
@@ -127,8 +134,7 @@ class TestMqttSampleServer(unittest.TestCase):
         received_msg: Optional[bytes] = self.receive_message(topic, timeout)
         if received_msg is not None:
             return json.loads(received_msg.decode("utf-8"))
-        else:
-            return {}
+        return {}
 
 
 if __name__ == "__main__":
