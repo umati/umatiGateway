@@ -53,7 +53,7 @@ class TestMqttSampleServer(unittest.TestCase):
         json_msg = self.receive_message_as_json(topic)
 
         # Load the JSON schema from a file.
-        with open("schemas/SampleServer/BaseMachineTool.json", "r") as f:
+        with open("schemas/SampleServer/BaseMachineTool.json", "r", encoding="utf-8") as f:
             schema = json.load(f)
 
         # Validate the received message against the JSON schema.
@@ -74,7 +74,7 @@ class TestMqttSampleServer(unittest.TestCase):
 
         # Load the JSON schema from a file.
         # you can use https://codebeautify.org/json-to-json-schema-generator to generate a schema from a example json
-        with open("schemas/SampleServer/FullMachineTool.json", "r") as f:
+        with open("schemas/SampleServer/FullMachineTool.json", "r",encoding="utf-8") as f:
             schema = json.load(f)
 
         # Validate the received message against the JSON schema.
@@ -100,6 +100,7 @@ class TestMqttSampleServer(unittest.TestCase):
         received_msg = None
 
         def on_message(client, userdata, msg):
+             # pylint: disable=unused-argument
             nonlocal received_msg
             if msg.topic == topic:
                 received_msg = msg.payload
