@@ -1,5 +1,8 @@
 #!/bin/bash
-export  IMAGE_REPOSITORY=umati/umatigateway
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2025 Sebastian Friedl FVA GmbH - interop4x. All rights reserved.
+
+export IMAGE_REPOSITORY=umati/umatigateway
 export IMAGE_TAG=develop
 docker compose up -d
 pip3 install -r requirements.txt
