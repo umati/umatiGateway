@@ -134,7 +134,7 @@ jobs:
         run: |
           #! /bin/bash
           python -m pip install --upgrade pip
-          cd ./UmatiDashboardOpcUaClient/Tests/integration/mqtt_test || exit
+          cd ./umatiGateway/Tests/integration/mqtt_test || exit
           pip install -r requirements.txt
           docker compose up -d
           ./waitForContainer.sh
