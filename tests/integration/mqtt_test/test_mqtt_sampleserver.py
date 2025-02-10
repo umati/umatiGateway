@@ -51,7 +51,8 @@ class TestMqttSampleServer(unittest.TestCase):
         This test function test if the BaseMachineTool is send correct to the mqtt broker
         """
         # Use the helper method to receive the message as JSON
-        topic = "umati/v2/umati/mqtt_test/MachineToolType/nsu=http:_2F_2Fexample.com_2FBasicMachineTool_2F;i=66382"  # pylint: disable=line-too-long
+        # pylint: disable=line-too-long
+        topic = "umati/v2/umati/mqtt_test/MachineToolType/nsu=http:_2F_2Fexample.com_2FBasicMachineTool_2F;i=66382"
         json_msg = self.receive_message_as_json(topic)
 
         # Load the JSON schema from a file.
@@ -73,7 +74,8 @@ class TestMqttSampleServer(unittest.TestCase):
         This test function test if the FullMachineTool is send correct to the mqtt broker
         """
         # Use the helper method to receive the message as JSON
-        topic = "umati/v2/umati/mqtt_test/MachineToolType/nsu=http:_2F_2Fexample.com_2FFullMachineTool_2F;i=66382"  # pylint: disable=line-too-long
+        # pylint: disable=line-too-long
+        topic = "umati/v2/umati/mqtt_test/MachineToolType/nsu=http:_2F_2Fexample.com_2FFullMachineTool_2F;i=66382"
         json_msg = self.receive_message_as_json(topic)
 
         # Load the JSON schema from a file.
