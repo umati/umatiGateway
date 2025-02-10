@@ -199,7 +199,7 @@
               "Description": {
                   "$ref": "#/definitions/Manufacturer"
               },
-              "DisplayNmae": {
+              "DisplayName": {
                   "$ref": "#/definitions/Manufacturer"
               },
               "NamespaceUri": {
@@ -211,7 +211,7 @@
           },
           "required": [
               "Description",
-              "DisplayNmae",
+              "DisplayName",
               "NamespaceUri",
               "UnitId"
           ],
