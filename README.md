@@ -56,6 +56,14 @@ Web-based interface is accessible on port 8080 by default. There the connection 
 
 The interface will be then available at [http://localhost:8080](http://localhost:8080).
 
+### Configuration ###
+
+#### Webserver Configuration ####
+
+The UmatiGateway provides its UI via a Web-GUI on port 5000 at default settings.
+
+##### Changing the Webserver Port #####
+
 #### OPC UA configuration
 
 OPC UA connection is configured in [OPC Connection](http://localhost:8080/OPCConnection) page. When not using the autostart option, make sure the connection URL is correct and press _Connect_ button. _ConnectionStatus_ field should shortly change to _True_.
