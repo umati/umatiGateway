@@ -74,4 +74,4 @@ Go to [MqttConfiguration](http://localhost:8080/umatiMqtt) page and make sure th
 
 ## License
 
---- TBD ---
+This Software is licensed under Apache v2 license.
