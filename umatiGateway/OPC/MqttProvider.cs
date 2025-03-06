@@ -1470,6 +1470,7 @@ namespace UmatiGateway.OPC
                 nameSpace = this.GetNameSpaceForIndex(nodeId.NamespaceIndex);
                 if (replace)
                 {
+                    nameSpace = nameSpace.Replace("_","_5F");
                     nameSpace = nameSpace.Replace("/", "_2F");
                 }
                 if (machineId.IdType == IdType.Numeric)
