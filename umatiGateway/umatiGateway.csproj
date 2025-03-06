@@ -118,6 +118,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Configuration\Files\LocalConfigLocalSampleServer.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Configuration\Files\LocalFlatglassConfigSiemensMy.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

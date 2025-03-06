@@ -1,12 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Configuration version="1.0">
+  <!-- For authentication with username and password use the line below.-->
   <!-- <OPCConnection serverendpoint="opc.tcp://opcua.umati.app:4843" authentication="None" user ="admin" password="pw1"/> -->
   <OPCConnection serverendpoint="opc.tcp://127.0.0.1:4840" authentication="None" user="" password="" />
-  <MqttConnection serverendpoint="mqtt://localhost:1883" user="" password="" clientId="fva/matthias2" prefix="umati/v2" />
+  <MqttConnection serverendpoint="mqtt://localhost:1883" user="" password="" clientId="company/client" prefix="umati/v2" />
   <PublishedNodes>
-    <!-- <PublishedNode type="Numeric" namespaceurl="http://example.com/FullMachineTool/" nodeId="66382" BaseType=""/> -->
-    <!-- <PublishedNode type="Numeric" namespaceurl="http://example.com/BasicMachineTool/" nodeId="66382" BaseType=""/> -->
-    <!-- <PublishedNode type="Numeric" namespaceurl="http://www.3yourmind.com/BasicAMMachine/" nodeId="66382" BaseType=""/> -->
     <PublishedNode type="Numeric" namespaceurl="http://www.isw.uni-stuttgart.de/BasicGMS/" nodeId="66382" />
   </PublishedNodes>
   <CustomEncodings>
