@@ -476,7 +476,8 @@ namespace UmatiGateway.OPC
                                     if (String.IsNullOrEmpty(machineNode.BaseType))
                                     {
                                         this.WriteMessage(body, this.getInstanceNsu(machineNodeId), TypeDefinitionNode.BrowseName.Name);
-                                    } else
+                                    }
+                                    else
                                     {
                                         this.WriteMessage(body, this.getInstanceNsu(machineNodeId), machineNode.BaseType);
                                     }
@@ -520,7 +521,8 @@ namespace UmatiGateway.OPC
                     if (string.IsNullOrEmpty(machineNode.BaseType))
                     {
                         this.WriteMessage(machineNode.Data, machineNode.InstanceNamespace, machineNode.TypeBrowseName);
-                    } else
+                    }
+                    else
                     {
                         this.WriteMessage(machineNode.Data, machineNode.InstanceNamespace, machineNode.BaseType);
                     }
@@ -863,7 +865,8 @@ namespace UmatiGateway.OPC
                                         {
                                             data.Add("Topic", this.mqttPrefix + "/" + this.clientId + "/" + machineNode.TypeBrowseName + "/" + machineNode.InstanceNamespace);
                                             data.Add("TypeDefinition", machineNode.TypeBrowseName);
-                                        } else
+                                        }
+                                        else
                                         {
                                             data.Add("Topic", this.mqttPrefix + "/" + this.clientId + "/" + machineNode.BaseType + "/" + machineNode.InstanceNamespace);
                                             data.Add("TypeDefinition", machineNode.BaseType);
@@ -875,7 +878,8 @@ namespace UmatiGateway.OPC
                             if (string.IsNullOrEmpty(machineNode.BaseType))
                             {
                                 this.WriteIdentification(identificationArray, machineNode.InstanceNamespace, machineNode.TypeBrowseName);
-                            } else
+                            }
+                            else
                             {
                                 this.WriteIdentification(identificationArray, machineNode.InstanceNamespace, machineNode.BaseType);
                             }
@@ -1470,6 +1474,7 @@ namespace UmatiGateway.OPC
                 nameSpace = this.GetNameSpaceForIndex(nodeId.NamespaceIndex);
                 if (replace)
                 {
+                    nameSpace = nameSpace.Replace("_", "_5F");
                     nameSpace = nameSpace.Replace("/", "_2F");
                 }
                 if (machineId.IdType == IdType.Numeric)
