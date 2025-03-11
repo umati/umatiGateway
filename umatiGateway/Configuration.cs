@@ -38,7 +38,7 @@ namespace UmatiGateway
         public string NamespaceUrl { get; set; } = "";
         public string NodeId { get; set; } = "";
         public string BaseType { get; set; } = "";
-}
+    }
     public class CustomEncoding()
     {
         public string Name { get; set; } = "";

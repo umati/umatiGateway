@@ -167,7 +167,7 @@ namespace UmatiGateway
                             Console.WriteLine("No nodes to pubish found");
                         }
                         XmlNodeList? customEncodings = xmlDoc.SelectNodes("/Configuration/CustomEncodings/CustomEncoding");
-                        if(customEncodings != null)
+                        if (customEncodings != null)
                         {
                             foreach (XmlNode customEncodingNode in customEncodings)
                             {
@@ -186,7 +186,7 @@ namespace UmatiGateway
                                 configuration.customEncodings.Add(customEncoding);
                             }
                         }
-                        else 
+                        else
                         {
                             Console.WriteLine("No CustomEncodings found");
                         }

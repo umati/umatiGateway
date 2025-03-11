@@ -108,7 +108,7 @@ namespace UmatiGateway
             mqttConnectionNode.Attributes.Append(mqttClientId);
             mqttConnectionNode.Attributes.Append(mqttPrefix);
             XmlElement publishedNodesNode = xmlDocument.CreateElement("PublishedNodes");
-            foreach(PublishedNode publishedNode in configuration.publishedNodes)
+            foreach (PublishedNode publishedNode in configuration.publishedNodes)
             {
                 XmlElement publishedNodeNode = xmlDocument.CreateElement("PublishedNode");
                 XmlAttribute typeNode = xmlDocument.CreateAttribute("type");
@@ -126,7 +126,7 @@ namespace UmatiGateway
                 publishedNodesNode.AppendChild(publishedNodeNode);
             }
             XmlElement customEncodingsNode = xmlDocument.CreateElement("CustomEncodings");
-            foreach(CustomEncoding customEncoding in configuration.customEncodings)
+            foreach (CustomEncoding customEncoding in configuration.customEncodings)
             {
                 XmlElement customEncodingNode = xmlDocument.CreateElement("CustomEncoding");
                 XmlAttribute nameNode = xmlDocument.CreateAttribute("name");
