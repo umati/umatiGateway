@@ -38,6 +38,7 @@ namespace UmatiGateway.Pages
         {
             this.ConnectionUrl = ConnectionUrl;
             UmatiGatewayApp client = this.getClient();
+            client.configuration.opcServerEndpoint = this.ConnectionUrl;
             if (ConnectionUrl != null)
             {
                 _ = client.ConnectAsync(this.ConnectionUrl).Result;

@@ -51,16 +51,6 @@ namespace UmatiGateway.Pages
         }
         private UmatiGatewayApp getClient()
         {
-            string? mySessionId = HttpContext.Session.GetString("SessionId");
-            if (mySessionId == null)
-            {
-                this.SessionId = Guid.NewGuid().ToString();
-                HttpContext.Session.SetString("SessionId", this.SessionId);
-            }
-            else
-            {
-                this.SessionId = mySessionId;
-            }
             UmatiGatewayApp client = ClientFactory.getClient(this.SessionId);
             return client;
         }

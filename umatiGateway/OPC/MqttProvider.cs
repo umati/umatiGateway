@@ -112,14 +112,14 @@ namespace UmatiGateway.OPC
             this.Connect(this.connectionString, this.connectionType, this.connectionPort, this.user, this.pwd);
             foreach (PublishedNode publishedNode in this.publishedNodes)
             {
-                int namespaceIndex = this.client.GetNamespaceTable().GetIndex(publishedNode.namespaceUrl);
-                if (publishedNode.type == "Numeric")
+                int namespaceIndex = this.client.GetNamespaceTable().GetIndex(publishedNode.NamespaceUrl);
+                if (publishedNode.Type == "Numeric")
                 {
-                    this.onlineMachines.Add(new NodeId(Convert.ToUInt32(publishedNode.nodeId), (ushort)namespaceIndex));
+                    this.onlineMachines.Add(new NodeId(Convert.ToUInt32(publishedNode.NodeId), (ushort)namespaceIndex));
                 }
-                else if (publishedNode.type == "String")
+                else if (publishedNode.Type == "String")
                 {
-                    this.onlineMachines.Add(new NodeId(publishedNode.nodeId, (ushort)namespaceIndex));
+                    this.onlineMachines.Add(new NodeId(publishedNode.NodeId, (ushort)namespaceIndex));
                 }
             }
             // Todo use a switch case here and error handling

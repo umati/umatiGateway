@@ -20,9 +20,9 @@
                 @node.NodeData.node.DisplayName
             </button>
             @{
-                if (@node.NodeData.node.DisplayName.Text.Length <= 8)
+                if (@node.NodeData.node.DisplayName.Text.Length >= 1)
                 {
-                    <img src="./css/complete_alt.png" />
+                    <!-- <img src="./css/complete_alt.png" /> -->
                 }
                 else if (@node.NodeData.node.DisplayName.Text.Length > 8 && @node.NodeData.node.DisplayName.Text.Length < 12)
                 {

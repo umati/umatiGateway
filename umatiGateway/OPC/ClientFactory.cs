@@ -23,16 +23,6 @@ namespace UmatiGateway.OPC
         public UmatiGatewayApp getClient(String sessionId)
         {
             return this.client;
-            /*Client? client;
-            if(this.clients.TryGetValue(sessionId, out client))
-            { 
-                return client;
-            } else
-            {
-                client = createClientAsync().Result;
-                clients.Add(sessionId, client);
-                return client;
-            }*/
         }
 
         private async Task<UmatiGatewayApp> createClientAsync()

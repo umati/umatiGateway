@@ -155,10 +155,10 @@ namespace UmatiGateway
                             foreach (XmlNode publishedNode in publishedNodes)
                             {
                                 PublishedNode published = new PublishedNode();
-                                published.type = this.ReadAttribute(publishedNode, "type");
-                                published.namespaceUrl = this.ReadAttribute(publishedNode, "namespaceurl");
-                                published.nodeId = this.ReadAttribute(publishedNode, "nodeId");
-                                published.baseType = this.ReadAttribute(publishedNode, "BaseType");
+                                published.Type = this.ReadAttribute(publishedNode, "type");
+                                published.NamespaceUrl = this.ReadAttribute(publishedNode, "namespaceurl");
+                                published.NodeId = this.ReadAttribute(publishedNode, "nodeId");
+                                published.BaseType = this.ReadAttribute(publishedNode, "BaseType");
                                 configuration.publishedNodes.Add(published);
                             }
                         }
@@ -166,7 +166,30 @@ namespace UmatiGateway
                         {
                             Console.WriteLine("No nodes to pubish found");
                         }
+                        XmlNodeList? customEncodings = xmlDoc.SelectNodes("/Configuration/CustomEncodings/CustomEncoding");
+                        if(customEncodings != null)
+                        {
+                            foreach (XmlNode customEncodingNode in customEncodings)
+                            {
+                                CustomEncoding customEncoding = new CustomEncoding();
+                                customEncoding.Name = this.ReadAttribute(customEncodingNode, "name");
 
+                                string active = this.ReadAttribute(customEncodingNode, "active");
+                                if (string.Equals(active, "true", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    customEncoding.Active = true;
+                                }
+                                else
+                                {
+                                    customEncoding.Active = false;
+                                }
+                                configuration.customEncodings.Add(customEncoding);
+                            }
+                        }
+                        else 
+                        {
+                            Console.WriteLine("No CustomEncodings found");
+                        }
                     }
                     else
                     {
@@ -232,16 +255,40 @@ namespace UmatiGateway
                             foreach (XmlNode publishedNode in publishedNodes)
                             {
                                 PublishedNode published = new PublishedNode();
-                                published.type = this.ReadAttribute(publishedNode, "type");
-                                published.namespaceUrl = this.ReadAttribute(publishedNode, "namespaceurl");
-                                published.nodeId = this.ReadAttribute(publishedNode, "nodeId");
-                                published.baseType = this.ReadAttribute(publishedNode, "BaseType");
+                                published.Type = this.ReadAttribute(publishedNode, "type");
+                                published.NamespaceUrl = this.ReadAttribute(publishedNode, "namespaceurl");
+                                published.NodeId = this.ReadAttribute(publishedNode, "nodeId");
+                                published.BaseType = this.ReadAttribute(publishedNode, "BaseType");
                                 configuration.publishedNodes.Add(published);
                             }
                         }
                         else
                         {
                             Console.WriteLine("No nodes to pubish found");
+                        }
+                        XmlNodeList? customEncodings = xmlDoc.SelectNodes("/Configuration/CustomEncodings/CustomEncoding");
+                        if (customEncodings != null)
+                        {
+                            foreach (XmlNode customEncodingNode in customEncodings)
+                            {
+                                CustomEncoding customEncoding = new CustomEncoding();
+                                customEncoding.Name = this.ReadAttribute(customEncodingNode, "name");
+
+                                string active = this.ReadAttribute(customEncodingNode, "active");
+                                if (string.Equals(active, "true", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    customEncoding.Active = true;
+                                }
+                                else
+                                {
+                                    customEncoding.Active = false;
+                                }
+                                configuration.customEncodings.Add(customEncoding);
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("No CustomEncodings found");
                         }
 
                     }
