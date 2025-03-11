@@ -76,9 +76,9 @@ namespace UmatiGateway.OPC
             {
                 this.MqttProvider.publishedNodes.Add(publishedNode);
                 //Publish to machine nodes
-                MachineNode machineNode = new MachineNode(publishedNode.nodeId, publishedNode.namespaceUrl);
-                machineNode.NodeIdType = publishedNode.type;
-                machineNode.BaseType = publishedNode.baseType;
+                MachineNode machineNode = new MachineNode(publishedNode.NodeId, publishedNode.NamespaceUrl);
+                machineNode.NodeIdType = publishedNode.Type;
+                machineNode.BaseType = publishedNode.BaseType;
                 this.MqttProvider.publishedMachines.Add(machineNode);
             }
             // Read Config for Custom DataTypes from here for now.
@@ -119,7 +119,7 @@ namespace UmatiGateway.OPC
 
         public string getOpcConnectionUrl()
         {
-            return this.opcServerUrl;
+            return this.configuration.opcServerEndpoint;
         }
         public void ConnectMqtt()
         {
@@ -195,9 +195,9 @@ namespace UmatiGateway.OPC
                 {
                     //Publish to normal nodes
                     PublishedNode publishedNode = new PublishedNode();
-                    publishedNode.type = nodeId.IdType.ToString();
-                    publishedNode.nodeId = stringId;
-                    publishedNode.namespaceUrl = this.GetNamespaceTable().GetString(nodeId.NamespaceIndex);
+                    publishedNode.Type = nodeId.IdType.ToString();
+                    publishedNode.NodeId = stringId;
+                    publishedNode.NamespaceUrl = this.GetNamespaceTable().GetString(nodeId.NamespaceIndex);
                     this.MqttProvider.publishedNodes.Add(publishedNode);
                     //Publish to machine nodes
                     MachineNode machineNode = new MachineNode(stringId, this.GetNamespaceTable().GetString(nodeId.NamespaceIndex));
@@ -307,6 +307,8 @@ namespace UmatiGateway.OPC
                 {
                     // Log Error
                     m_output.WriteLine("Create Session Error : {0}", ex.Message);
+                    m_session = null;
+
                     return false;
                 }
                 finally

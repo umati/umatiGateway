@@ -9,57 +9,103 @@
 <h2>Configuration</h2>
 
 <form id="upload-form" method="post">
-    <div style="float:left; width:49%">
-        <fieldset class="settings-fieldset">
-        <legend class ="settings-legend">Active Configuration</legend>
-        <!-- <div class="divider">Mqtt Configuration</div> -->
-        <label for="OpcConnection" class="settings-label">OPC Server Endpoint</label>
-        <input id="OpcConnection" class="settings-input" type="text" name="OpcConnectionUrl" value="@Model.configuration.opcServerEndpoint">
-        <!-- <div class="divider">Mqtt Configuration</div> -->
-        <label for="MqttConnection" class="settings-label">Mqtt Server Endpoint</label>
-        <input id="MqttConnection" class="settings-input" type="text" name="MqttConnectionUrl" value="@Model.configuration.mqttServerEndpopint">
-        <label for="MqttUser" class="settings-label">User</label>
-        <input type="text" class="settings-input" id="MqttUser" name="MqttUser" value="@Model.configuration.mqttUser">
-        <label for="Password" class="settings-label">Password</label>
-        <input type="password" class="settings-input" id="Password" name="MqttPassword" value="@Model.configuration.mqttPassword">
-        <label for="ClientId" class="settings-label">ClientId</label>
-        <input type="text" class="settings-input" id="ClientId" name="MqttClientId" value="@Model.configuration.mqttClientId">
-        <label for="Prefix" class="settings-label">Prefix</label>
-        <input type="text"class="settings-input" id="Prefix" name="MqttPrefix" value="@Model.configuration.mqttPrefix">
-        <!-- <div class="divider">Published Nodes</div> -->
-        <table class="nodetable">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Type</th>
-                    <th>NamespaceUrl</th>
-                    <th>Identifier</th>
-                </tr>
-            </thead>
-            <tbody>
-                @for (var i = 0; i < Model.configuration.publishedNodes.Count; i++)
-                {
-                    <tr>
-                        <td>@(i + 1)</td>
-                        <td>@Model.configuration.publishedNodes[i].type</td>
-                        <td>@Model.configuration.publishedNodes[i].namespaceUrl</td>
-                        <td>@Model.configuration.publishedNodes[i].nodeId</td>
-                    </tr>
+    <div>
+        <fieldset class="settings-fieldset-two-column">
+        <div class="column">
+            <legend class ="settings-legend">Active Configuration</legend>
+            <div class="divider">OPC Configuration</div>
+            <label for="OpcConnection" class="settings-label">OPC Server Endpoint</label>
+            <input id="OpcConnection" class="settings-input" type="text" name="OpcConnectionUrl" value="@Model.configuration.opcServerEndpoint">
+            <label for="OpcUser" class="settings-label">User</label>
+            <input id="OpcUser" class="settings-input" type="text" name="OpcUser" value="@Model.configuration.opcUser">
+            <label for="OpcPassword" class="settings-label">Password</label>
+            <input id="OpcPassword" class="settings-input" type="text" name="OpcPassword" value="@Model.configuration.opcPassword">
+            <div class="divider">Mqtt Configuration</div>
+            <label for="MqttConnection" class="settings-label">Mqtt Server Endpoint</label>
+            <input id="MqttConnection" class="settings-input" type="text" name="MqttConnectionUrl" value="@Model.configuration.mqttServerEndpopint">
+            <label for="MqttUser" class="settings-label">User</label>
+            <input type="text" class="settings-input" id="MqttUser" name="MqttUser" value="@Model.configuration.mqttUser">
+            <label for="Password" class="settings-label">Password</label>
+            <input type="password" class="settings-input" id="Password" name="MqttPassword" value="@Model.configuration.mqttPassword">
+            <label for="ClientId" class="settings-label">ClientId</label>
+            <input type="text" class="settings-input" id="ClientId" name="MqttClientId" value="@Model.configuration.mqttClientId">
+            <label for="Prefix" class="settings-label">Prefix</label>
+            <input type="text"class="settings-input" id="Prefix" name="MqttPrefix" value="@Model.configuration.mqttPrefix">
+        </div>
+        <div class="column">
+            <legend class="settings-legend">&nbsp</legend>
+            <div class ="divider">Application Settings</div>
+            <label for="Autostart" class="settings-label">AutoStart</label>
+            <div class="settings-on-off-label">
+                <span class="off">Off</span>
+                <label class="settings-switch">
+                    <input id="Autostart" type="checkbox" name="AutoStart" value="true" @(Model.configuration.autostart ? "checked" : "")>
+                    <span class="settings-slider"></span>
+                </label>
+                <span class="on">On</span>
+            </div>
+            <label for="ReadExtraLibs" class="settings-label">Read Extra Libs</label>
+            <div class="settings-on-off-label">
+                <span class="off">Off</span>
+                <label class="settings-switch">
+                    <input id="ReadExtraLibs" size="60" type="checkbox" name="ReadExtraLibs" value="true" @(Model.configuration.readExtraLibs ? "checked" : "")>
+                    <span class="settings-slider"></span>
+                </label>
+                <span class="on">On</span>
+            </div>
+                <div class="divider">Custom Encodings</div>
+                @{
+                    for (int i = 0; i < Model.CustomEncodings.Count; i++)
+                    {
+
+                        <label for="CustomEncodings[@i].Name" class="settings-label">@Model.CustomEncodings[i].Name</label>
+                        <input type="hidden" name="CustomEncodings[@i].Name" value="@Model.CustomEncodings[i].Name" />
+                        <div class="settings-on-off-label">
+                            <span class="off">Off</span>
+                            <label class="settings-switch">
+                                <!-- <input type="hidden" name="CustomEncodings[@i].Active" value="false" /> -->
+                                <input id="CustomEncodings[@i].Active" type="checkbox" name="CustomEncodings[@i].Active" value="true" @(@Model.CustomEncodings[i].Active ? "checked" : "")>
+                                <span class="settings-slider"></span>
+                            </label>
+                            <span class="on">On</span>
+                        </div>
+                    }
                 }
-            </tbody>
-        </table>
-        <div class="settings-button-container">
-            <button type="submit" asp-page-handler="Download" class="settings-button"> Download Active Configuration</button>
+            <div class="divider">Published Nodes</div>
+            <table class="nodetable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Type</th>
+                        <th>NamespaceUrl</th>
+                        <th>Identifier</th>
+                        <th>BaseType</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (var i = 0; i < Model.PublishedNodes.Count; i++)
+                    {
+                        <tr>
+                            <td>@(i + 1)</td>
+                                <td><input name="PublishedNodes[@i].type" value=@Model.PublishedNodes[i].Type readonly style="width: auto; border: none; outline: none;background-color: transparent;"></td>
+                                <td><input name="PublishedNodes[@i].namespaceUrl" value=@Model.PublishedNodes[i].NamespaceUrl readonly style="width: auto; border: none; outline: none; background-color: transparent;"></td>
+                                <td><input name="PublishedNodes[@i].nodeId" value=@Model.PublishedNodes[i].NodeId readonly style="width: auto; border: none; outline: none; background-color: transparent;"></td>
+                                <td><input name="PublishedNodes[@i].BaseType" value=@Model.PublishedNodes[i].BaseType readonly style="width: auto; border: none; outline: none; background-color: transparent;"></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <div class="settings-button-container">
+                <button type="submit" asp-page-handler="Download" class="settings-button"> Download Active Configuration</button>
+            </div>
         </div>
         </fieldset>
     </div>
-    <div style="float:right; width:49%">
+    <!-- <div style="float:right; width:49%">
         <fieldset class="settings-fieldset">
             <legend class="settings-legend" id="file-name-display">Configuration File</legend>
-            <!-- <div class="divider">Mqtt Configuration</div> -->
             <label for="OpcConnection" class="settings-label">OPC Server Endpoint</label>
             <input id="OpcConnection" class="settings-input" type="text" name="OpcConnectionUrl" value="@Model.loadedConfiguration.opcServerEndpoint">
-            <!-- <div class="divider">Mqtt Configuration</div> -->
             <label for="MqttConnection" class="settings-label">ConnectionUrl</label>
             <input id="MqttConnection" class="settings-input" type="text" name="MqttConnectionUrl" value="@Model.loadedConfiguration.mqttServerEndpopint">
             <label for="MqttUser" class="settings-label">User</label>
@@ -70,7 +116,6 @@
             <input type="text" class="settings-input" id="ClientId" name="MqttClientId" value="@Model.loadedConfiguration.mqttClientId">
             <label for="Prefix" class="settings-label">Prefix</label>
             <input type="text" class="settings-input" id="Prefix" name="MqttPrefix" value="@Model.loadedConfiguration.mqttPrefix">
-            <!-- <div class="divider">Published Nodes</div> -->
             <table class="nodetable">
                 <thead>
                     <tr>
@@ -85,9 +130,9 @@
                     {
                         <tr>
                             <td>@(i + 1)</td>
-                            <td>@Model.configuration.publishedNodes[i].type</td>
-                            <td>@Model.configuration.publishedNodes[i].namespaceUrl</td>
-                            <td>@Model.configuration.publishedNodes[i].nodeId</td>
+                            <td>@Model.configuration.publishedNodes[i].Type</td>
+                            <td>@Model.configuration.publishedNodes[i].NamespaceUrl</td>
+                            <td>@Model.configuration.publishedNodes[i].NodeId</td>
                         </tr>
                     }
                 </tbody>
@@ -95,13 +140,13 @@
             <div class="settings-button-container">
                 <label for="file-upload" class="file-input-label-as-button">Load</label>
                 <input type="file" id="file-upload" class="file-input">
-                <!-- Verstecktes Feld zum Speichern des Datei-Inhalts -->
                 <input type="hidden" id="file-content" name="FileContent" />
                 <button asp-page-handler="Load" style="display:none" id="LoadButton">Apply</button>
                 <button asp-page-handler="Apply" class="settings-button" style="margin-left:10px">Apply</button>
             </div>
         </fieldset>
     </div>
+    -->
 </form>
 <script>
     const fileInput = document.getElementById('file-upload');

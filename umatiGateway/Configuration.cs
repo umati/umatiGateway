@@ -1,6 +1,7 @@
 ﻿// SPDX-License-Identifier: Apache-2.0
 // Copyright (c) 2025 FVA GmbH - interop4x. All rights reserved.
 using Opc.Ua;
+using UmatiGateway.OPC.CustomEncoding;
 
 namespace UmatiGateway
 {
@@ -28,13 +29,19 @@ namespace UmatiGateway
         public string mqttClientId = "";
         public string mqttPrefix = "";
         public List<PublishedNode> publishedNodes = [];
+        public List<CustomEncoding> customEncodings = [];
         public Configuration() { }
     }
     public class PublishedNode()
     {
-        public string type = "";
-        public string namespaceUrl = "";
-        public string nodeId = "";
-        public string baseType = "";
+        public string Type { get; set; } = "";
+        public string NamespaceUrl { get; set; } = "";
+        public string NodeId { get; set; } = "";
+        public string BaseType { get; set; } = "";
+    }
+    public class CustomEncoding()
+    {
+        public string Name { get; set; } = "";
+        public bool Active { get; set; } = false;
     }
 }

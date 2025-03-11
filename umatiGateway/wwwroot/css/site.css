@@ -104,6 +104,22 @@ btn-txt {
     background-color: #F5F5F5; /* Helles Grau für den Hintergrund */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Leichter Schatten */
 }
+/* Fieldset styling */
+.settings-fieldset-two-column {
+    border: 2px solid #A9A9A9; /* Dunkelgrau für den Rand */
+    border-radius: 10px;
+    padding: 20px;
+    background-color: #F5F5F5; /* Helles Grau für den Hintergrund */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Leichter Schatten */
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    width: 100%;
+}
+
+.column {
+    flex: 1;
+}
 
 /* Legend styling */
 .settings-legend {
