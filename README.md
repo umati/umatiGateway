@@ -56,13 +56,13 @@ Web-based interface is accessible on port 8080 by default. There the connection 
 
 The interface will be then available at [http://localhost:8080](http://localhost:8080).
 
-### Configuration ###
+### Configuration
 
-#### Webserver Configuration ####
+#### Webserver Configuration
 
 The UmatiGateway provides its UI via a Web-GUI on port 5000 at default settings.
 
-##### Changing the Webserver Port #####
+##### Changing the Webserver Port
 
 #### OPC UA configuration
 
