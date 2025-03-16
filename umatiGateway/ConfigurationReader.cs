@@ -37,7 +37,7 @@ namespace UmatiGateway
                         }
                         string logLevel = this.ReadAttribute(node, "logLevel");
                         logLevel = logLevel.ToLower();
-                        switch(logLevel)
+                        switch (logLevel)
                         {
                             case "trace": configuration.loglevel = "Trace"; break;
                             case "debug": configuration.loglevel = "Debug"; break;

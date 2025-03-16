@@ -83,8 +83,7 @@ namespace UmatiGateway.OPC
         private List<MachineNode> machineNodes = new List<MachineNode>();
 
         public MqttProvider(UmatiGatewayApp client)
-        {
-            
+        {     
             this.client = client;
             this.mqttClient = mqttFactory.CreateMqttClient();
         }
@@ -1497,14 +1496,12 @@ namespace UmatiGateway.OPC
 
         private void doPublish()
         {
-            
             if (this.connected)
             {
                 try
                 {
                     if (!firstReadFinished)
-                    {
-                        
+                    {  
                         if (!ReadInProgress)
                         {
                             Logger.Info("Start Initial Reading.");
@@ -1531,7 +1528,6 @@ namespace UmatiGateway.OPC
                                     Logger.Error($"Unknown NodeIdType {machineNode.NodeIdType}");
                                 }
                             }
-
                             Logger.Info("Read InstanceNsu and BrowseName");
                             this.ReadInstanceNsuAndBrowseName();
                             Logger.Info("Publish BadList MachineNodes");
@@ -1654,15 +1650,18 @@ namespace UmatiGateway.OPC
                                     this.InstanceNSU = this.getInstanceNsu(machine);
                                     this.TypeBrowseName = TypeDefinitionNode.BrowseName.Name;
                                     Logger.Debug($"InstanceNSU:\t{this.InstanceNSU}\tTypeBrowseName:\t{this.TypeBrowseName}");
-                                } else
+                                }
+                                else
                                 {
                                     Logger.Error($"Unable to get TypeDefinitionNode for Type NodeID:\t{typedefinition}");
                                 }
-                            } else
+                            }
+                            else
                             {
                                 Logger.Error($"Unable to browse NodeId of Typedefinition for machine NodeId:\t{machine}");
                             }
-                        } else
+                        }
+                        else
                         {
                             Logger.Error($"Unable to read machine for NodeId:\t{machine}");
                         }
@@ -1690,7 +1689,8 @@ namespace UmatiGateway.OPC
                                 machineNode.InstanceNamespace = this.getInstanceNsu(machineNodeId);
                                 machineNode.TypeBrowseName = typeDefinitionNode.BrowseName.Name;
                                 Logger.Debug($"InstanceNSU:\t{machineNode.InstanceNamespace}\tTypeBrowseName:\t{machineNode.TypeBrowseName}");
-                            } else
+                            }
+                            else
                             {
                                 Logger.Error($"Unable to get TypeDefinitionNode for Type NodeID:\t{typedefinitionNodeId}");
                             }
@@ -1699,7 +1699,8 @@ namespace UmatiGateway.OPC
                         {
                             Logger.Error($"Unable to browse NodeId of Typedefinition for machine NodeId:\t{machineNodeId}");
                         }
-                    } else
+                    }
+                    else
                     {
                         Logger.Error("ResolvedNodeId for machine is null");
                     }
