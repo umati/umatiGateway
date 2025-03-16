@@ -16,6 +16,10 @@
     <legend class="settings-legend">OPC Connection</legend>
     <label for="OPCConnection" class="settings-label">@Model.LabelConnectionUrl</label>
     <input id="OPCConnection" class="settings-input" type="text" name="ConnectionUrl" value="@Model.ConnectionUrl">
+    <label for="OPCUser" class="settings-label">OPC User</label>
+    <input id="OPCUser" class="settings-input" type="text" name="OpcUser" value="@Model.OpcUser">
+    <label for="OPCPassword" class="settings-label">OPC Password</label>
+    <input id="OPCPassword" class="settings-input" type="text" name="OpcPassword" value="@Model.OpcPassword">
     <div class="settings-button-container">
         <button asp-page-handler="Connect" class="settings-button">Connect</button>
         <button asp-page-handler="Disconnect" class="settings-button" style="margin-left:10px">Disconnect</button>

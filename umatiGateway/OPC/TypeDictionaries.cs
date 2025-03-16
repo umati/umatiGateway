@@ -38,20 +38,20 @@ namespace UmatiGateway.OPC
             this.ReadOpcBinary();
             if (!onlyBinaries)
             {
-                Console.WriteLine("Read DataTypes");
+                Logger.Info("Read DataTypes");
                 this.ReadDataTypes();
-                Console.WriteLine("Read EventTypes");
+                Logger.Info("Read EventTypes");
                 this.ReadEventTypes();
-                Console.WriteLine("ReadInterfaceTypes");
+                Logger.Info("ReadInterfaceTypes");
                 this.ReadInterfaceTypes();
-                Console.WriteLine("ReadObjectTypes");
+                Logger.Info("ReadObjectTypes");
                 this.ReadObjectTypes();
-                Console.WriteLine("ReadReferenceTypes");
+                Logger.Info("ReadReferenceTypes");
                 this.ReadReferenceTypes();
-                Console.WriteLine("VariableTypes");
+                Logger.Info("VariableTypes");
                 this.ReadVariableTypes();
             }
-            Console.WriteLine("TypeDictionary Read Finished");
+            Logger.Info("TypeDictionary Read Finished");
         }
         public void ReadOpcBinary()
         {
@@ -90,7 +90,7 @@ namespace UmatiGateway.OPC
                 }
                 else
                 {
-                    Console.WriteLine("Error Reading Node for NodeId:", opcBinaryNodeId);
+                    Logger.Info("Error Reading Node for NodeId:", opcBinaryNodeId);
                 }
             }
             this.SetOpcBinaryTypes(opcBinaryTypes);
@@ -249,10 +249,10 @@ namespace UmatiGateway.OPC
                             case ("opc:Import"):
                                 break;
                             default:
-                                Console.WriteLine("UnknownType: -> ##################" + "###" + reader.Name + "###");
+                                Logger.Info("UnknownType: -> ##################" + "###" + reader.Name + "###");
                                 break;
                         }
-                        //Console.WriteLine("###" + reader.Name + "###");
+                        //Logger.Info("###" + reader.Name + "###");
 
                         break;
                     case XmlNodeType.Text:
@@ -294,11 +294,11 @@ namespace UmatiGateway.OPC
                 if (node != null)
                 {
                     dataTypes.Add(dataTypeNodeId, node);
-                    // Console.WriteLine(dataTypeNodeId);
+                    // Logger.Info(dataTypeNodeId);
                 }
                 else
                 {
-                    Console.WriteLine("Error Reading Node for NodeId:", dataTypeNodeId);
+                    Logger.Info("Error Reading Node for NodeId:", dataTypeNodeId);
                 }
             }
             this.SetDataTypes(dataTypes);
@@ -317,7 +317,7 @@ namespace UmatiGateway.OPC
                 }
                 else
                 {
-                    Console.WriteLine("Error Reading Node for NodeId:", eventTypeNodeId);
+                    Logger.Info("Error Reading Node for NodeId:", eventTypeNodeId);
                 }
             }
             this.SetEventTypes(eventTypes);
@@ -336,7 +336,7 @@ namespace UmatiGateway.OPC
                 }
                 else
                 {
-                    Console.WriteLine("Error Reading Node for NodeId:", interfaceTypeNodeId);
+                    Logger.Info("Error Reading Node for NodeId:", interfaceTypeNodeId);
                 }
             }
             this.SetInterfaceTypes(interfaceTypes);
@@ -356,7 +356,7 @@ namespace UmatiGateway.OPC
                 }
                 else
                 {
-                    Console.WriteLine("Error Reading Node for NodeId:", objectTypeNodeId);
+                    Logger.Info("Error Reading Node for NodeId:", objectTypeNodeId);
                 }
             }
             this.SetObjectTypes(objectTypes);
@@ -376,7 +376,7 @@ namespace UmatiGateway.OPC
                 }
                 else
                 {
-                    Console.WriteLine("Error Reading Node for NodeId:", referenceTypeNodeId);
+                    Logger.Info("Error Reading Node for NodeId:", referenceTypeNodeId);
                 }
             }
             this.SetReferenceTypes(referenceTypes);
@@ -396,7 +396,7 @@ namespace UmatiGateway.OPC
                 }
                 else
                 {
-                    Console.WriteLine("Error Reading Node for NodeId:", variableTypeNodeId);
+                    Logger.Info("Error Reading Node for NodeId:", variableTypeNodeId);
                 }
             }
             this.SetVariableTypes(variableTypes);
