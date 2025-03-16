@@ -17,6 +17,7 @@ namespace UmatiGateway
         public bool readExtraLibs = false;
         public bool singleThreadPolling = false;
         public int pollTime = 2000;
+        public string loglevel = "Info";
 
         public string configVersion = "";
         public string opcServerEndpoint = "";

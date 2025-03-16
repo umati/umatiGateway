@@ -3,6 +3,7 @@
 using System.Text;
 using System.Xml;
 using Microsoft.Extensions.Configuration;
+using NLog;
 using Opc.Ua;
 using umatiGateway.OPC.CustomEncoding;
 
@@ -13,6 +14,7 @@ namespace UmatiGateway.OPC.CustomEncoding
     /// </summary>
     public class CustomEncodingManager
     {
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         public IList<ManagedCustomEncoding> managedCustomEncodings { get; set; } = new List<ManagedCustomEncoding>();
         public CustomEncodingManager()
         {
@@ -69,7 +71,7 @@ namespace UmatiGateway.OPC.CustomEncoding
             }
             else
             {
-                Console.WriteLine("No nodes for Custom Encodings found.");
+                Logger.Info("No nodes for Custom Encodings found.");
             }
 
         }
@@ -108,7 +110,7 @@ namespace UmatiGateway.OPC.CustomEncoding
             }
             else
             {
-                Console.WriteLine("Unable to save Custom ENcodings");
+                Logger.Info("Unable to save Custom ENcodings");
             }
 
             XmlWriterSettings settings = new XmlWriterSettings { Indent = true, IndentChars = "  ", NewLineOnAttributes = false, Encoding = Encoding.UTF8 };
