@@ -83,7 +83,7 @@ namespace UmatiGateway.OPC
         private List<MachineNode> machineNodes = new List<MachineNode>();
 
         public MqttProvider(UmatiGatewayApp client)
-        {     
+        {
             this.client = client;
             this.mqttClient = mqttFactory.CreateMqttClient();
         }
@@ -1501,7 +1501,7 @@ namespace UmatiGateway.OPC
                 try
                 {
                     if (!firstReadFinished)
-                    {  
+                    {
                         if (!ReadInProgress)
                         {
                             Logger.Info("Start Initial Reading.");
@@ -1523,7 +1523,8 @@ namespace UmatiGateway.OPC
                                     machineNode.ResolvedNodeId = new NodeId(machineNode.NodeIdString, (ushort)namespaceIndex);
                                     this.machineNodes.Add(machineNode);
                                     Logger.Debug($"Resolved NodeId is:\t{machineNode.ResolvedNodeId}");
-                                } else
+                                }
+                                else
                                 {
                                     Logger.Error($"Unknown NodeIdType {machineNode.NodeIdType}");
                                 }
