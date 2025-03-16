@@ -84,6 +84,7 @@ namespace UmatiGateway.OPC
 
         public MqttProvider(UmatiGatewayApp client)
         {
+            
             this.client = client;
             this.mqttClient = mqttFactory.CreateMqttClient();
         }
@@ -91,10 +92,10 @@ namespace UmatiGateway.OPC
         // Connection/Disconnection
         public void Disconnect()
         {
-            Console.WriteLine("Disconnecting");
+            Logger.Info("Disconnecting");
             AsyncHelper.RunSync(() => this.mqttClient.DisconnectAsync());
             this.connected = false;
-            Console.WriteLine("Disconnected");
+            Logger.Info("Disconnected");
         }
         public void Connect()
         {
@@ -204,7 +205,7 @@ namespace UmatiGateway.OPC
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                Logger.Info(e.ToString());
             }
         }
         private void Connect_Client_Using_Tcp()
@@ -263,7 +264,7 @@ namespace UmatiGateway.OPC
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                Logger.Info(e.ToString());
                 this.connected = false;
                 throw;
                 //return false;
@@ -311,7 +312,7 @@ namespace UmatiGateway.OPC
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                Logger.Info(e.ToString());
                 //this.connected = false;
                 throw;
             }
@@ -340,7 +341,7 @@ namespace UmatiGateway.OPC
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                Logger.Info(e.ToString());
                 throw;
             }
         }
@@ -374,7 +375,7 @@ namespace UmatiGateway.OPC
             }
             catch (Exception e)
             {
-                Console.WriteLine("Unable to publish BadList", e.ToString());
+                Logger.Info("Unable to publish BadList", e.ToString());
                 throw;
             }
         }
@@ -418,7 +419,7 @@ namespace UmatiGateway.OPC
             }
             catch (Exception e)
             {
-                Console.WriteLine("Unable to publish BadList", e.ToString());
+                Logger.Info("Unable to publish BadList", e.ToString());
                 throw;
             }
         }
@@ -448,7 +449,7 @@ namespace UmatiGateway.OPC
             }
             catch (Exception e)
             {
-                Console.WriteLine("Unable to publish ClientOnline", e.ToString());
+                Logger.Info("Unable to publish ClientOnline", e.ToString());
                 throw;
             }
         }
@@ -492,7 +493,7 @@ namespace UmatiGateway.OPC
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                Logger.Info(e.ToString());
                 throw;
             }
         }
@@ -507,7 +508,7 @@ namespace UmatiGateway.OPC
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                Logger.Info(e.ToString());
                 throw;
             }
         }
@@ -530,7 +531,7 @@ namespace UmatiGateway.OPC
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                Logger.Info(e.ToString());
                 throw;
             }
         }
@@ -736,7 +737,7 @@ namespace UmatiGateway.OPC
 
                             }
                             break;
-                        default: Console.WriteLine($"Unexpected NodeClass Detected! {childNodeClass}"); break;
+                        default: Logger.Info($"Unexpected NodeClass Detected! {childNodeClass}"); break;
                     }
                     createJSON(childObject, child, machineNode, nodeId);
                 }
@@ -805,7 +806,7 @@ namespace UmatiGateway.OPC
                 {
                     PublishedBrowsePaths publishedBrowsePaths = new PublishedBrowsePaths(childNodeId, ParentId);
                     publishedBrowsePaths.browsePaths.Add(childObject.Path, childObject);
-                    Console.WriteLine(childObject.Path);
+                    Logger.Info(childObject.Path);
                     machineNode.KnownBrowsePaths.Add(childNodeId, publishedBrowsePaths);
                 }
                 else
@@ -833,7 +834,7 @@ namespace UmatiGateway.OPC
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                Logger.Info(e.ToString());
                 throw;
             }
         }
@@ -890,7 +891,7 @@ namespace UmatiGateway.OPC
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                Logger.Info(e.ToString());
                 throw;
             }
         }
@@ -1298,7 +1299,7 @@ namespace UmatiGateway.OPC
                             {
                                 String valueString = BinaryDecoder.ReadString(field.Name);
                                 jObject.Add(field.Name, valueString);
-                                //Console.WriteLine("Value: " + valueString.ToString());
+                                //Logger.Info("Value: " + valueString.ToString());
                             }
                             else if (field.TypeName == "opc:DateTime")
                             {
@@ -1496,49 +1497,59 @@ namespace UmatiGateway.OPC
 
         private void doPublish()
         {
+            
             if (this.connected)
             {
                 try
                 {
                     if (!firstReadFinished)
                     {
+                        
                         if (!ReadInProgress)
                         {
+                            Logger.Info("Start Initial Reading.");
                             ReadInProgress = true;
                             this.machineNodes.Clear();
+                            Logger.Debug("Reading published machines.");
                             foreach (MachineNode machineNode in this.publishedMachines)
                             {
+                                Logger.Debug($"Read Machine Node: {machineNode.NodeIdType}\t{machineNode.NodeIdString}\t{machineNode.NamespaceUrl}\t{machineNode.BaseType}");
                                 int namespaceIndex = this.client.GetNamespaceTable().GetIndex(machineNode.NamespaceUrl);
                                 if (machineNode.NodeIdType == "Numeric")
                                 {
                                     machineNode.ResolvedNodeId = new NodeId(Convert.ToUInt32(machineNode.NodeIdString), (ushort)namespaceIndex);
                                     this.machineNodes.Add(machineNode);
+                                    Logger.Debug($"Resolved NodeId is:\t{machineNode.ResolvedNodeId}");
                                 }
                                 else if (machineNode.NodeIdType == "String")
                                 {
                                     machineNode.ResolvedNodeId = new NodeId(machineNode.NodeIdString, (ushort)namespaceIndex);
                                     this.machineNodes.Add(machineNode);
+                                    Logger.Debug($"Resolved NodeId is:\t{machineNode.ResolvedNodeId}");
+                                } else
+                                {
+                                    Logger.Error($"Unknown NodeIdType {machineNode.NodeIdType}");
                                 }
                             }
 
-                            Console.WriteLine("Read InstanceNsu and BrowseName");
+                            Logger.Info("Read InstanceNsu and BrowseName");
                             this.ReadInstanceNsuAndBrowseName();
-                            Console.WriteLine("Publish BadList MachineNodes");
+                            Logger.Info("Publish BadList MachineNodes");
                             this.PublishBadListMachineNodes();
-                            Console.WriteLine("Publish BadList MachineNodes.");
-                            Console.WriteLine("Publish Client Online");
+                            Logger.Info("Publish BadList MachineNodes.");
+                            Logger.Info("Publish Client Online");
                             this.publishClientOnline();
-                            Console.WriteLine("Publish Client Online finish.");
-                            Console.WriteLine("Publish Maschine");
+                            Logger.Info("Publish Client Online finish.");
+                            Logger.Info("Publish Maschine");
                             this.publishNodeMachineNodes();
-                            Console.WriteLine("Publish Maschine finished.");
+                            Logger.Info("Publish Maschine finished.");
                             this.publishNodeAfterSubscriptionMachineNodes();
-                            Console.WriteLine("Publish Online Machines Machine Node");
+                            Logger.Info("Publish Online Machines Machine Node");
                             this.publishOnlineMachinesMachineNode();
-                            Console.WriteLine("Publish Online Machines Machine Node finish.");
-                            Console.WriteLine("Publish Identification Machine Node");
+                            Logger.Info("Publish Online Machines Machine Node finish.");
+                            Logger.Info("Publish Identification Machine Node");
                             this.publishIdentificationMachineNodes();
-                            Console.WriteLine("Publish Identification Machine Node finish.");
+                            Logger.Info("Publish Identification Machine Node finish.");
                             foreach (MachineNode machineNode in this.machineNodes)
                             {
                                 foreach (KeyValuePair<NodeId, PublishedBrowsePaths> entry in machineNode.KnownBrowsePaths)
@@ -1556,21 +1567,21 @@ namespace UmatiGateway.OPC
                     {
                         //Detect OPC disconnect
                         _ = this.client.ReadNode(ObjectIds.Server);
-                        Console.WriteLine("Publish BadList Machine Nodes");
+                        Logger.Info("Publish BadList Machine Nodes");
                         this.PublishBadListMachineNodes();
-                        Console.WriteLine("Publish Bad List Maschine Nodes finish.");
-                        Console.WriteLine("Publish Client Online");
+                        Logger.Info("Publish Bad List Maschine Nodes finish.");
+                        Logger.Info("Publish Client Online");
                         this.publishClientOnline();
-                        Console.WriteLine("Publish Client Online finish.");
-                        Console.WriteLine("Publish Online Machines MachineNode");
+                        Logger.Info("Publish Client Online finish.");
+                        Logger.Info("Publish Online Machines MachineNode");
                         this.publishOnlineMachinesMachineNode();
-                        Console.WriteLine("Publish Online Machines Machine Node finish.");
-                        Console.WriteLine("Publish Identification Object");
+                        Logger.Info("Publish Online Machines Machine Node finish.");
+                        Logger.Info("Publish Identification Object");
                         this.publishIdentificationMachineNodes();
-                        Console.WriteLine("Publish Identification Object");
-                        Console.WriteLine("Publish Maschine Object Machine Nodes");
+                        Logger.Info("Publish Identification Object");
+                        Logger.Info("Publish Maschine Object Machine Nodes");
                         this.publishNodeAfterSubscriptionMachineNodes();
-                        Console.WriteLine("Publish Maschine Object Machine Nodes finished.");
+                        Logger.Info("Publish Maschine Object Machine Nodes finished.");
                     }
 
                 }
@@ -1583,21 +1594,21 @@ namespace UmatiGateway.OPC
                     this.InstanceNSU = "";
                     this.subscriptions.Clear();
                     this.client.subscription = null;
-                    Console.WriteLine("Message:" + ex2.Message);
+                    Logger.Info("Message:" + ex2.Message);
                     if (ex2.Message == "BadNotConnected")
                     {
-                        Console.WriteLine("Reconnecting OPC");
+                        Logger.Info("Reconnecting OPC");
                         _ = this.client.ConnectAsync(this.client.opcServerUrl).Result;
                     }
                 }
                 catch (MQTTnet.Exceptions.MqttClientNotConnectedException ex)
                 {
-                    Console.WriteLine(ex.ToString());
+                    Logger.Info(ex.ToString());
                     this.connected = false;
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex.ToString());
+                    Logger.Info(ex.ToString());
                 }
             }
             else
@@ -1606,13 +1617,13 @@ namespace UmatiGateway.OPC
                 {
                     if (this.ConnectedOnce)
                     {
-                        Console.WriteLine("Reconnecting Mqtt");
+                        Logger.Info("Reconnecting Mqtt");
                         this.Reconnect();
                     }
                 }
                 catch (Exception ex1)
                 {
-                    Console.WriteLine(ex1.ToString());
+                    Logger.Info(ex1.ToString());
                 }
             }
         }
@@ -1624,47 +1635,79 @@ namespace UmatiGateway.OPC
         {
             try
             {
+                Logger.Debug("Read Instance Nsu for Online Machines");
                 foreach (NodeId machine in this.onlineMachines)
                 {
                     if (machine != null)
                     {
+                        Logger.Debug($"Machine Node Id:\t{machine}");
                         Node? machineNode = this.client.ReadNode(machine);
                         if (machineNode != null)
                         {
                             NodeId? typedefinition = this.client.BrowseTypeDefinition(machine);
                             if (typedefinition != null)
                             {
+                                Logger.Debug($"TypeDefinition NodeId is:\t{typedefinition}");
                                 Node? TypeDefinitionNode = this.client.ReadNode(typedefinition);
                                 if (TypeDefinitionNode != null)
                                 {
                                     this.InstanceNSU = this.getInstanceNsu(machine);
                                     this.TypeBrowseName = TypeDefinitionNode.BrowseName.Name;
+                                    Logger.Debug($"InstanceNSU:\t{this.InstanceNSU}\tTypeBrowseName:\t{this.TypeBrowseName}");
+                                } else
+                                {
+                                    Logger.Error($"Unable to get TypeDefinitionNode for Type NodeID:\t{typedefinition}");
                                 }
+                            } else
+                            {
+                                Logger.Error($"Unable to browse NodeId of Typedefinition for machine NodeId:\t{machine}");
                             }
+                        } else
+                        {
+                            Logger.Error($"Unable to read machine for NodeId:\t{machine}");
                         }
                     }
+                    else
+                    {
+                        Logger.Error("Unable to read machine Node. Machine is null.");
+                    }
                 }
+                Logger.Debug("Read Instance Nsu for published Machines");
                 foreach (MachineNode machineNode in this.publishedMachines)
                 {
+                    Logger.Debug($"Machine:\t{machineNode.NodeIdType}\t{machineNode.NamespaceUrl}\t{machineNode.NodeIdString}\t{machineNode.BaseType}");
                     NodeId? machineNodeId = machineNode.ResolvedNodeId;
                     if (machineNodeId != null)
                     {
+                        Logger.Debug($"Resolved NodeId is:\t{machineNodeId}");
                         NodeId? typedefinitionNodeId = this.client.BrowseTypeDefinition(machineNodeId);
                         if (typedefinitionNodeId != null)
                         {
+                            Logger.Debug($"TypeDefinition NodeId is:\t{typedefinitionNodeId}");
                             Node? typeDefinitionNode = this.client.ReadNode(typedefinitionNodeId);
                             if (typeDefinitionNode != null)
                             {
                                 machineNode.InstanceNamespace = this.getInstanceNsu(machineNodeId);
                                 machineNode.TypeBrowseName = typeDefinitionNode.BrowseName.Name;
+                                Logger.Debug($"InstanceNSU:\t{machineNode.InstanceNamespace}\tTypeBrowseName:\t{machineNode.TypeBrowseName}");
+                            } else
+                            {
+                                Logger.Error($"Unable to get TypeDefinitionNode for Type NodeID:\t{typedefinitionNodeId}");
                             }
                         }
+                        else
+                        {
+                            Logger.Error($"Unable to browse NodeId of Typedefinition for machine NodeId:\t{machineNodeId}");
+                        }
+                    } else
+                    {
+                        Logger.Error("ResolvedNodeId for machine is null");
                     }
                 }
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                Logger.Info(e.ToString());
                 throw;
             }
 
@@ -1715,7 +1758,7 @@ namespace UmatiGateway.OPC
         {
             if (debug)
             {
-                Console.WriteLine(message);
+                Logger.Info(message);
             }
         }
         bool IsBitSet(UInt32 value, int pos)
@@ -1790,7 +1833,7 @@ namespace UmatiGateway.OPC
         }
         void OpcUaEventListener.ModelChangeEvent(NodeId affectedNode)
         {
-            Console.WriteLine($"Update Affected Node {affectedNode}");
+            Logger.Info($"Update Affected Node {affectedNode}");
             this.updateNode(affectedNode);
         }
     }

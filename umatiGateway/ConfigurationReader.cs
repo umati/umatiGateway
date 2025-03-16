@@ -1,5 +1,6 @@
 ﻿// SPDX-License-Identifier: Apache-2.0
 // Copyright (c) 2025 FVA GmbH - interop4x. All rights reserved.
+using NLog;
 using Opc.Ua;
 using System.Xml;
 
@@ -7,6 +8,7 @@ namespace UmatiGateway
 {
     public class ConfigurationReader
     {
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         public const string VERSION_1_0 = "1.0";
         public const string CONFIG_VERSION_1_0 = "1.0";
         public ConfigurationReader() { }
@@ -32,6 +34,17 @@ namespace UmatiGateway
                         else
                         {
                             configuration.autostart = false;
+                        }
+                        string logLevel = this.ReadAttribute(node, "logLevel");
+                        logLevel = logLevel.ToLower();
+                        switch(logLevel)
+                        {
+                            case "trace": configuration.loglevel = "Trace"; break;
+                            case "debug": configuration.loglevel = "Debug"; break;
+                            case "info": configuration.loglevel = "Info"; break;
+                            case "warn": configuration.loglevel = "Warn"; break;
+                            case "error": configuration.loglevel = "Error"; break;
+                            default: configuration.loglevel = "INFO"; break;
                         }
                         string readExtraLibs = this.ReadAttribute(node, "ReadExtraLibs");
                         if (string.Equals(readExtraLibs, "true", StringComparison.OrdinalIgnoreCase))
@@ -64,7 +77,7 @@ namespace UmatiGateway
                             }
                             catch (Exception e)
                             {
-                                Console.WriteLine(e.Message);
+                                Logger.Info(e.Message);
                             }
                         }
                         configuration.configFilePath = this.ReadAttribute(node, "file");
@@ -80,12 +93,12 @@ namespace UmatiGateway
                 }
                 else
                 {
-                    Console.WriteLine("Root Node not found!");
+                    Logger.Info("Root Node not found!");
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error on Loading ConfigurationFile." + ex.ToString());
+                Logger.Info("Error on Loading ConfigurationFile." + ex.ToString());
             }
             return configuration;
         }
@@ -98,13 +111,13 @@ namespace UmatiGateway
                 value = node.Attributes[attributeName]?.Value;
                 if (value == null)
                 {
-                    Console.WriteLine($"Error on Rerading Configuration: Attribute \"{node.Name}\" of node \"{attributeName}\" is missing.");
+                    Logger.Info($"Error on Rerading Configuration: Attribute \"{attributeName}\" of node \"{node.Name}\" is missing.");
                     value = "";
                 }
             }
             else
             {
-                Console.WriteLine($"Error on Reading Configuration: Attribute \"{attributeName}\" of node \"{node.Name}\" is missing. The node \"{node.Name}\" does not contain attributes.");
+                Logger.Info($"Error on Reading Configuration: Attribute \"{attributeName}\" of node \"{node.Name}\" is missing. The node \"{node.Name}\" does not contain attributes.");
             }
             return value;
         }
@@ -133,7 +146,7 @@ namespace UmatiGateway
                         }
                         else
                         {
-                            Console.WriteLine("OPCNode not found!");
+                            Logger.Info("OPCNode not found!");
                         }
 
                         XmlNode? mqttNode = xmlDoc.SelectSingleNode("/Configuration/MqttConnection");
@@ -147,7 +160,7 @@ namespace UmatiGateway
                         }
                         else
                         {
-                            Console.WriteLine("MqttNode not found!");
+                            Logger.Info("MqttNode not found!");
                         }
                         XmlNodeList? publishedNodes = xmlDoc.SelectNodes("/Configuration/PublishedNodes/PublishedNode");
                         if (publishedNodes != null)
@@ -164,7 +177,7 @@ namespace UmatiGateway
                         }
                         else
                         {
-                            Console.WriteLine("No nodes to pubish found");
+                            Logger.Info("No nodes to pubish found");
                         }
                         XmlNodeList? customEncodings = xmlDoc.SelectNodes("/Configuration/CustomEncodings/CustomEncoding");
                         if (customEncodings != null)
@@ -188,23 +201,23 @@ namespace UmatiGateway
                         }
                         else
                         {
-                            Console.WriteLine("No CustomEncodings found");
+                            Logger.Info("No CustomEncodings found");
                         }
                     }
                     else
                     {
-                        Console.WriteLine($"Wrong Version \"{configuration.gatewayConfigVersion}\".");
+                        Logger.Info($"Wrong Version \"{configuration.gatewayConfigVersion}\".");
                     }
                 }
                 else
                 {
-                    Console.WriteLine("Root Node not found!");
+                    Logger.Info("Root Node not found!");
                 }
 
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error on Loading ConfigurationFile \"{configuration.configFilePath}\"." + ex.ToString());
+                Logger.Info($"Error on Loading ConfigurationFile \"{configuration.configFilePath}\"." + ex.ToString());
             }
             return configuration;
         }
@@ -233,7 +246,7 @@ namespace UmatiGateway
                         }
                         else
                         {
-                            Console.WriteLine("OPCNode not found!");
+                            Logger.Info("OPCNode not found!");
                         }
 
                         XmlNode? mqttNode = xmlDoc.SelectSingleNode("/Configuration/MqttConnection");
@@ -247,7 +260,7 @@ namespace UmatiGateway
                         }
                         else
                         {
-                            Console.WriteLine("MqttNode not found!");
+                            Logger.Info("MqttNode not found!");
                         }
                         XmlNodeList? publishedNodes = xmlDoc.SelectNodes("/Configuration/PublishedNodes/PublishedNode");
                         if (publishedNodes != null)
@@ -264,7 +277,7 @@ namespace UmatiGateway
                         }
                         else
                         {
-                            Console.WriteLine("No nodes to pubish found");
+                            Logger.Info("No nodes to pubish found");
                         }
                         XmlNodeList? customEncodings = xmlDoc.SelectNodes("/Configuration/CustomEncodings/CustomEncoding");
                         if (customEncodings != null)
@@ -288,24 +301,24 @@ namespace UmatiGateway
                         }
                         else
                         {
-                            Console.WriteLine("No CustomEncodings found");
+                            Logger.Info("No CustomEncodings found");
                         }
 
                     }
                     else
                     {
-                        Console.WriteLine($"Wrong Version \"{configuration.gatewayConfigVersion}\".");
+                        Logger.Info($"Wrong Version \"{configuration.gatewayConfigVersion}\".");
                     }
                 }
                 else
                 {
-                    Console.WriteLine("Root Node not found!");
+                    Logger.Info("Root Node not found!");
                 }
 
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error on Loading ConfigurationFile \"{configuration.configFilePath}\"." + ex.ToString());
+                Logger.Info($"Error on Loading ConfigurationFile \"{configuration.configFilePath}\"." + ex.ToString());
             }
 
         }

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using NLog;
 using Opc.Ua;
 using Opc.Ua.Configuration;
 
@@ -12,11 +13,12 @@ namespace UmatiGateway.OPC
 {
     public class ClientFactory
     {
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         public Dictionary<string, UmatiGatewayApp> clients = new Dictionary<string, UmatiGatewayApp>();
         UmatiGatewayApp client;
         public ClientFactory()
         {
-            Console.WriteLine("Create ClientFactory");
+            Logger.Info("Create ClientFactory");
             client = this.createClientAsync().Result;
             client.StartUp();
         }
