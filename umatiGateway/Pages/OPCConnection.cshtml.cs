@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Localization;
+using NLog;
 using System.Collections.Concurrent;
 using System.Reflection;
 using System.Resources;
@@ -13,12 +14,15 @@ namespace UmatiGateway.Pages
 {
     public class OPCConnectionModel : PageModel, UmatiGatewayAppListener
     {
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         public string LabelConnectionUrl { get; } = "Connection URL:";
         public string LabelSessionId { get; } = "SessionId:";
         public string LabelOPCSessionName { get; } = "OPCSessionName:";
         public string LabelOPCSessionId { get; } = "OPCSessionId:";
         public string LabelConnectionStatus { get; } = "ConnectionStatus:";
         public string ConnectionUrl { get; private set; } = "";
+        public string OpcUser { get; private set; } = "";
+        public string OpcPassword { get; private set; } = "";
         public ClientFactory ClientFactory;
         public string SessionId { get; private set; } = "";
         public string OPCSessionName { get; private set; } = "";
@@ -34,11 +38,13 @@ namespace UmatiGateway.Pages
             if (Label_ConnectionUrl_Translated != null) { this.LabelConnectionUrl = Label_ConnectionUrl_Translated; }
         }
 
-        public IActionResult OnPostConnect(String ConnectionUrl)
+        public IActionResult OnPostConnect(String ConnectionUrl, String OpcUser, String OpcPassword)
         {
             this.ConnectionUrl = ConnectionUrl;
             UmatiGatewayApp client = this.getClient();
             client.configuration.opcServerEndpoint = this.ConnectionUrl;
+            client.configuration.opcUser = OpcUser ?? "";
+            client.configuration.opcPassword = OpcPassword ?? "";
             if (ConnectionUrl != null)
             {
                 _ = client.ConnectAsync(this.ConnectionUrl).Result;
@@ -95,6 +101,8 @@ namespace UmatiGateway.Pages
 
                 }
                 this.ConnectionUrl = client.getOpcConnectionUrl();
+                this.OpcUser = client.configuration.opcUser;
+                this.OpcPassword = client.configuration.opcPassword;
             }
         }
         public IActionResult OnGetStreamUpdates()
@@ -118,7 +126,7 @@ namespace UmatiGateway.Pages
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in SSE connection: {ex.Message}");
+                Logger.Info($"Error in SSE connection: {ex.Message}");
             }
 
             return new EmptyResult();
