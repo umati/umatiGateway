@@ -2,6 +2,7 @@
 // Copyright (c) 2025 FVA GmbH - interop4x. All rights reserved.
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using NLog;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using UmatiGateway.OPC;
@@ -12,6 +13,7 @@ namespace UmatiGateway
     [ApiController]
     public class SSEController : ControllerBase, UmatiGatewayAppListener
     {
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         private readonly BlockingCollection<string> UpdateQueue = new BlockingCollection<string>();
         public SSEController(ClientFactory ClientFactory)
         {
@@ -48,7 +50,7 @@ namespace UmatiGateway
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in SSE connection: {ex.Message}");
+                Logger.Info($"Error in SSE connection: {ex.Message}");
             }
 
             return new EmptyResult();

@@ -49,15 +49,38 @@ namespace UmatiGateway.OPC
             LoggingConfiguration config = new LoggingConfiguration();
             ConsoleTarget logconsole = new ConsoleTarget("logconsole")
             {
-                Layout = "${longdate} ${uppercase:${level}} ${message}"
+                Layout = "${uppercase:${level}} ${message}"
             };
-            config.AddRule(NLog.LogLevel.Info, NLog.LogLevel.Fatal, logconsole);
+            string logfilePath = Path.Combine(AppContext.BaseDirectory, "umatiGateway.log");
+            if (File.Exists(logfilePath))
+            {
+                File.Delete(logfilePath);
+            }
+            FileTarget logfile = new FileTarget("logfile")
+            {
+                FileName = logfilePath,
+                Layout = "${uppercase:${level}} ${message}",
+            };
+
+            string logLevelstring = this.configuration.loglevel ?? "";
+            NLog.LogLevel logLevel = NLog.LogLevel.Info;
+            switch (logLevelstring)
+            {
+                case "Trace": logLevel = NLog.LogLevel.Trace; break;
+                case "Debug": logLevel = NLog.LogLevel.Debug; break;
+                case "Info": logLevel = NLog.LogLevel.Info; break;
+                case "Warn": logLevel = NLog.LogLevel.Warn; break;
+                case "Error": logLevel = NLog.LogLevel.Error; break;
+                default: logLevel = NLog.LogLevel.Info; break;
+            }
+            config.AddRule(logLevel, NLog.LogLevel.Fatal, logconsole);
+            config.AddRule(logLevel, NLog.LogLevel.Fatal, logfile);
             LogManager.Configuration = config;
         }
 
         public void StartUp()
         {
-            Console.WriteLine("Reading Configuration");
+            Logger.Info("Reading Configuration");
             this.configuration = new ConfigurationReader().ReadConfiguration();
             this.opcServerUrl = this.configuration.opcServerEndpoint;
             this.opcUser = this.configuration.opcUser;
@@ -85,9 +108,9 @@ namespace UmatiGateway.OPC
             this.MqttProvider.customEncodingManager.ReadConfiguration(this.configuration.configFilePath);
             if (this.configuration.autostart == true)
             {
-                Console.WriteLine("Create OPC Connection");
+                Logger.Info("Create OPC Connection");
                 _ = this.ConnectAsync(this.opcServerUrl).Result;
-                Console.WriteLine("Create Mqtt Connection");
+                Logger.Info("Create Mqtt Connection");
                 this.MqttProvider.Connect();
             }
         }
@@ -235,9 +258,9 @@ namespace UmatiGateway.OPC
                     EndpointConfiguration endpointConfiguration = EndpointConfiguration.Create(m_configuration);
                     ConfiguredEndpoint endpoint = new ConfiguredEndpoint(null, endpointDescription, endpointConfiguration);
                     UserIdentity userIdentity = new UserIdentity();
-                    if (!String.IsNullOrWhiteSpace(this.opcUser))
+                    if (!String.IsNullOrWhiteSpace(this.configuration.opcUser))
                     {
-                        userIdentity = new UserIdentity(this.opcUser, this.opcPwd);
+                        userIdentity = new UserIdentity(this.configuration.opcUser, this.configuration.opcPassword);
                     }
 
                     // Create the session
@@ -269,31 +292,31 @@ namespace UmatiGateway.OPC
                         this.blockingTransition.Detail = "Read Binaries";
                         this.blockingTransitionChange(this.blockingTransition);
                         //this.TypeDictionaries.ReadTypeDictionary(false);
-                        Console.WriteLine("Read Binaries");
+                        Logger.Info("Read Binaries");
                         this.TypeDictionaries.ReadOpcBinary();
                         this.blockingTransition.Detail = "Read DataTypes";
                         this.blockingTransitionChange(this.blockingTransition);
-                        Console.WriteLine("Read DataTypes");
+                        Logger.Info("Read DataTypes");
                         this.TypeDictionaries.ReadDataTypes();
                         this.blockingTransition.Detail = "Read EventTypes";
                         this.blockingTransitionChange(this.blockingTransition);
-                        Console.WriteLine("Read EventTypes");
+                        Logger.Info("Read EventTypes");
                         this.TypeDictionaries.ReadEventTypes();
                         this.blockingTransition.Detail = "Read InterfaceTypes";
                         this.blockingTransitionChange(this.blockingTransition);
-                        Console.WriteLine("Read InterfaceTypes");
+                        Logger.Info("Read InterfaceTypes");
                         this.TypeDictionaries.ReadInterfaceTypes();
                         this.blockingTransition.Detail = "Read ObjectTypes";
                         this.blockingTransitionChange(this.blockingTransition);
-                        Console.WriteLine("Read ObjectTypes");
+                        Logger.Info("Read ObjectTypes");
                         this.TypeDictionaries.ReadObjectTypes();
                         this.blockingTransition.Detail = "Read ReferenceTypes";
                         this.blockingTransitionChange(this.blockingTransition);
-                        Console.WriteLine("Read ReferenceTypes");
+                        Logger.Info("Read ReferenceTypes");
                         this.TypeDictionaries.ReadReferenceTypes();
                         this.blockingTransition.Detail = "Read VariableTypes";
                         this.blockingTransitionChange(this.blockingTransition);
-                        Console.WriteLine("Read VariableTypes");
+                        Logger.Info("Read VariableTypes");
                         this.TypeDictionaries.ReadVariableTypes();
                         return true;
                     }
@@ -305,10 +328,8 @@ namespace UmatiGateway.OPC
                 }
                 catch (Exception ex)
                 {
-                    // Log Error
-                    m_output.WriteLine("Create Session Error : {0}", ex.Message);
+                    Logger.Error($"Create Session Error : {ex.Message}");
                     m_session = null;
-
                     return false;
                 }
                 finally
@@ -318,7 +339,7 @@ namespace UmatiGateway.OPC
             }
             else
             {
-                Console.WriteLine("Allready trying to Connect to OPC Server");
+                Logger.Info("Allready trying to Connect to OPC Server");
                 return false;
             }
         }
@@ -446,9 +467,9 @@ namespace UmatiGateway.OPC
                                     ModelChangeStructureDataType mcs = (ModelChangeStructureDataType)body;
                                     if (mcs.Affected != null)
                                     {
-                                        Console.WriteLine($"Affected: {mcs.Affected}");
-                                        Console.WriteLine($"AffectedType: {mcs.AffectedType}");
-                                        Console.WriteLine($"Verb: {mcs.Verb}");
+                                        Logger.Info($"Affected: {mcs.Affected}");
+                                        Logger.Info($"AffectedType: {mcs.AffectedType}");
+                                        Logger.Info($"Verb: {mcs.Verb}");
                                         foreach (OpcUaEventListener listener in this.opcUaEventListeners)
                                         {
                                             listener.ModelChangeEvent(mcs.Affected);
@@ -462,7 +483,7 @@ namespace UmatiGateway.OPC
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"OnMonitoredItemNotification error: {ex.Message}");
+                Logger.Info($"OnMonitoredItemNotification error: {ex.Message}");
             }
         }
         public List<NodeId> BrowseLocalNodeIds(NodeId rootNodeId, BrowseDirection browseDirection, uint nodeClassMask, NodeId referenceTypeIds, bool includeSubTypes)
@@ -875,7 +896,7 @@ namespace UmatiGateway.OPC
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Unable to notify Listener: {ex.StackTrace}");
+                    Logger.Info($"Unable to notify Listener: {ex.StackTrace}");
                 }
             }
         }

@@ -47,6 +47,9 @@ namespace UmatiGateway
             XmlAttribute autostart = xmlDocument.CreateAttribute("autostart");
             autostart.Value = configuration.autostart.ToString();
             umatiGatewayConfigNode.Attributes.Append(autostart);
+            XmlAttribute logLevel = xmlDocument.CreateAttribute("logLevel");
+            logLevel.Value = configuration.loglevel;
+            umatiGatewayConfigNode.Attributes.Append(logLevel);
             XmlAttribute file = xmlDocument.CreateAttribute("file");
             file.Value = configuration.configFilePath;
             umatiGatewayConfigNode.Attributes.Append(file);

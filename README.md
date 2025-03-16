@@ -32,7 +32,7 @@ services:
     image: ghcr.io/umati/umatigateway
     container_name: umatigateway
     ports:
-      - 8080:8080
+      - "127.0.0.1:8080:8080"
     volumes:
       - ./LocalConfigumatiApp.xml:/app/Configuration/Files/LocalConfigumatiApp.xml
       - ./umatiGatewayConfig.xml:/app/Configuration/umatiGatewayConfig.xml
@@ -56,13 +56,13 @@ Web-based interface is accessible on port 8080 by default. There the connection 
 
 The interface will be then available at [http://localhost:8080](http://localhost:8080).
 
-### Configuration ###
+### Configuration
 
-#### Webserver Configuration ####
+#### Webserver Configuration
 
 The UmatiGateway provides its UI via a Web-GUI on port 5000 at default settings.
 
-##### Changing the Webserver Port #####
+##### Changing the Webserver Port
 
 #### OPC UA configuration
 
