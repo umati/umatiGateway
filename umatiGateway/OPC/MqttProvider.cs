@@ -665,7 +665,7 @@ namespace UmatiGateway.OPC
                 }
                 Node? childNode = this.client.ReadNode(child);
                 if (childNode != null)
-                {  
+                {
                     if (placeHolderObject != null)
                     {
                         Console.Write($"{child} = {childNode.BrowseName} is a PlaceHolder.");
