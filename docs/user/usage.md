@@ -1,18 +1,6 @@
 # User Manual
 
-## Installation
-
---- TBD ---
-
-### Installation as docker image
-
---- TBD ---
-
-### Installation as executeable
-
---- TBD ---
-
-# Running the software
+## Running the software
 
 ### Running the umatiGateway as executable
 
