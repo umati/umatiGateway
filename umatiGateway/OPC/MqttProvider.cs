@@ -81,6 +81,8 @@ namespace UmatiGateway.OPC
         private bool shortenVariables = true;
         private BlockingCollection<NodeId> changedNodes = new BlockingCollection<NodeId>();
         private List<MachineNode> machineNodes = new List<MachineNode>();
+        private Dictionary<NodeId, string> placeholderVariablesWithTypeDefinition = new Dictionary<NodeId, string>();
+        private NodeId? resultFolder = null;
 
         public MqttProvider(UmatiGatewayApp client)
         {
@@ -545,23 +547,73 @@ namespace UmatiGateway.OPC
                 {
                     if (childNode.NodeClass == NodeClass.Variable)
                     {
+                        string? placeholderType = null;
+                        this.placeholderVariablesWithTypeDefinition.TryGetValue(nodeId, out placeholderType);
                         object dataValue = getDataValueAsObject(nodeId);
                         if (dataValue is JValue)
                         {
-                            return (JValue)dataValue;
+                            JValue dv = (JValue)dataValue;
+                            return dv;
                         }
                         else if (dataValue is JObject)
                         {
-                            return (JObject)dataValue;
+                            JObject dv = (JObject)dataValue;
+                            dv.Add("$TypeDefinition", placeholderType);
+                            return dv;
                         }
                         else if (dataValue is JArray)
                         {
-                            return (JArray)dataValue;
+                            JArray dv = (JArray)dataValue;
+                            return dv;
                         }
                     }
                 }
             }
             return jObject;
+        }
+        private void printPlaceholderNodes(List<NodeId> optionalMandatoryPlaceholders, NodeId nodeId, NodeId? parent, List<PlaceholderNode> possiblePlaceholdernodes)
+        {
+            Logger.Trace("--------------------------------------------------------------------------");
+            Node? theNode = this.client.ReadNode(nodeId);
+            if (parent == null)
+            {
+
+                if (theNode != null)
+                {
+                    Logger.Trace($"The Placeholders Types in {nodeId} = {theNode.BrowseName} are:");
+                }
+                else {
+                    Logger.Trace($"The Placeholders Types in {nodeId} are:");
+                }
+            }
+            else
+            {
+                Node? parentNode = this.client.ReadNode(parent);
+                if (theNode != null && parentNode != null)
+                {
+                    Logger.Trace($"The Placeholders Types in {nodeId} = {theNode.BrowseName} and {parent} = {parentNode.BrowseName} are:");
+                }
+                else
+                {
+                    Logger.Trace($"The Placeholders Types in {nodeId} and {parent} are:");
+                }
+            }
+            foreach (NodeId placeholder in optionalMandatoryPlaceholders) {
+                Node? placeholderNode = this.client.ReadNode(placeholder);
+                if (placeholderNode != null)
+                {
+                    Logger.Trace($"Placeholder Type: {placeholder} = {placeholderNode.BrowseName}");
+                }
+                else {
+                    Logger.Trace($"Placeholder Type: {placeholder} ");
+                }
+            }
+            Logger.Trace("Valid Placeholder Childs are:");
+            foreach (PlaceholderNode possiblePlaceHolderNode in possiblePlaceholdernodes)
+            {
+                possiblePlaceHolderNode.printPlaceholderNode(this.client);
+            }
+            Logger.Trace("--------------------------------------------------------------------------");
         }
         private void createJSON(JObject jObject, NodeId nodeId, MachineNode? machineNode = null, NodeId? parent = null, bool subscribe = true)
         {
@@ -591,6 +643,7 @@ namespace UmatiGateway.OPC
                 }
 
             }
+            this.printPlaceholderNodes(optionalMandatoryPlaceholders, nodeId, parent, placeholderNodes);
 
             List<NodeId> hierarchicalChilds = this.client.BrowseLocalNodeIds(nodeId, BrowseDirection.Forward, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true);
             foreach (NodeId child in hierarchicalChilds)
@@ -610,8 +663,39 @@ namespace UmatiGateway.OPC
                 Node? childNode = this.client.ReadNode(child);
                 if (childNode != null)
                 {
+                    
+                    if (placeHolderObject != null)
+                    {
+                        Console.Write($"{child} = {childNode.BrowseName} is a PlaceHolder.");
+                        if (typeDefinition != null)
+                        {
+                            Logger.Trace($"TypeDefinition: {typeDefinition}");
+                        }
+                        else
+                        {
+                            Logger.Trace("There is no TypeDefintion.");
+                        }
+                    }
+                    else
+                    {
+                        Logger.Trace($"{child} = {childNode.BrowseName} is NOT a PlaceHolder");
+                        if (typeDefinition != null)
+                        {
+                            Logger.Trace($"TypeDefinition: {typeDefinition}");
+                        }
+                        else
+                        {
+                            Logger.Trace("There is no TypeDefintion.");
+                        }
+                    }
                     NodeClass childNodeClass = childNode.NodeClass;
                     String browseName = childNode.BrowseName.Name;
+                    //Look for resultsfolder
+                    if (browseName == "Results" && typeDefinition == ObjectTypeIds.FolderType)
+                    {
+                        this.resultFolder = childNode.NodeId;
+                        Logger.Trace($"Found resultfolder: {this.resultFolder}");
+                    }
                     JObject childObject = new JObject();
                     if (jObject.ContainsKey(browseName))
                     {
@@ -636,9 +720,15 @@ namespace UmatiGateway.OPC
                             }
                             break;
                         case NodeClass.Variable:
+                            //ToDo Fix how the placeholder is received from DataType
+                            if (!this.placeholderVariablesWithTypeDefinition.ContainsKey(child))
+                            {
+                                this.placeholderVariablesWithTypeDefinition.Add(child, this.getInstanceNsu(typeDefinition, false));
+                            }
                             JToken dataValue = getDataValueAsObject(child);
                             bool isProperty = false;
                             bool shorten = false;
+                            bool useValueIndentation = true;
 
                             if (typeDefinition == VariableTypeIds.PropertyType)
                             {
@@ -653,9 +743,14 @@ namespace UmatiGateway.OPC
                                     {
                                         shorten = true;
                                     }
+                                    if (this.getInstanceNsu(typeDefinition, false) == "nsu=http://opcfoundation.org/UA/GMS/;i=2004")
+                                    {
+                                        Logger.Trace("Not use ValueIndentation");
+                                        useValueIndentation = false;
+                                    }
                                 }
                             }
-                            if (isProperty || shorten)
+                            if (isProperty || shorten || !useValueIndentation)
                             {
                                 if (dataValue is JValue)
                                 {
@@ -742,6 +837,13 @@ namespace UmatiGateway.OPC
                 }
             }
         }
+        private void GetTypeParentNodeIds(NodeId nodeId, List<NodeId> typeParents) {
+            NodeId? typeParent = this.client.BrowseLocalNodeId(nodeId, BrowseDirection.Inverse, (int)NodeClass.ObjectType | (int)NodeClass.VariableType, ReferenceTypeIds.HasSubtype, true);
+            if (typeParent != null && typeParent != ObjectTypeIds.BaseObjectType && typeParent != VariableTypeIds.BaseDataVariableType) {
+                typeParents.Add(typeParent);
+                this.GetTypeParentNodeIds(typeParent, typeParents);
+            }
+        }
         private List<NodeId> GetOptionalAndMandatoryPlaceHolders(NodeId nodeId, NodeId? parent)
         {
             List<NodeId> optionalMandatoryPlaceholdersOverParent = new List<NodeId>();
@@ -759,6 +861,20 @@ namespace UmatiGateway.OPC
                         {
                             optionalMandatoryPlaceholdersOverParent = this.client.GetOptionalAndMandatoryPlaceholders(typeNodeIdofNodeID);
                         }
+                        //
+                        List<NodeId> typeParentNodeIds = new List<NodeId>();
+                        this.GetTypeParentNodeIds(parentTypeDefinition, typeParentNodeIds);
+                        foreach (NodeId typeParentNodeId in typeParentNodeIds)
+                        {
+                            NodeId? typeNodeIdofNodeIDFromSubType = this.client.BrowseLocalNodeIdWithBrowseName(typeParentNodeId, BrowseDirection.Forward, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true, browseName);
+                            if (typeNodeIdofNodeIDFromSubType != null)
+                            {
+                                optionalMandatoryPlaceholdersOverParent.AddRange(this.client.GetOptionalAndMandatoryPlaceholders(typeNodeIdofNodeIDFromSubType));
+                            }
+
+                        }
+                        Logger.Trace("Here");
+                        //
                     }
                 }
 
@@ -1754,6 +1870,44 @@ namespace UmatiGateway.OPC
                 this.phList = phList;
                 this.subTypeNodeIds = subTypeNodeIds;
             }
+            public void printPlaceholderNode(UmatiGatewayApp client)
+            {
+                Console.Write($"PlaceHolderNodeId: {placeholderNodeId} = ");
+                Node? placeholderNodeIdNode = client.ReadNode(placeholderNodeId);
+                if (placeholderNodeIdNode != null)
+                {
+                    Logger.Trace($"{placeholderNodeIdNode.BrowseName}");
+                }
+                else
+                {
+                    Logger.Trace($"Unknown");
+                }
+                Console.Write($"TypeDefinitionNodeId: {typeDefinitionNodeId} = ");
+                Node? TypeDefinitionNodeIdNode = client.ReadNode(typeDefinitionNodeId);
+                if (TypeDefinitionNodeIdNode != null)
+                {
+                    Logger.Trace($"{TypeDefinitionNodeIdNode.BrowseName}");
+                }
+                else
+                {
+                    Logger.Trace($"Unknown");
+                }
+                Logger.Trace($"phList: {phList}");
+                Logger.Trace("SubTypeNodeIds:");
+                foreach (NodeId nodeId in subTypeNodeIds)
+                {
+                    Console.Write($"SubTypeNodeId: {nodeId} = ");
+                    Node? subTypeNode = client.ReadNode(nodeId);
+                    if (subTypeNode != null)
+                    {
+                        Logger.Trace($"{subTypeNode.BrowseName}");
+                    }
+                    else
+                    {
+                        Logger.Trace($"Unknown");
+                    }
+                }
+            }
 
         }
         private void Debug(String message)
@@ -1837,6 +1991,19 @@ namespace UmatiGateway.OPC
         {
             Logger.Info($"Update Affected Node {affectedNode}");
             this.updateNode(affectedNode);
+        }
+        void OpcUaEventListener.ResultReadyEvent()
+        {
+            Logger.Trace("ResultReadyEvent reveived.");
+            if(resultFolder != null)
+            {
+                Logger.Trace($"Update Resultfolder: {resultFolder}");
+                this.updateNode(resultFolder);
+            } else
+            {
+                Logger.Trace("Unable to determine Result Folder");
+            }
+
         }
     }
     public class MqttSubscription
