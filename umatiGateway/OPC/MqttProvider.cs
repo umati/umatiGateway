@@ -582,7 +582,8 @@ namespace UmatiGateway.OPC
                 {
                     Logger.Trace($"The Placeholders Types in {nodeId} = {theNode.BrowseName} are:");
                 }
-                else {
+                else
+                {
                     Logger.Trace($"The Placeholders Types in {nodeId} are:");
                 }
             }
@@ -598,13 +599,15 @@ namespace UmatiGateway.OPC
                     Logger.Trace($"The Placeholders Types in {nodeId} and {parent} are:");
                 }
             }
-            foreach (NodeId placeholder in optionalMandatoryPlaceholders) {
+            foreach (NodeId placeholder in optionalMandatoryPlaceholders)
+            {
                 Node? placeholderNode = this.client.ReadNode(placeholder);
                 if (placeholderNode != null)
                 {
                     Logger.Trace($"Placeholder Type: {placeholder} = {placeholderNode.BrowseName}");
                 }
-                else {
+                else
+                {
                     Logger.Trace($"Placeholder Type: {placeholder} ");
                 }
             }
@@ -662,8 +665,7 @@ namespace UmatiGateway.OPC
                 }
                 Node? childNode = this.client.ReadNode(child);
                 if (childNode != null)
-                {
-                    
+                {  
                     if (placeHolderObject != null)
                     {
                         Console.Write($"{child} = {childNode.BrowseName} is a PlaceHolder.");
@@ -837,9 +839,11 @@ namespace UmatiGateway.OPC
                 }
             }
         }
-        private void GetTypeParentNodeIds(NodeId nodeId, List<NodeId> typeParents) {
+        private void GetTypeParentNodeIds(NodeId nodeId, List<NodeId> typeParents)
+        {
             NodeId? typeParent = this.client.BrowseLocalNodeId(nodeId, BrowseDirection.Inverse, (int)NodeClass.ObjectType | (int)NodeClass.VariableType, ReferenceTypeIds.HasSubtype, true);
-            if (typeParent != null && typeParent != ObjectTypeIds.BaseObjectType && typeParent != VariableTypeIds.BaseDataVariableType) {
+            if (typeParent != null && typeParent != ObjectTypeIds.BaseObjectType && typeParent != VariableTypeIds.BaseDataVariableType)
+            {
                 typeParents.Add(typeParent);
                 this.GetTypeParentNodeIds(typeParent, typeParents);
             }
@@ -1995,11 +1999,12 @@ namespace UmatiGateway.OPC
         void OpcUaEventListener.ResultReadyEvent()
         {
             Logger.Trace("ResultReadyEvent reveived.");
-            if(resultFolder != null)
+            if (resultFolder != null)
             {
                 Logger.Trace($"Update Resultfolder: {resultFolder}");
                 this.updateNode(resultFolder);
-            } else
+            }
+            else
             {
                 Logger.Trace("Unable to determine Result Folder");
             }

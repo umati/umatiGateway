@@ -272,7 +272,6 @@ namespace UmatiGateway.OPC
                         m_configuration.ApplicationName,
                         30 * 60 * 1000,
                         userIdentity,
-                        //null,
                         null
                     );
 
@@ -456,7 +455,8 @@ namespace UmatiGateway.OPC
                     VariantCollection vc = efl.EventFields;
                     foreach (Variant var in vc)
                     {
-						if (var.Value is NodeId) {
+                        if (var.Value is NodeId)
+                        {
                             NodeId nodeId = (NodeId)var.Value;
                             if (nodeId.IdType == IdType.Numeric && (uint)nodeId.Identifier == 1002)
                             {
@@ -467,7 +467,7 @@ namespace UmatiGateway.OPC
                                 }
                                 return;
                             }
-                        }						  
+                        }
                         if (var.TypeInfo.ToString() == "ExtensionObject[]")
                         {
                             ExtensionObject[] etos = (ExtensionObject[])var.Value;
