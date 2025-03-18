@@ -7,5 +7,6 @@ namespace UmatiGateway.OPC
     public interface OpcUaEventListener
     {
         public void ModelChangeEvent(NodeId affectedNode);
+        public void ResultReadyEvent();
     }
 }
