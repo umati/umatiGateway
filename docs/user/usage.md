@@ -25,6 +25,7 @@ services:
       - ./umatiGatewayConfig.xml:/app/Configuration/umatiGatewayConfig.xml
 ```
 ## Configuration
+
 ### Configuration via config files
 The umatiGateway app has two configuration files per default.
 The first file called umatiGatewayConfig.xml is located in the *Configuration/* folder in the root directory of the umatiGateway app. It stores the basic application configuration.
@@ -52,17 +53,17 @@ The second file is called LocalConfigumatiApp.xml and it is stored in the *Confi
 ```xml
 <?xml version="1.0" encoding="utf-8" ?>
 <Configuration version="1.0">
-	<!--For authentication with username and password use the line below.-->
-	<!--<OPCConnection serverendpoint="opc.tcp://opcua.umati.app:4843" authentication="None" user ="admin" password="pw1"/>-->
-	<OPCConnection serverendpoint="opc.tcp://opcua.umati.app:4840" authentication="None" user ="" password=""/>
-	<MqttConnection serverendpoint="mqtt://localhost:1883" user="" password="" clientId="fva/matthias2" prefix="umati/v2"/>
-	<PublishedNodes>
-		<PublishedNode type="Numeric" namespaceurl="http://example/instance/" nodeId="5003" BaseType=""/>
-	</PublishedNodes>
-	<CustomEncodings>
-		<CustomEncoding name="GMSResultDataTypeEncoding" active="False" />
-		<CustomEncoding name="ProcessingCategoryDataTypeEncoding" active="False" />
-	</CustomEncodings>
+    <!--For authentication with username and password use the line below.-->
+    <!--<OPCConnection serverendpoint="opc.tcp://opcua.umati.app:4843" authentication="None" user ="admin" password="pw1"/>-->
+    <OPCConnection serverendpoint="opc.tcp://opcua.umati.app:4840" authentication="None" user ="" password=""/>
+    <MqttConnection serverendpoint="mqtt://localhost:1883" user="" password="" clientId="fva/matthias2" prefix="umati/v2"/>
+    <PublishedNodes>
+        <PublishedNode type="Numeric" namespaceurl="http://example/instance/" nodeId="5003" BaseType=""/>
+    </PublishedNodes>
+    <CustomEncodings>
+    <CustomEncoding name="GMSResultDataTypeEncoding" active="False" />
+        <CustomEncoding name="ProcessingCategoryDataTypeEncoding" active="False" />
+        </CustomEncodings>
 </Configuration>
 ```
 
@@ -95,5 +96,55 @@ The second file is called LocalConfigumatiApp.xml and it is stored in the *Confi
 
 
 ### Configuration via Web UI
+
 ## FAQ
 
+### How to change the port for the Web UI?
+
+The port for the Web UI can be changed by editing the `application.json` file in the root directory of the application in the follwoing way:
+
+``` json
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*",
+  "Kestrel": {
+    "Endpoints": {
+      "Http": {
+        "Url": "http://localhost:5001"
+      }
+    }
+  }
+}
+```
+
+### How to change the Web UI to use https?
+
+You can configure the Web UI to use a https connection by editing the `application.json` file in the root directory of the application in the follwoing way:
+
+``` json
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*",
+  "Kestrel": {
+    "Endpoints": {
+      "Https": {
+        "Url": "https://0.0.0.0:443",
+        "Certificate": {
+          "Path": "/etc/ssl/certs/mycert.pfx",
+          "Password": "deinPasswort"
+        }
+      }
+    }
+  }
+}
+```
