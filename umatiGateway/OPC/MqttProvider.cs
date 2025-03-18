@@ -558,7 +558,7 @@ namespace UmatiGateway.OPC
                         else if (dataValue is JObject)
                         {
                             JObject dv = (JObject)dataValue;
-                            dv.Add("$TypeDefinition", placeholderType);
+                            //dv.Add("$TypeDefinition", placeholderType);
                             return dv;
                         }
                         else if (dataValue is JArray)
