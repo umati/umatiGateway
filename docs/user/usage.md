@@ -8,7 +8,7 @@ Start the container directly with the default configuration:
 
 `docker run -it ghcr.io/umati/umatigateway:develop`
 
-You can use the default configuration to reach the configuration section via the Web Gui and adapt and download your configuration.
+You can use the default configuration to reach the configuration section via the Web GUI and adapt and download your configuration.
 
 #### Running the umatiGateway as docker container with mounted Configuration Files
 
@@ -100,7 +100,7 @@ The second file is called LocalConfigumatiApp.xml and it is stored in the *Confi
 
 ### Configuration via Web UI
 
-The Web UI is accessible after starting the umatiGateway via http://localhost:8080 . The address can be configured via an application.json file in the applications root directory. An example is statet in the FAQs.
+The Web UI is accessible after starting the umatiGateway via `http://localhost:8080` . The address can be configured via an application.json file in the applications root directory. An example is statet in the FAQs.
 The Web UI consists of 4 different tabs:
 1. The *OPC Connection Tab* which deals with the OPC Connection
 2. The *OPC Subscription Tab* where you can define the nodes you want to subscribe to.
