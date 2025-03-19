@@ -1,3 +1,5 @@
+<!-- prettier-ignore-start -->
+
 # umati Gateway
 
 Gateway connecting OPC UA servers implementing umati endorsed Companion Specifications with the umati Dashboard
