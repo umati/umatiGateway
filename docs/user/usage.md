@@ -1,3 +1,4 @@
+<!-- prettier-ignore-start -->
 # User Manual
 
 ## Running the software
