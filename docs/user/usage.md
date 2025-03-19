@@ -1,5 +1,3 @@
-
-<!-- prettier-ignore-start -->
 # User Manual
 
 ## Running the software
@@ -188,5 +186,3 @@ You can configure the Web UI to use a https connection by editing the `applicati
   }
 }
 ```
-
-<!-- prettier-ignore-end -->
