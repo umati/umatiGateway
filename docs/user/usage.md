@@ -2,10 +2,6 @@
 
 ## Running the software
 
-### Running the umatiGateway as executable
-
---- TBD ---
-
 ### Running the umatiGateway as docker container
 Start the container directly with the configuration files mounted:
 
@@ -97,10 +93,36 @@ The second file is called LocalConfigumatiApp.xml and it is stored in the *Confi
 
 ### Configuration via Web UI
 
+The Web UI is accessible after starting the umatiGateway via http://localhost:5000 . The address can be configured via an application.json file in the applications root directory. An example is statet in the FAQs.
+The Web UI consists of 4 different tabs:
+1. The *OPC Connection Tab* which deals with the OPC Connection
+2. The *OPC Subscription Tab* where you can define the nodes you want to subscribe to.
+3. The *Mqtt Configuration Tab* which deals with the Mqtt Connection.
+4. The *Configuration Tab* that holds the curretn configuration an allows to download the configuration files.
+
+#### OPC Connection Tab
+
+In the OPC Connection Tab you can configure the OPC Connection parameters and connect or disconnet to/from an OPC Server.
+
 ![OPCConnection](/docs/user/images/OpcConnection.png)
-![OPCConnection](/docs/user/images/MqttConnection.png)
-![OPCConnection]("/docs/user/images/OpcSubscriptions.png")
-![OPCConnection](/docs/user/images/Configuration.png)
+
+#### OPC Subscription Tab
+
+In the OPC Subscription Tab you can browse the Nodes in the OPC Server when you are connected and add the selected node to the nodes that should be published via Mqtt (typically your machine). All child Nodes of the node will be published as well.
+
+![OPCSubscriptions](/docs/user/images/OPCSubscriptions.png)
+
+#### Mqtt Connection Tab
+
+In the Mqtt Connection Tab you can configure the Mqtt Connection. If you push the connect button the Mqtt connection will be established and the Nodes in the Publsihed Nodes table will be published.
+
+![MqttConnection](/docs/user/images/MqttConnection.png)
+
+#### Configuration Tab
+
+In the Configuration Tab you can see all currently set configuration settings. You are able to change this settings there and download the resulting .xml configuration files as a .zip archive.
+
+![Configuration](/docs/user/images/Configuration.png)
 
 ## FAQ
 
