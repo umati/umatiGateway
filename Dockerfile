@@ -19,7 +19,7 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 COPY --from=build /app ./
 
-# Expose port 80 for the application
+# Expose port 8080 for the application
 EXPOSE 8080
 
 # Set the entry point to the application
