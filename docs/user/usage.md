@@ -6,20 +6,20 @@
 
 Start the container directly with the default configuration:
 
-`docker run -it ghcr.io/umati/umatigateway`
+`docker run -it ghcr.io/umati/umatigateway:develop`
 
 You can use the default configuration to reach the configuration section via the Web Gui and adapt and download your configuration.
 
 #### Running the umatiGateway as docker container with mounted Configuration Files
 
-`docker run -it -v ./LocalConfigumatiApp.xml:/app/Configuration/Files/LocalConfigumatiApp.xml -v ./umatiGatewayConfig.xml:/app/Configuration/umatiGatewayConfig.xml ghcr.io/umati/umatigateway`
+`docker run -it -v ./LocalConfigumatiApp.xml:/app/Configuration/Files/LocalConfigumatiApp.xml -v ./umatiGatewayConfig.xml:/app/Configuration/umatiGatewayConfig.xml ghcr.io/umati/umatigateway:develop`
 
 or via Compose with this config:
 
 ```yaml
 services:
   umatigateway:
-    image: ghcr.io/umati/umatigateway
+    image: ghcr.io/umati/umatigateway:develop
     container_name: umatigateway
     ports:
       - "127.0.0.1:8080:8080"
