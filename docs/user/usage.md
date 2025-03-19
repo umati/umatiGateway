@@ -7,6 +7,10 @@ Start the container directly with the configuration files mounted:
 
 `docker run -it -v ./LocalConfigumatiApp.xml:/app/Configuration/Files/LocalConfigumatiApp.xml -v ./umatiGatewayConfig.xml:/app/Configuration/umatiGatewayConfig.xml ghcr.io/umati/umatigateway`
 
+#### Mount Configuration Files
+
+`docker run -it -v ./LocalConfigumatiApp.xml:/app/Configuration/Files/LocalConfigumatiApp.xml -v ./umatiGatewayConfig.xml:/app/Configuration/umatiGatewayConfig.xml ghcr.io/umati/umatigateway`
+
 or via Compose with this config:
 
 ```yaml
@@ -93,7 +97,7 @@ The second file is called LocalConfigumatiApp.xml and it is stored in the *Confi
 
 ### Configuration via Web UI
 
-The Web UI is accessible after starting the umatiGateway via http://localhost:5000 . The address can be configured via an application.json file in the applications root directory. An example is statet in the FAQs.
+The Web UI is accessible after starting the umatiGateway via http://localhost:8080 . The address can be configured via an application.json file in the applications root directory. An example is statet in the FAQs.
 The Web UI consists of 4 different tabs:
 1. The *OPC Connection Tab* which deals with the OPC Connection
 2. The *OPC Subscription Tab* where you can define the nodes you want to subscribe to.
@@ -142,7 +146,7 @@ The port for the Web UI can be changed by editing the `application.json` file in
   "Kestrel": {
     "Endpoints": {
       "Http": {
-        "Url": "http://localhost:5001"
+        "Url": "http://localhost:8080"
       }
     }
   }
