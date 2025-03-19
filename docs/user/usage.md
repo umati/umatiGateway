@@ -97,6 +97,11 @@ The second file is called LocalConfigumatiApp.xml and it is stored in the *Confi
 
 ### Configuration via Web UI
 
+![OPCConnection](/docs/user/images/OpcConnection.png)
+![OPCConnection](/docs/user/images/MqttConnection.png)
+![OPCConnection]("/docs/user/images/OpcSubscriptions.png")
+![OPCConnection](/docs/user/images/Configuration.png)
+
 ## FAQ
 
 ### How to change the port for the Web UI?
