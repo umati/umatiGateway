@@ -8,6 +8,8 @@ umati Gateway connects to an OPC UA server, subscribes to values from one or mor
 
 ## Getting Started
 
+For a more detailed description about the umatiGateway please take a look at the [User Manual](/docs/user/usage.md) .
+
 ### Configuration files
 
 - Download gateway configuration file ([umatiGatewayConfig.xml](umatiGateway/Configuration/umatiGatewayConfig.xml))
@@ -38,14 +40,6 @@ services:
       - ./umatiGatewayConfig.xml:/app/Configuration/umatiGatewayConfig.xml
 ```
 
-### Running standalone executable
-
---- TBD ---
-
-### Building
-
---- TBD ---
-
 ### GUI
 
 Web-based interface is accessible on port 8080 by default. There the connection settings can be modified and applied on the fly, making it useful for initial setup and debugging.
@@ -55,30 +49,6 @@ Web-based interface is accessible on port 8080 by default. There the connection 
 > `ssh -L 8080:localhost:8080 user@remote-server`
 
 The interface will be then available at [http://localhost:8080](http://localhost:8080).
-
-### Configuration
-
-#### Webserver Configuration
-
-The UmatiGateway provides its UI via a Web-GUI on port 5000 at default settings.
-
-##### Changing the Webserver Port
-
-#### OPC UA configuration
-
-OPC UA connection is configured in [OPC Connection](http://localhost:8080/OPCConnection) page. When not using the autostart option, make sure the connection URL is correct and press _Connect_ button. _ConnectionStatus_ field should shortly change to _True_.
-
-#### OPC UA Subscriptions
-
-To select machine data to be published, go to [OPC Subscriptions](http://localhost:8080/OPCSubscriptions) page. Click _Root_ item in the _Address Space_ tree, navigate to your machine node (e.g. Root → Objects → Machines → MyMachine) and click _Publish_ button in the right panel.
-
-#### MQTT configuration
-
-Go to [MqttConfiguration](http://localhost:8080/umatiMqtt) page and make sure the credentials are correct. You should see a list of the nodes you subscribed to in _Published Nodes_ panel on the right. When not using the autostart option, click _Connect_ to start publishing.
-
-## Components
-
---- TBD ---
 
 ## License
 
