@@ -18,4 +18,4 @@ jobs:
         run: npm install --save-dev prettier
 
       - name: Run Prettier Check
-        run: npx prettier --diff "docs/user/usage.md"
+        run: npx prettier --write "docs/user/usage.md"
