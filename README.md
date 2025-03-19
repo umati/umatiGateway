@@ -1,6 +1,3 @@
-
-<!-- prettier-ignore-start -->
-
 # umati Gateway
 
 Gateway connecting OPC UA servers implementing umati endorsed Companion Specifications with the umati Dashboard
@@ -50,5 +47,3 @@ The interface will be then available at [http://localhost:8080](http://localhost
 ## License
 
 This Software is licensed under Apache v2 license.
-
-<!-- prettier-ignore-end -->
