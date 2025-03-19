@@ -2,12 +2,15 @@
 
 ## Running the software
 
-### Running the umatiGateway as docker container
-Start the container directly with the configuration files mounted:
+### Running the umatiGateway as docker container with defailt configuration
 
-`docker run -it -v ./LocalConfigumatiApp.xml:/app/Configuration/Files/LocalConfigumatiApp.xml -v ./umatiGatewayConfig.xml:/app/Configuration/umatiGatewayConfig.xml ghcr.io/umati/umatigateway`
+Start the container directly with the default configuration:
 
-#### Mount Configuration Files
+`docker run -it ghcr.io/umati/umatigateway`
+
+You can use the default configuration to reach the configuration section via the Web Gui and adapt and download your configuration.
+
+#### Running the umatiGateway as docker container with mounted Configuration Files
 
 `docker run -it -v ./LocalConfigumatiApp.xml:/app/Configuration/Files/LocalConfigumatiApp.xml -v ./umatiGatewayConfig.xml:/app/Configuration/umatiGatewayConfig.xml ghcr.io/umati/umatigateway`
 
