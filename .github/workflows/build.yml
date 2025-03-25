@@ -83,7 +83,7 @@ jobs:
         run: dotnet test umatiGateway.sln --configuration ${{ matrix.build_type }}
 
       - name: Publish Application
-        run: dotnet publish umatiGateway.sln --configuration ${{ matrix.build_type }} --output ./publish
+        run: dotnet publish umatiGateway.sln --self-contained true --configuration ${{ matrix.build_type }} --output ./publish
 
       - name: Upload Published Artifacts
         uses: actions/upload-artifact@v4
