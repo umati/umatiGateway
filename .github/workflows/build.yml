@@ -44,16 +44,7 @@ jobs:
       - name: build and package
         run: |
           cd umatiGateway/umatiGateway
-          dotnet publish umatiGateway.csproj \
-          --configuration ${{ matrix.build_type }} \
-          --runtime linux-x64 \
-          --self-contained true \
-          /p:PublishSingleFile=false \
-          /p:IncludeNativeLibrariesForSelfExtract=true \
-          --output ./publish
-          dotnet deb \
-          --input ./publish \
-          --output ../../umati-gateway.deb
+          dotnet deb --configuration ${{ matrix.build_type }} --output ../umati-gateway.deb
 
       - name: Upload Debian Package
         uses: actions/upload-artifact@v4
