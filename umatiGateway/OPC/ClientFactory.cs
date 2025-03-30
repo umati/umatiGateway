@@ -39,7 +39,7 @@ namespace UmatiGateway.OPC
                 CertificatePasswordProvider = PasswordProvider
             };
             var config = await application.LoadApplicationConfiguration("./OPC/Gateway.Config.xml", silent: false);
-            await application.CheckApplicationInstanceCertificate(silent: false, minimumKeySize: 0);
+            await application.CheckApplicationInstanceCertificates(silent: false);
             UmatiGatewayApp client = new UmatiGatewayApp(config, Console.Out, ClientBase.ValidateResponse)
             {
                 AutoAccept = true
