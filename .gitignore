@@ -1,2 +1,11 @@
 */bin
 */obj
+/.vs/umatiGateway
+/umatiGateway/umatiGateway.csproj.user
+/umatiGateway/.?pki?client?own
+/umatiGateway/pki/client
+/.vs
+/umatiGateway/.?pki?client?trusted/certs
+/umatiGateway/.pkiclientown
+/umatiGateway/.pkiclienttrusted/certs
+/umatiGateway/umatiGateway.csproj.user
