@@ -99,6 +99,11 @@ jobs:
       packages: write
       contents: read
     runs-on: ubuntu-24.04
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
     env:
       # Use docker.io for Docker Hub if empty
       REGISTRY: ghcr.io
@@ -129,22 +134,37 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3.10.0
+        with:
+          driver-opts: network=host
 
-      - name: Build and Push Docker Image
+      - name: Build and Push container image to ${{ env.REGISTRY }}
         uses: docker/build-push-action@v6.15.0
+        if: github.event_name != 'pull_request'
         with:
           context: ./umatiGateway
           file: ./umatiGateway/Dockerfile
           platforms: linux/amd64
-          push: ${{ github.event_name != 'pull_request' }}
+          push: true
           tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          provenance: false
+
+      - name: Build and Push container image to local registry
+        uses: docker/build-push-action@v6.15.0
+        if: github.event_name == 'pull_request'
+        with:
+          context: ./umatiGateway
+          file: ./umatiGateway/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: localhost:5000/umati/umatigateway:${{ steps.meta.outputs.version }}
           labels: ${{ steps.meta.outputs.labels }}
           provenance: false
 
       - name: Run integration test mqtt
         if: github.event_name == 'pull_request'
         run: |
-          #! /bin/bash
+          #!/bin/bash
           cd ./umatiGateway/tests/integration/mqtt_test || exit
           docker compose up -d
           python -m pip install --upgrade pip
