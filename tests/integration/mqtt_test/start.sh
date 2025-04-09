@@ -4,6 +4,8 @@
 
 export IMAGE_REPOSITORY=umati/umatigateway
 export IMAGE_TAG=develop
+echo $IMAGE_REPOSITORY
+echo $IMAGE_TAG
 docker compose up -d
 pip3 install -r requirements.txt
 ./waitForContainer.sh
