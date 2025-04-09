@@ -1582,7 +1582,7 @@ namespace UmatiGateway.OPC
             }
             return ns;
         }
-        
+
         /// <summary>
         /// Builds a fully qualified OPC UA NodeId string with the format: 
         /// "nsu=&lt;encodedNamespaceUri&gt;;&lt;encodedIdentifier&gt;".
@@ -1601,40 +1601,40 @@ namespace UmatiGateway.OPC
         private string getInstanceNsu(NodeId? nodeId, bool replace = true)
         {
             const string nsuPrefix = "nsu=";
+            string identifier = "";
 
             if (nodeId == null)
-                this.Error("No NodeId for Instance");
+            {
+                Logger.Error("No NodeId for Instance");
                 return "";
-
-            NodeId machineId = nodeId.Value;
+            }
 
             // Retrieve the namespace URI from the namespace index
-            string namespaceUri = this.GetNameSpaceForIndex(machineId.NamespaceIndex);
-
+            string namespaceUri = this.GetNameSpaceForIndex(nodeId.NamespaceIndex);
             // Apply custom encoding if required
             if (replace)
             {
                 namespaceUri = CustomUrlEncode(namespaceUri);
+                identifier = nodeId.IdType switch
+                {
+                    IdType.Numeric => $"i={(uint)nodeId.Identifier}",
+                    IdType.String => $"s={CustomUrlEncode((string)nodeId.Identifier)}",
+                    IdType.Guid => $"g={nodeId.Identifier.ToString()}",
+                    IdType.Opaque => $"b={Convert.ToBase64String((byte[])nodeId.Identifier)}",
+                    _ => throw new NotSupportedException($"Unsupported IdType: {nodeId.IdType}")
+                };
             }
-
-            string identifier = machineId.IdType switch
+            else
             {
-                IdType.Numeric => $"i={(uint)machineId.Identifier}",
-                IdType.String => {
-                    var stringId = (string)machineId.Identifier;
-                    string encoded = replace ? CustomUrlEncode(stringId) : stringId;
-                    return $"s={encoded}";
-                },
-                IdType.Guid => {
-                    var guidId = machineId.Identifier.ToString();
-                    string encoded = replace ? CustomUrlEncode(guidId) : guidId;
-                    return $"g={encoded}";
-                },
-                IdType.Guid    => $"g={machineId.Identifier.ToString()}",
-                IdType.Opaque  => $"b={Convert.ToBase64String((byte[])machineId.Identifier)}",
-                _              => throw new NotSupportedException($"Unsupported IdType: {machineId.IdType}")
-            };
-
+                identifier = nodeId.IdType switch
+                {
+                    IdType.Numeric => $"i={(uint)nodeId.Identifier}",
+                    IdType.String => $"s={((string)nodeId.Identifier)}",
+                    IdType.Guid => $"g={nodeId.Identifier.ToString()}",
+                    IdType.Opaque => $"b={Convert.ToBase64String((byte[])nodeId.Identifier)}",
+                    _ => throw new NotSupportedException($"Unsupported IdType: {nodeId.IdType}")
+                };
+            }
             return nsuPrefix + namespaceUri + ";" + identifier;
         }
 
