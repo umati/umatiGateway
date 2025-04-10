@@ -142,7 +142,7 @@ jobs:
         if: github.event_name != 'pull_request'
         with:
           context: ./umatiGateway
-          file: ./umatiGateway/Dockerfile
+          file: "./umatiGateway/umatiGateway/Dockerfile"
           platforms: linux/amd64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
@@ -154,7 +154,7 @@ jobs:
         if: github.event_name == 'pull_request'
         with:
           context: ./umatiGateway
-          file: ./umatiGateway/Dockerfile
+          file: "./umatiGateway/umatiGateway/Dockerfile"
           platforms: linux/amd64
           push: true
           tags: localhost:5000/umati/umatigateway:${{ steps.meta.outputs.version }}
