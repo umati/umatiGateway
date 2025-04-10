@@ -7,6 +7,7 @@
     <SelfContained>true</SelfContained>
     <UserSecretsId>a6a3a4b3-1ead-446e-9c8c-671e54a46342</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <Version>1.0.0-rc1</Version>
   </PropertyGroup>
 
   <ItemGroup>

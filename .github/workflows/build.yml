@@ -182,27 +182,24 @@ jobs:
       - name: Download artifacts
         uses: dawidd6/action-download-artifact@v9
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{secrets.GITHUB_TOKEN}}
           workflow: build.yml
           workflow_conclusion: success
           repo: ${{ github.repository }}
-          commit: ${{ github.event.pull_request.head.sha }}
+          commit: ${{github.event.pull_request.head.sha}}
           if_no_artifact_found: fail
           skip_unpack: true
-
       - name: Checksum
         run: |
-          sha256sum ./*.deb ./*.zip > SHA256-checksums
-
+          #!/bin/bash
+          sha256sum ./*.zip > SHA256-checksums
       - name: Display structure of downloaded files
         run: ls -R
-
       - name: Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v2.2.1
         with:
           generate_release_notes: true
           fail_on_unmatched_files: true
           files: |
-            ./*.deb
             ./*.zip
             SHA256-checksums
