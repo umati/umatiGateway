@@ -105,11 +105,17 @@ namespace UmatiGateway
             mqttClientId.Value = configuration.mqttClientId;
             XmlAttribute mqttPrefix = xmlDocument.CreateAttribute("prefix");
             mqttPrefix.Value = configuration.mqttPrefix;
+            XmlAttribute mqttCertificateFile = xmlDocument.CreateAttribute("certificateFile");
+            mqttCertificateFile.Value = configuration.mqttCertificateFile;
+            XmlAttribute mqttCertificatePassword = xmlDocument.CreateAttribute("certificatePassword");
+            mqttCertificatePassword.Value = configuration.mqttCertificatePassword;
             mqttConnectionNode.Attributes.Append(mqttServerEndpoint);
             mqttConnectionNode.Attributes.Append(mqttUser);
             mqttConnectionNode.Attributes.Append(mqttPassword);
             mqttConnectionNode.Attributes.Append(mqttClientId);
             mqttConnectionNode.Attributes.Append(mqttPrefix);
+            mqttConnectionNode.Attributes.Append(mqttCertificateFile);
+            mqttConnectionNode.Attributes.Append(mqttCertificatePassword);
             XmlElement publishedNodesNode = xmlDocument.CreateElement("PublishedNodes");
             foreach (PublishedNode publishedNode in configuration.publishedNodes)
             {

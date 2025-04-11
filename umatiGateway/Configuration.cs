@@ -29,6 +29,8 @@ namespace UmatiGateway
         public string mqttPassword = "";
         public string mqttClientId = "";
         public string mqttPrefix = "";
+        public string mqttCertificateFile = "";
+        public string mqttCertificatePassword = "";
         public List<PublishedNode> publishedNodes = [];
         public List<CustomEncoding> customEncodings = [];
         public Configuration() { }

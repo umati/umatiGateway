@@ -35,7 +35,9 @@ namespace UmatiGateway.Pages
         }
         public IActionResult OnPostDownload(string OpcConnectionUrl, string OpcUser, string OpcPassword,
             string MqttConnectionUrl, string MqttUser, string MqttPassword, string MqttClientId, string MqttPrefix,
-            bool? AutoStart, bool? readExtraLibs,string LogLevel, string configfilePath, List<CustomEncoding> CustomEncodings, List<PublishedNode> PublishedNodes)
+            bool? AutoStart, bool? readExtraLibs,string LogLevel, string configfilePath, List<CustomEncoding> CustomEncodings, List<PublishedNode> PublishedNodes,
+            string CertificateFile, string CertificatePassword)
+
         {
             UmatiGatewayApp client = this.getClient();
             Configuration configuration = new Configuration();
@@ -53,6 +55,8 @@ namespace UmatiGateway.Pages
             configuration.loglevel = LogLevel;
             configuration.customEncodings = CustomEncodings ?? new List<CustomEncoding>();
             configuration.publishedNodes = PublishedNodes ?? new List<PublishedNode>();
+            configuration.mqttCertificateFile = CertificateFile ?? "";
+            configuration.mqttCertificatePassword = CertificatePassword ?? "";
             ConfigurationWriter writer = new ConfigurationWriter();
             string appfileContent = writer.WriteApplicationConfigToString(configuration);
             string fileContent = writer.WriteToString(configuration);

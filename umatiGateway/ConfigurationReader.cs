@@ -157,6 +157,8 @@ namespace UmatiGateway
                             configuration.mqttPassword = this.ReadAttribute(mqttNode, "password");
                             configuration.mqttClientId = this.ReadAttribute(mqttNode, "clientId");
                             configuration.mqttPrefix = this.ReadAttribute(mqttNode, "prefix");
+                            configuration.mqttCertificateFile = this.ReadAttribute(mqttNode, "certificateFile");
+                            configuration.mqttCertificatePassword = this.ReadAttribute(mqttNode, "certificatePassword");
                         }
                         else
                         {
@@ -257,6 +259,8 @@ namespace UmatiGateway
                             configuration.mqttPassword = this.ReadAttribute(mqttNode, "password");
                             configuration.mqttClientId = this.ReadAttribute(mqttNode, "clientId");
                             configuration.mqttPrefix = this.ReadAttribute(mqttNode, "prefix");
+                            configuration.mqttCertificateFile = this.ReadAttribute(mqttNode, "certificateFile");
+                            configuration.mqttCertificatePassword = this.ReadAttribute(mqttNode, "certificatePassword");
                         }
                         else
                         {
