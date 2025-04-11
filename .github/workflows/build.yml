@@ -3,6 +3,9 @@ name: build
 
 on:
   push:
+    branches: [main, develop]
+    # Publish semver tags as releases.
+    tags: ["v*.*.*"]
   pull_request:
     branches: [main, develop]
   merge_group:
@@ -14,7 +17,7 @@ jobs:
       contents: read
     strategy:
       matrix:
-        os: [ubuntu-22.04, ubuntu-24.04]
+        os: [ubuntu-22.04, ubuntu-22.04-arm, ubuntu-24.04, ubuntu-24.04-arm]
         build_type: [Debug, Release]
       fail-fast: false
     runs-on: ${{ matrix.os }}
@@ -96,51 +99,72 @@ jobs:
       packages: write
       contents: read
     runs-on: ubuntu-24.04
+    services:
+      registry:
+        image: registry:3
+        ports:
+          - 5000:5000
     env:
-      # Check if this is not a pull request andGITHUB_TOKEN is set
-      # As all env variables are strings, you need to compare
-      # against "== 'true'" (not "== true")
-      IS_NOT_PR: "${{ !github.head_ref && true }}"
+      # Use docker.io for Docker Hub if empty
+      REGISTRY: ghcr.io
+      # github.repository as <account>/<repo>
+      IMAGE_NAME: ${{ github.repository }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
           path: umatiGateway
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3.6.0
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3.10.0
-        # yamllint disable rule:line-length
-      - name: PrepareReg Names
-        # yamllint disable rule:line-length
-        run: |
-          #! /bin/bash
-          #shellcheck  disable=SC2296
-          echo IMAGE_REPOSITORY="$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_ENV"
-          echo IMAGE_TAG="$(echo "${{ github.ref }}" | tr '[:upper:]' '[:lower:]' |  awk '{sub(/([^\/]*\/){2}/,""); gsub(/\/|_/, "-")}1')" >> "$GITHUB_ENV"
-          echo IS_NOT_PR="${{ env.IS_NOT_PR }})"
-        # yamllint enable rule:line-length
-      - name: Login to GitHub Container Registry
+
+      - name: Login to registry ${{ env.REGISTRY }}
         uses: docker/login-action@v3.4.0
-        if: env.IS_NOT_PR == 'true'
+        if: github.event_name != 'pull_request'
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build and Push Docker Image
+      # Extract metadata (tags, labels) for Docker
+      # https://github.com/docker/metadata-action
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5.7.0
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3.6.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3.10.0
+        with:
+          driver-opts: network=host
+
+      - name: Build and Push container image to ${{ env.REGISTRY }}
         uses: docker/build-push-action@v6.15.0
+        if: github.event_name != 'pull_request'
         with:
           context: ./umatiGateway
-          file: ./umatiGateway/Dockerfile
+          file: "./umatiGateway/umatiGateway/Dockerfile"
           platforms: linux/amd64
-          push: ${{env.IS_NOT_PR == 'true'}}
-          tags: |
-            ghcr.io/${{ env.IMAGE_REPOSITORY }}:${{ env.IMAGE_TAG }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           provenance: false
+
+      - name: Build and Push container image to local registry
+        uses: docker/build-push-action@v6.15.0
+        if: github.event_name == 'pull_request'
+        with:
+          context: ./umatiGateway
+          file: "./umatiGateway/umatiGateway/Dockerfile"
+          platforms: linux/amd64
+          push: true
+          tags: localhost:5000/umati/umatigateway:${{ steps.meta.outputs.version }}
+          labels: ${{ steps.meta.outputs.labels }}
+          provenance: false
+
       - name: Run integration test mqtt
-        if: ${{env.IS_NOT_PR == 'true'}}
+        if: github.event_name == 'pull_request'
         run: |
-          #! /bin/bash
+          #!/bin/bash
           cd ./umatiGateway/tests/integration/mqtt_test || exit
           docker compose up -d
           python -m pip install --upgrade pip
@@ -158,27 +182,24 @@ jobs:
       - name: Download artifacts
         uses: dawidd6/action-download-artifact@v9
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{secrets.GITHUB_TOKEN}}
           workflow: build.yml
           workflow_conclusion: success
           repo: ${{ github.repository }}
-          commit: ${{ github.event.pull_request.head.sha }}
+          commit: ${{github.event.pull_request.head.sha}}
           if_no_artifact_found: fail
           skip_unpack: true
-
       - name: Checksum
         run: |
-          sha256sum ./*.deb ./*.zip > SHA256-checksums
-
+          #!/bin/bash
+          sha256sum ./*.zip > SHA256-checksums
       - name: Display structure of downloaded files
         run: ls -R
-
       - name: Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v2.2.1
         with:
           generate_release_notes: true
           fail_on_unmatched_files: true
           files: |
-            ./*.deb
             ./*.zip
             SHA256-checksums

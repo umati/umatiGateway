@@ -16,7 +16,7 @@ services:
     depends_on:
       - mqtt_broker
       - opcuaserver
-    image: ghcr.io/${IMAGE_REPOSITORY}:${IMAGE_TAG}
+    image: localhost:5000/umati/umatigateway:${DOCKER_METADATA_OUTPUT_VERSION}
     volumes:
       - ./Configuration/Files/LocalConfig.xml:/app/Configuration/Files/LocalConfig.xml
       - ./Configuration/umatiGatewayConfig.xml:/app/Configuration/umatiGatewayConfig.xml
