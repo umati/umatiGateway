@@ -1639,8 +1639,8 @@ namespace UmatiGateway.OPC
         }
 
         /// <summary>
-        /// Encodes a string using a custom URL-encoding scheme:
-        /// - Alphanumeric characters [A-Za-z0-9] remain unchanged.
+        /// Encodes a string using a custom URL-encoding (RFC3986) scheme:
+        /// - Unreserved characters [A-Za-z0-9], '-', '.', '_', and '~' remain unchanged.
         /// - All other characters are replaced with an underscore (_) followed by
         ///   their two-digit uppercase hexadecimal ASCII value.
         /// Example: "My Value/Path" becomes "My_20Value_2FPath".
@@ -1653,7 +1653,7 @@ namespace UmatiGateway.OPC
 
             foreach (char c in input)
             {
-                if (char.IsLetterOrDigit(c))
+                if (char.IsLetterOrDigit(c) || c == '-' || c == '.' || c == '_' || c == '~')
                 {
                     encoded.Append(c);
                 }
