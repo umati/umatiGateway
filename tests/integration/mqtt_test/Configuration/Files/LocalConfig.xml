@@ -5,6 +5,5 @@
 	<PublishedNodes>
 		<PublishedNode type="Numeric" namespaceurl="http://example.com/FullMachineTool/" nodeId="66382"/>
 		<PublishedNode type="Numeric" namespaceurl="http://example.com/BasicMachineTool/" nodeId="66382"/>
-		<PublishedNode type="Numeric" namespaceurl="http://example.com/FullMachineTool/" nodeId="66382"/>
 	</PublishedNodes>
 </Configuration>

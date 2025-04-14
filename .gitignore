@@ -1,6 +1,7 @@
 */bin
 */obj
 /.vs/umatiGateway
+/.vscode
 /umatiGateway/umatiGateway.csproj.user
 /umatiGateway/.?pki?client?own
 /umatiGateway/pki/client

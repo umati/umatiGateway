@@ -145,7 +145,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Configuration\umatiGatewayConfig.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="OPC\Gateway.Config.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

@@ -1582,36 +1582,90 @@ namespace UmatiGateway.OPC
             }
             return ns;
         }
+
+        /// <summary>
+        /// Builds a fully qualified OPC UA NodeId string with the format: 
+        /// "nsu=&lt;encodedNamespaceUri&gt;;&lt;encodedIdentifier&gt;".
+        /// All non-alphanumeric characters in the namespace URI and string identifiers
+        /// are URL-encoded using an underscore (_) instead of a percent sign (%).
+        /// </summary>
+        /// <param name="nodeId">The NodeId to encode. Null values will return an empty string.</param>
+        /// <param name="replace">
+        /// Optional flag to enable custom URL encoding for namespace URI and string-based identifiers.
+        /// Default is true.
+        /// </param>
+        /// <returns>
+        /// A fully qualified NodeId string compliant with OPC UA string representations,
+        /// or an empty string if <paramref name="nodeId"/> is null.
+        /// </returns>
         private string getInstanceNsu(NodeId? nodeId, bool replace = true)
         {
-            string nsuString = "nsu=";
-            string nameSpace = "";
+            const string nsuPrefix = "nsu=";
             string identifier = "";
-            NodeId? machineId = nodeId;
-            if (machineId != null && nodeId != null)
+
+            if (nodeId == null)
             {
-                ushort namespaceIndex = machineId.NamespaceIndex;
-                nameSpace = this.GetNameSpaceForIndex(nodeId.NamespaceIndex);
-                if (replace)
+                Logger.Error("No NodeId for Instance");
+                return "";
+            }
+
+            // Retrieve the namespace URI from the namespace index
+            string namespaceUri = this.GetNameSpaceForIndex(nodeId.NamespaceIndex);
+            // Apply custom encoding if required
+            if (replace)
+            {
+                namespaceUri = CustomUrlEncode(namespaceUri);
+                identifier = nodeId.IdType switch
                 {
-                    nameSpace = nameSpace.Replace("_", "_5F");
-                    nameSpace = nameSpace.Replace("/", "_2F");
-                }
-                if (machineId.IdType == IdType.Numeric)
-                {
-                    identifier = "i=" + (uint)machineId.Identifier;
-                }
-                else if (machineId.IdType == IdType.String)
-                {
-                    identifier = "s=" + ((string)machineId.Identifier).Replace(" ", "_20");
-                }
-                return nsuString + nameSpace + ";" + identifier;
+                    IdType.Numeric => $"i={(uint)nodeId.Identifier}",
+                    IdType.String => $"s={CustomUrlEncode((string)nodeId.Identifier)}",
+                    IdType.Guid => $"g={nodeId.Identifier.ToString()}",
+                    IdType.Opaque => $"b={Convert.ToBase64String((byte[])nodeId.Identifier)}",
+                    _ => throw new NotSupportedException($"Unsupported IdType: {nodeId.IdType}")
+                };
             }
             else
             {
-                return "";
+                identifier = nodeId.IdType switch
+                {
+                    IdType.Numeric => $"i={(uint)nodeId.Identifier}",
+                    IdType.String => $"s={((string)nodeId.Identifier)}",
+                    IdType.Guid => $"g={nodeId.Identifier.ToString()}",
+                    IdType.Opaque => $"b={Convert.ToBase64String((byte[])nodeId.Identifier)}",
+                    _ => throw new NotSupportedException($"Unsupported IdType: {nodeId.IdType}")
+                };
             }
+            return nsuPrefix + namespaceUri + ";" + identifier;
         }
+
+        /// <summary>
+        /// Encodes a string using a custom URL-encoding (RFC3986) scheme:
+        /// - Unreserved characters [A-Za-z0-9], '-', '.', '_', and '~' remain unchanged.
+        /// - All other characters are replaced with an underscore (_) followed by
+        ///   their two-digit uppercase hexadecimal ASCII value.
+        /// Example: "My Value/Path" becomes "My_20Value_2FPath".
+        /// </summary>
+        /// <param name="input">The input string to encode.</param>
+        /// <returns>The encoded string.</returns>
+        private string CustomUrlEncode(string input)
+        {
+            StringBuilder encoded = new StringBuilder();
+
+            foreach (char c in input)
+            {
+                if (char.IsLetterOrDigit(c) || c == '-' || c == '.' || c == '_' || c == '~')
+                {
+                    encoded.Append(c);
+                }
+                else
+                {
+                    encoded.Append($"_{((int)c):X2}");
+                }
+            }
+
+            return encoded.ToString();
+        }
+
 
 
         private void doPublish()
