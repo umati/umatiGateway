@@ -1,0 +1,10 @@
+{
+    "PublisherId": "example_publisher_1",
+    "Status": {
+      "IsCyclic": true,
+      "Message": "Publisher active and ready",
+      "Time": "2025-04-14T10:30:00Z",
+      "StatusCode": 0
+    }
+  }
+  

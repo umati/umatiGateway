@@ -1,0 +1,10 @@
+{
+    "Timestamp": "2025-04-14T10:15:00.000Z",
+    "Status": 0,
+    "Name": "nsu=http://example.com/FullMachineTool/;i=58513",
+    "Payload": {
+      "virual_id": "5:Equipment.5:Tools.13:Tool1.13:ToolLife",
+      "Rotations": "512"
+    }
+  }
+  

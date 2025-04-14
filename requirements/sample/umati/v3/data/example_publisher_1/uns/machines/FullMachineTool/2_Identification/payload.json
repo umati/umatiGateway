@@ -1,0 +1,29 @@
+{
+    "Timestamp": "2025-04-14T10:00:00.000Z",
+    "Status": 0,
+    "Name": "nsu=http://example.com/FullMachineTool/;i=66382",
+    "Payload": {
+      "virual_id": "3:Identification",
+      "ComponentName": {
+        "locale": "",
+        "text": "FullMachineTool"
+      },
+      "DeviceClass": "Machining centre (other)",
+      "Location": "CIMT A3 832/VIRTUAL 1 1/N 48.781340 E 9.165731",
+      "Manufacturer": {
+        "locale": "",
+        "text": "ISW Christian von Arnim"
+      },
+      "Model": {
+        "locale": "",
+        "text": "FullMachineTool"
+      },
+      "MonthOfConstruction": 6,
+      "YearOfConstruction": 2020,
+      "ProductCode": "2021-47110815",
+      "SerialNumber": "2021-5255470740220189828",
+      "ProductInstanceUri": "http://www.isw.uni-stuttgart.de/#FullMachineTool",
+      "SoftwareRevision": "1.00.1"
+    }
+  }
+  

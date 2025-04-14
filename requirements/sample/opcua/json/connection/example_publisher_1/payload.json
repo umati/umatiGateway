@@ -1,0 +1,135 @@
+{
+  "PublisherId": "example_publisher_1",
+  "WriterGroups": [
+    {
+      "Name": "MachineDataWriterGroup",
+      "DataSetWriters": [
+        {
+          "Name": "uns_machines_FullMachineTool_2:Identification",
+          "QueueName": "umati/v3/json/data/example_publisher_1/uns/machines/FullMachineTool/2:Identification",
+          "MetaDataQueueName": "umati/v3/json/metadata/example_publisher_1/uns/machines/FullMachineTool/2:Identification"
+        },
+        {
+          "Name": "uns_machines_FullMachineTool_5:Equipment_5:Tools_13:Multi_1_13:SubTool_1_5:ToolLife_13:Rotations",
+          "QueueName": "umati/v3/json/data/example_publisher_1/uns/machines/FullMachineTool/5:Equipment/5:Tools/13:Multi_1/13:SubTool_1/5:ToolLife/13:Rotations",
+          "MetaDataQueueName": "umati/v3/json/metadata/example_publisher_1/uns/machines/FullMachineTool/5:Equipment/5:Tools/13:Multi_1/13:SubTool_1/5:ToolLife/13:Rotations"
+        },
+        {
+          "Name": "uns_machines_FullMachineTool_5:Equipment_5:Tools_13:Multi_1_13:SubTool_2:5:ToolLife_13:Rotations",
+          "QueueName": "umati/v3/json/data/example_publisher_1/uns/machines/FullMachineTool/5:Equipment/5:Tools/13:Multi_1/13:SubTool_2/5:ToolLife/13:Rotations",
+          "MetaDataQueueName": "umati/v3/json/metadata/example_publisher_1/uns/machines/FullMachineTool/5:Equipment/5:Tools/13:Multi_1/13:SubTool_2/5:ToolLife/13:Rotations"
+        },
+        {
+          "Name": "uns_machines_FullMachineTool_5:Equipment_5:Tools_13:Tool1",
+          "QueueName": "umati/v3/json/data/example_publisher_1/uns/machines/FullMachineTool/5:Equipment/5:Tools/13:Tool1",
+          "MetaDataQueueName": "umati/v3/json/metadata/example_publisher_1/uns/machines/FullMachineTool/5:Equipment/5:Tools/13:Tool1"
+        },
+        {
+          "Name": "uns_machines_FullMachineTool_5:Equipment_5:Tools_13:Tool1_13:ToolLife",
+          "QueueName": "umati/v3/json/data/example_publisher_1/uns/machines/FullMachineTool/5:Equipment/5:Tools/13:Tool1/13:ToolLife",
+          "MetaDataQueueName": "umati/v3/json/metadata/example_publisher_1/uns/machines/FullMachineTool/5:Equipment/5:Tools/13:Tool1/13:ToolLife"
+        },
+        {
+          "Name": "uns_machines_FullMachineTool_5:Equipment_5:Tools_13:Tool1_13:ToolLife_13:Rotations",
+          "QueueName": "umati/v3/json/data/example_publisher_1/uns/machines/FullMachineTool/5:Equipment/5:Tools/13:Tool1/13:ToolLife/13:Rotations",
+          "MetaDataQueueName": "umati/v3/json/metadata/example_publisher_1/uns/machines/FullMachineTool/5:Equipment/5:Tools/13:Tool1/13:ToolLife/13:Rotations"
+        },
+        {
+          "Name": "uns_machines_FullMachineTool_5:Monitoring_13:Channel_1",
+          "QueueName": "umati/v3/json/data/example_publisher_1/uns/machines/FullMachineTool/5:Monitoring/13:Channel_1",
+          "MetaDataQueueName": "umati/v3/json/metadata/example_publisher_1/uns/machines/FullMachineTool/5:Monitoring/13:Channel_1"
+        },
+        {
+          "Name": "uns_machines_FullMachineTool_5:Monitoring_13:Channel_2",
+          "QueueName": "umati/v3/json/data/example_publisher_1/uns/machines/FullMachineTool/5:Monitoring/13:Channel_2",
+          "MetaDataQueueName": "umati/v3/json/metadata/example_publisher_1/uns/machines/FullMachineTool/5:Monitoring/13:Channel_2"
+        },
+        {
+          "Name": "uns_machines_FullMachineTool_5:Monitoring_13:Channel_3",
+          "QueueName": "umati/v3/json/data/example_publisher_1/uns/machines/FullMachineTool/5:Monitoring/13:Channel_3",
+          "MetaDataQueueName": "umati/v3/json/metadata/example_publisher_1/uns/machines/FullMachineTool/5:Monitoring/13:Channel_3"
+        },
+        {
+          "Name": "uns_machines_FullMachineTool_5:Monitoring_13:Channel_4",
+          "QueueName": "umati/v3/json/data/example_publisher_1/uns/machines/FullMachineTool/5:Monitoring/13:Channel_4",
+          "MetaDataQueueName": "umati/v3/json/metadata/example_publisher_1/uns/machines/FullMachineTool/5:Monitoring/13:Channel_4"
+        },
+        {
+          "Name": "uns_machines_FullMachineTool_5:Monitoring_13:EDM",
+          "QueueName": "umati/v3/json/data/example_publisher_1/uns/machines/FullMachineTool/5:Monitoring/13:EDM",
+          "MetaDataQueueName": "umati/v3/json/metadata/example_publisher_1/uns/machines/FullMachineTool/5:Monitoring/13:EDM"
+        },
+        {
+          "Name": "uns_machines_FullMachineTool_5:Monitoring_13:Laser",
+          "QueueName": "umati/v3/json/data/example_publisher_1/uns/machines/FullMachineTool/5:Monitoring/13:Laser",
+          "MetaDataQueueName": "umati/v3/json/metadata/example_publisher_1/uns/machines/FullMachineTool/5:Monitoring/13:Laser"
+        },
+        {
+          "Name": "uns_machines_FullMachineTool_5:Monitoring_13:Spindle_1",
+          "QueueName": "umati/v3/json/data/example_publisher_1/uns/machines/FullMachineTool/5:Monitoring/13:Spindle_1",
+          "MetaDataQueueName": "umati/v3/json/metadata/example_publisher_1/uns/machines/FullMachineTool/5:Monitoring/13:Spindle_1"
+        },
+        {
+          "Name": "uns_machines_FullMachineTool_5:Monitoring_5:Stacklight_13:Light_0",
+          "QueueName": "umati/v3/json/data/example_publisher_1/uns/machines/FullMachineTool/5:Monitoring/5:Stacklight/13:Light_0",
+          "MetaDataQueueName": "umati/v3/json/metadata/example_publisher_1/uns/machines/FullMachineTool/5:Monitoring/5:Stacklight/13:Light_0"
+        },
+        {
+          "Name": "uns_machines_FullMachineTool_5:Monitoring_5:Stacklight_13:Light_1",
+          "QueueName": "umati/v3/json/data/example_publisher_1/uns/machines/FullMachineTool/5:Monitoring/5:Stacklight/13:Light_1",
+          "MetaDataQueueName": "umati/v3/json/metadata/example_publisher_1/uns/machines/FullMachineTool/5:Monitoring/5:Stacklight/13:Light_1"
+        },
+        {
+          "Name": "uns_machines_FullMachineTool_5:Monitoring_5:Stacklight_13:Light_2",
+          "QueueName": "umati/v3/json/data/example_publisher_1/uns/machines/FullMachineTool/5:Monitoring/5:Stacklight/13:Light_2",
+          "MetaDataQueueName": "umati/v3/json/metadata/example_publisher_1/uns/machines/FullMachineTool/5:Monitoring/5:Stacklight/13:Light_2"
+        },
+        {
+          "Name": "uns_machines_FullMachineTool_5:Monitoring_5:Stacklight_13:Light_3",
+          "QueueName": "umati/v3/json/data/example_publisher_1/uns/machines/FullMachineTool/5:Monitoring/5:Stacklight/13:Light_3",
+          "MetaDataQueueName": "umati/v3/json/metadata/example_publisher_1/uns/machines/FullMachineTool/5:Monitoring/5:Stacklight/13:Light_3"
+        },
+        {
+          "Name": "uns_machines_FullMachineTool_5:Notification_5:Prognoses_Maintenance",
+          "QueueName": "umati/v3/json/data/example_publisher_1/uns/machines/FullMachineTool/5:Notification/5:Prognoses/Maintenance",
+          "MetaDataQueueName": "umati/v3/json/metadata/example_publisher_1/uns/machines/FullMachineTool/5:Notification/5:Prognoses/Maintenance"
+        },
+        {
+          "Name": "uns_machines_FullMachineTool_5:Notification_5:Prognoses_Manual",
+          "QueueName": "umati/v3/json/data/example_publisher_1/uns/machines/FullMachineTool/5:Notification/5:Prognoses/Manual",
+          "MetaDataQueueName": "umati/v3/json/metadata/example_publisher_1/uns/machines/FullMachineTool/5:Notification/5:Prognoses/Manual"
+        },
+        {
+          "Name": "uns_machines_FullMachineTool_5:Notification_5:Prognoses_ToolChange",
+          "QueueName": "umati/v3/json/data/example_publisher_1/uns/machines/FullMachineTool/5:Notification/5:Prognoses/ToolChange",
+          "MetaDataQueueName": "umati/v3/json/metadata/example_publisher_1/uns/machines/FullMachineTool/5:Notification/5:Prognoses/ToolChange"
+        },
+        {
+          "Name": "uns_machines_FullMachineTool_5:Production_5:ActiveProgram",
+          "QueueName": "umati/v3/json/data/example_publisher_1/uns/machines/FullMachineTool/5:Production/5:ActiveProgram",
+          "MetaDataQueueName": "umati/v3/json/metadata/example_publisher_1/uns/machines/FullMachineTool/5:Production/5:ActiveProgram"
+        },
+        {
+          "Name": "uns_machines_FullMachineTool_5:Production_5:ActiveProgram_5:State",
+          "QueueName": "umati/v3/json/data/example_publisher_1/uns/machines/FullMachineTool/5:Production/5:ActiveProgram/5:State",
+          "MetaDataQueueName": "umati/v3/json/metadata/example_publisher_1/uns/machines/FullMachineTool/5:Production/5:ActiveProgram/5:State"
+        },
+        {
+          "Name": "uns_machines_FullMachineTool_5:Production_5:ProductionPlan_13:MyJob_1_PartSets_Set1_PartsPerRun_Part_1",
+          "QueueName": "umati/v3/json/data/example_publisher_1/uns/machines/FullMachineTool/5:Production/5:ProductionPlan/13:MyJob_1/PartSets/Set1/PartsPerRun/Part_1",
+          "MetaDataQueueName": "umati/v3/json/metadata/example_publisher_1/uns/machines/FullMachineTool/5:Production/5:ProductionPlan/13:MyJob_1/PartSets/Set1/PartsPerRun/Part_1"
+        },
+        {
+          "Name": "uns_machines_FullMachineTool_5:Production_5:ProductionPlan_13:MyJob_1_PartSets_Set1_PartsPerRun_Part_2",
+          "QueueName": "umati/v3/json/data/example_publisher_1/uns/machines/FullMachineTool/5:Production/5:ProductionPlan/13:MyJob_1/PartSets/Set1/PartsPerRun/Part_2",
+          "MetaDataQueueName": "umati/v3/json/metadata/example_publisher_1/uns/machines/FullMachineTool/5:Production/5:ProductionPlan/13:MyJob_1/PartSets/Set1/PartsPerRun/Part_2"
+        },
+        {
+          "Name": "uns_machines_FullMachineTool_5:Production_5:ProductionPlan_13:MyJob_1_PartSets_Set1_PartsPerRun_Part_3",
+          "QueueName": "umati/v3/json/data/example_publisher_1/uns/machines/FullMachineTool/5:Production/5:ProductionPlan/13:MyJob_1/PartSets/Set1/PartsPerRun/Part_3",
+          "MetaDataQueueName": "umati/v3/json/metadata/example_publisher_1/uns/machines/FullMachineTool/5:Production/5:ProductionPlan/13:MyJob_1/PartSets/Set1/PartsPerRun/Part_3"
+        }
+      ]
+    }
+  ]
+}
