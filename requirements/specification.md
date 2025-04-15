@@ -1,7 +1,13 @@
-# OPC UA PubSub Interface Description for umati
+# OPC UA PubSub Interface Description for umati (Version 0.2)
 
 This document defines the Interface of the umati Dashboard based on OPC UA PubSub.
 It describes how a OPC UA server _AddressSpace_ must be mapped to OPC UA PubSub, so that the information can map to the umati Dashboard templates and displayed.
+
+## Changelog 
+
+### Version 0.2
+- Change Mapping between WriterGroup and PathToNode
+- Change Seperator for Topic with the same name from . to _
 
 ## Requirements for the Mapping of the _AddressSpace_ to PubSub
 
@@ -112,17 +118,18 @@ The mapping is based on the structure but deviates from it if necessary e.g., fo
 | `<MqttMessageType>`                 | as defined in OPC UA PubSub                                |
 | `<PublisherId>`                     | Name of the Client.                                        |
 | `<UNS>`                             | The location of the device in the ISA-95 common data model |
-| `[<WriterGroup>[/<DataSetWriter>]]` | PathToTheNode                                              |
+| `<WriterGroup>`                     | MachineDataWriterGroup                                     |
+| `<DataSetWriter>`                   | PathToTheNode                                              |
 
 The `<UNS>` the be create as following sturucture `Enterprise:Site:Area:Line:Cell`.
 
-The PathToTheNode is the Path from the _0:Objects_ node to the _Node_ that is connected to the _DataSet_.
-Generally, only hierarchical references are used. If a node occurs in two places, the message should be sent to both topics.
-The use of _Organizes_ references can lead to loops in the path. In this case, only the shortest path should be transmitted.
-Each _Node_ is a topic. The Topic name is build from the `name` field of the _BrowseName_. All character except `[A-Za-z0-9]` need to encode by [URL-Encoding](https://de.wikipedia.org/wiki/URL-Encoding) using an underscore instead of a '%'.
-If two nodes have the same _BrowsePath_ an iterator (".Number") can be send to avoid collisions (e.g, `Parent/Tool.1`, `Parent.3/Tool.2` `Parent3/Tool.3` )
-
-For _Events_ the _SourceNode_ and the _Name_ are used for the PathToTheNode
+- The PathToTheNode is the Path from the _0:Objects_ node to the _Node_ that is connected to the _DataSet_.
+- Each _Node_ is a topic. The Topic name is build from the `name` field of the _BrowseName_. 
+- All character except `[A-Za-z0-9]` need to encode by [URL-Encoding](https://de.wikipedia.org/wiki/URL-Encoding) using an underscore instead of a '%'.
+- Generally, only hierarchical references are used. If a node occurs in two places, the message should be sent to both topics.
+- The use of _Organizes_ references can lead to loops in the path. In this case, only the shortest path should be transmitted.
+- If two nodes have the same _BrowsePath_ an iterator ("_Number") can be send to avoid collisions (e.g, `Parent/Tool_1`, `Parent/Tool_2` `Parent/Tool_3` )
+- For _Events_ the _SourceNode_ and the _Name_ are used for the PathToTheNode
 
 ### Examples
 
@@ -174,7 +181,9 @@ The fields of _DataSetMetaData_ should be mapped as follows:
 Each DataSet need an Field called "virual_id" which contains the BrowsePath.
 (e.g.; `5:Production.5:ActiveProgram.5:State`)
 
-If two nodes have the same _BrowsePath_ an iterator (".Number") can be send to avoid collisions (e.g., `Parent/Tool.1`, `Parent.3/Tool.2` `Parent3/Tool.3` )
+The `NamespaceIndex` of the `QulifiedName` are mapped to the Namesapces array of the `DataTypeSchemaHeader`
+
+If two nodes have the same _BrowsePath_ an iterator ("_Number") can be send to avoid collisions (e.g., `Parent/Tool_1`, `Parent/Tool_2` `Parent3/Tool_2` )
 
 The metadata of the object is written to the Properties.
 
