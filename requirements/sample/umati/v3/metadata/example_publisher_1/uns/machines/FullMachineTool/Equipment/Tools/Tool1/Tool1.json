@@ -1,7 +1,9 @@
 {
     "Name": "nsu=http://example.com/FullMachineTool/;i=66382",
     "Namespaces": [
-      "http://opcfoundation.org/UA/",
+      "http://opcfoundation.org/UA/DI/",
+      "http://opcfoundation.org/UA/Machinery/",
+      "http://opcfoundation.org/UA/MachineTool/",
       "http://example.com/FullMachineTool/"
     ],
     "Fields": [

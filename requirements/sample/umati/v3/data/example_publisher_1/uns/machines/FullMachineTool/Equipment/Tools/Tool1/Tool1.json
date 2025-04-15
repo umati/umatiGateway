@@ -3,7 +3,7 @@
     "Status": 0,
     "Name": "nsu=http://example.com/FullMachineTool/;i=66382",
     "Payload": {
-      "virual_id": "5:Equipment.5:Tools.13:Tool1",
+      "virual_id": "2:Machines.4:FullMachineTool.3:Equipment.3:Tools.4:Tool1",
       "ControlIdentifier1": 2,
       "ControlIdentifierInterpretation": 0,
       "Locked": false,
