@@ -187,8 +187,14 @@ namespace UmatiGateway.OPC
                         .WithWebSocketServer(options => { options.WithUri(this.connectionString); })
                         .WithProtocolVersion(MQTTnet.Formatter.MqttProtocolVersion.V500)
                         .WithCredentials(this.user, this.pwd)
-                        .WithTlsOptions(o => { })
+                        .WithTlsOptions(new MqttClientTlsOptions
+                            {
+                                AllowUntrustedCertificates = true,
+                                IgnoreCertificateChainErrors = true,
+                                IgnoreCertificateRevocationErrors = true,
+                            })
                         .Build();
+                        Logger.Warn("Using untrusted certificates!! This is only for debugging purposes.");
                     }
                     else
                     {
