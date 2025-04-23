@@ -17,6 +17,7 @@ using Opc.Ua;
 using Opc.Ua.Client;
 using Opc.Ua.Client.ComplexTypes;
 using Opc.Ua.Schema.Binary;
+using static Opc.Ua.RelativePathFormatter;
 using static Org.BouncyCastle.Math.EC.ECCurve;
 
 namespace UmatiGateway.OPC
@@ -648,6 +649,61 @@ namespace UmatiGateway.OPC
             }
             return nodeIds;
         }
+        public List<TypeClassNode> GetTypeClassNodesForNodeId(NodeId nodeId, RelativePathElementCollection? pathToChild = null)
+        {
+            List<TypeClassNode> typeClassNodes = new List<TypeClassNode>();
+            Node? node = ReadNode(nodeId);
+            if (node != null)
+            {
+                RelativePath relativePath = new RelativePath(node.BrowseName);
+                if (pathToChild != null)
+                {
+                    relativePath.Elements.AddRange(pathToChild);
+                }
+                List<NodeId> parentNodeIds = BrowseLocalNodeIds(nodeId, BrowseDirection.Inverse, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true);
+                foreach (NodeId parentNodeId in parentNodeIds)
+                {
+                    NodeId? parentTypeDefinition = BrowseTypeDefinition(parentNodeId);
+                    if (parentTypeDefinition != null)
+                    {
+                        typeClassNodes.Add(new TypeClassNode(parentTypeDefinition, relativePath.Elements));
+                    }
+                    List<TypeClassNode> childDictionary = GetTypeClassNodesForNodeId(parentNodeId, relativePath.Elements);
+                    foreach (TypeClassNode typeclassnode in childDictionary)
+                    {
+                        typeClassNodes.Add(typeclassnode);
+                    }
+                }
+            }
+            return typeClassNodes;
+        }
+        public List<NodeId> GetOptionalAndMandatoryPlaceholdersForTypeClassNodes(List<TypeClassNode> typeClassNodes)
+        {
+            List<NodeId> typeClassesFromParent = new List<NodeId>();
+            BrowsePathCollection browsePathCollection = new BrowsePathCollection();
+            foreach (TypeClassNode typeClassNode in typeClassNodes)
+            {
+                BrowsePath browsePath = new BrowsePath();
+                browsePath.StartingNode = typeClassNode.StartNodeId;
+                RelativePath relativePath = new RelativePath();
+                relativePath.Elements = typeClassNode.RelativePathElements;
+                browsePath.RelativePath = relativePath;
+                browsePathCollection.Add(browsePath);
+            }
+            m_session.TranslateBrowsePathsToNodeIds(null, browsePathCollection, out BrowsePathResultCollection results, out DiagnosticInfoCollection diagnosticInfos);
+            foreach (BrowsePathResult result in results)
+            {
+                if (StatusCode.IsGood(result.StatusCode))
+                {
+                    if (result.Targets.Count > 0)
+                    {
+                        NodeId nodeId = ExpandedNodeId.ToNodeId(result.Targets[0].TargetId, this.GetNamespaceTable());
+                        typeClassesFromParent.Add(nodeId);
+                    }
+                }
+            }
+            return typeClassesFromParent;
+        }
         public NodeId? BrowseLocalNodeId(NodeId rootNodeId, BrowseDirection browseDirection, uint nodeClassMask, NodeId referenceTypeIds, bool includeSubTypes)
         {
 
@@ -709,7 +765,6 @@ namespace UmatiGateway.OPC
                 nodeToBrowse.NodeClassMask = nodeClassMask;
                 nodeToBrowse.ReferenceTypeId = referenceTypeIds;
                 nodeToBrowse.IncludeSubtypes = includeSubTypes;
-
                 BrowseDescriptionCollection nodesToBrowse = new BrowseDescriptionCollection();
                 nodesToBrowse.Add(nodeToBrowse);
                 m_session.Browse(null, null, 10000, nodesToBrowse, out BrowseResultCollection results, out DiagnosticInfoCollection diagnosticInfos);
@@ -911,6 +966,16 @@ namespace UmatiGateway.OPC
                     Logger.Info($"Unable to notify Listener: {ex.StackTrace}");
                 }
             }
+        }
+    }
+    public class TypeClassNode
+    {
+        public RelativePathElementCollection RelativePathElements { get; set; }
+        public NodeId StartNodeId { get; set; }
+        public TypeClassNode(NodeId StartNodeId, RelativePathElementCollection RelativePathElements)
+        {
+            this.StartNodeId = StartNodeId;
+            this.RelativePathElements = RelativePathElements;
         }
     }
 }
