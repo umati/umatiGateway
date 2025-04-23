@@ -848,13 +848,13 @@ namespace UmatiGateway.OPC
                 this.GetTypeParentNodeIds(typeParent, typeParents);
             }
         }
-        private List<NodeId> GetOptionalAndMandatoryPlaceHolderIntroducedFromParents( NodeId nodeId, RelativePath relativePath)
+        private List<NodeId> GetOptionalAndMandatoryPlaceHolderIntroducedFromParents(NodeId nodeId, RelativePath relativePath)
         {
             List<NodeId> discoveredNodeIds = this.client.BrowseLocalNodeIds(nodeId, BrowseDirection.Inverse, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true);
-            foreach(NodeId discoveredNodeId in discoveredNodeIds)
+            foreach (NodeId discoveredNodeId in discoveredNodeIds)
             {
                 NodeId? parentTypeDefinition = this.client.BrowseTypeDefinition(discoveredNodeId);
-                if(parentTypeDefinition != null)
+                if (parentTypeDefinition != null)
                 {
                     QualifiedName test = new QualifiedName("TighteningSystem/AssetManagement/Assets", 1);
                     //List<NodeId> nodeIdsd = this.client.GetOptionalAndMandatoryPlaceholdersForBrowsePath(parentTypeDefinition, new BrowsePath());
@@ -907,7 +907,7 @@ namespace UmatiGateway.OPC
             }
             List<TypeClassNode> TypeClassNodes = this.client.GetTypeClassNodesForNodeId(nodeId);
             OptionalPlaceholdersByTypeClasses = this.client.GetOptionalAndMandatoryPlaceholdersForTypeClassNodes(TypeClassNodes);
-            foreach(NodeId TypeClassNodeId in OptionalPlaceholdersByTypeClasses)
+            foreach (NodeId TypeClassNodeId in OptionalPlaceholdersByTypeClasses)
             {
                 optionalMandatoryPlaceholders.AddRange(this.client.GetOptionalAndMandatoryPlaceholders(TypeClassNodeId));
             }

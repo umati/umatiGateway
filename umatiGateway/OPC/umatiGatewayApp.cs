@@ -655,25 +655,25 @@ namespace UmatiGateway.OPC
             Node? node = ReadNode(nodeId);
             if (node != null)
             {
-                    RelativePath relativePath = new RelativePath(node.BrowseName);
-                    if(pathToChild != null)
+                RelativePath relativePath = new RelativePath(node.BrowseName);
+                if (pathToChild != null)
+                {
+                    relativePath.Elements.AddRange(pathToChild);
+                }
+                List<NodeId> parentNodeIds = BrowseLocalNodeIds(nodeId, BrowseDirection.Inverse, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true);
+                foreach (NodeId parentNodeId in parentNodeIds)
+                {
+                    NodeId? parentTypeDefinition = BrowseTypeDefinition(parentNodeId);
+                    if (parentTypeDefinition != null)
                     {
-                        relativePath.Elements.AddRange(pathToChild);
+                        typeClassNodes.Add(new TypeClassNode(parentTypeDefinition, relativePath.Elements));
                     }
-                    List<NodeId> parentNodeIds = BrowseLocalNodeIds(nodeId, BrowseDirection.Inverse, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true);
-                    foreach (NodeId parentNodeId in parentNodeIds)
+                    List<TypeClassNode> childDictionary = GetTypeClassNodesForNodeId(parentNodeId, relativePath.Elements);
+                    foreach (TypeClassNode typeclassnode in childDictionary)
                     {
-                        NodeId? parentTypeDefinition = BrowseTypeDefinition(parentNodeId);
-                        if (parentTypeDefinition != null)
-                        {
-                            typeClassNodes.Add(new TypeClassNode(parentTypeDefinition, relativePath.Elements));
-                        }
-                        List<TypeClassNode> childDictionary = GetTypeClassNodesForNodeId(parentNodeId, relativePath.Elements);
-                        foreach (TypeClassNode typeclassnode in childDictionary)
-                        {
-                            typeClassNodes.Add(typeclassnode);
-                        }
-                    }    
+                        typeClassNodes.Add(typeclassnode);
+                    }
+                }
             }
             return typeClassNodes;
         }
@@ -681,7 +681,7 @@ namespace UmatiGateway.OPC
         {
             List<NodeId> typeClassesFromParent = new List<NodeId>();
             BrowsePathCollection browsePathCollection = new BrowsePathCollection();
-            foreach(TypeClassNode typeClassNode in typeClassNodes)
+            foreach (TypeClassNode typeClassNode in typeClassNodes)
             {
                 BrowsePath browsePath = new BrowsePath();
                 browsePath.StartingNode = typeClassNode.StartNodeId;
@@ -693,7 +693,7 @@ namespace UmatiGateway.OPC
             m_session.TranslateBrowsePathsToNodeIds(null, browsePathCollection, out BrowsePathResultCollection results, out DiagnosticInfoCollection diagnosticInfos);
             foreach (BrowsePathResult result in results)
             {
-                if(StatusCode.IsGood(result.StatusCode))
+                if (StatusCode.IsGood(result.StatusCode))
                 {
                     if (result.Targets.Count > 0)
                     {
