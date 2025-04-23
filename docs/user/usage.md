@@ -193,7 +193,7 @@ Problem:
 In some corporate networks, TLS inspection replaces the broker's certificate with one signed by a company CA. This causes TLS errors.
 
 Common error:
-```The remote certificate is invalid according to the validation procedure.``` 
+```The remote certificate is invalid according to the validation procedure.```
 
 #### Solution 1: Install Company Root CA (Recommended)
 Get the root certificate from your IT department.
