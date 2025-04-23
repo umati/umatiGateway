@@ -124,25 +124,7 @@
 
   <ItemGroup>
     <None Update="Configuration\Files\LocalConfigLocalSampleServer.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Configuration\Files\LocalFlatglassConfigSiemensMy.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Configuration\Files\LocalWHConfig.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Configuration\Files\LocalFlatglassConfigSiemens.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Configuration\Files\LocalFlatglassConfigLisec.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Configuration\Files\LocalFlatglassConfigHegla.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Configuration\Files\LocalWhConfig.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Configuration\umatiGatewayConfig.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

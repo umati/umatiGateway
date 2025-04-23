@@ -186,3 +186,22 @@ You can configure the Web UI to use a https connection by editing the `applicati
   }
 }
 ```
+
+
+### How to handle with TLS Inspection / MQTT Connection Problems?
+Problem:
+In some corporate networks, TLS inspection replaces the broker's certificate with one signed by a company CA. This causes TLS errors.
+
+Common error:
+```The remote certificate is invalid according to the validation procedure.```
+
+#### Solution 1: Install Company Root CA (Recommended)
+Get the root certificate from your IT department.
+Install it into the Trusted Root Certification Authorities store on your system.
+
+This allows all applications to trust inspected TLS connections.
+
+#### Solution 2: Use Custom CA in App Directory
+Place the root certificate file (e.g. custom_ca.crt) next to the .exe.
+
+The app will use it to validate TLS connections.
