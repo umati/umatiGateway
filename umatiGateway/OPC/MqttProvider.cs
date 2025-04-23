@@ -34,6 +34,8 @@ using NLog;
 using UmatiGateway.OPC.CustomEncoding;
 
 
+using System.Security.Cryptography.X509Certificates;
+
 namespace UmatiGateway.OPC
 {
     /// <summary>
@@ -100,6 +102,7 @@ namespace UmatiGateway.OPC
         }
         public void Connect()
         {
+            Console.WriteLine("MQTT Connect with TCP");  
             if (!TimerSetup)
             {
                 aTimer.Interval = PollTimer;
@@ -174,49 +177,113 @@ namespace UmatiGateway.OPC
                 connected = false;
             }
         }
+        private const string ServerCertificatePath = "broker_cert.pem";
+        private const string CustomCaCertificatePath = "custom_ca.crt";
+
         private void Connect_Client_Using_WebSockets()
         {
+            Logger.Trace("MQTT Connect with Websockets");
+
             try
             {
-                if (this.mqttClient != null)
+                if (this.mqttClient == null)
                 {
-                    MqttClientOptions mqttClientOptions;
-                    if (this.user != null && this.user != "" && this.pwd != null)
-                    {
-                        mqttClientOptions = new MqttClientOptionsBuilder()
-                        .WithWebSocketServer(options => { options.WithUri(this.connectionString); })
-                        .WithProtocolVersion(MQTTnet.Formatter.MqttProtocolVersion.V500)
-                        .WithCredentials(this.user, this.pwd)
-                        .WithTlsOptions(new MqttClientTlsOptions
-                            {
-                                AllowUntrustedCertificates = true,
-                                IgnoreCertificateChainErrors = true,
-                                IgnoreCertificateRevocationErrors = true,
-                            })
-                        .Build();
-                        Logger.Warn("Using untrusted certificates!! This is only for debugging purposes.");
-                    }
-                    else
-                    {
-                        mqttClientOptions = new MqttClientOptionsBuilder()
-                        .WithWebSocketServer(options => { options.WithUri(this.connectionString); })
-                        .WithProtocolVersion(MQTTnet.Formatter.MqttProtocolVersion.V500)
-                        .Build();
-                    }
-                    AsyncHelper.RunSync(() => this.mqttClient.ConnectAsync(mqttClientOptions, CancellationToken.None));
+                    Console.Out.WriteLine("m_mqttClient is null.");
+                    return;
+                }
+
+                var tlsParameters = new MqttClientTlsOptions
+                {
+                    UseTls = true,
+                    CertificateValidationHandler = ValidateServerCertificate
+                };
+
+                var mqttClientOptionsBuilder = new MqttClientOptionsBuilder()
+                    .WithWebSocketServer(options => options.WithUri(this.connectionString))
+                    .WithProtocolVersion(MQTTnet.Formatter.MqttProtocolVersion.V500);
+
+                if (!string.IsNullOrEmpty(this.user) && this.pwd != null)
+                {
+                    mqttClientOptionsBuilder = mqttClientOptionsBuilder.WithCredentials(this.user, this.pwd);
+                }
+
+                mqttClientOptionsBuilder = mqttClientOptionsBuilder.WithTlsOptions(tlsParameters);
+
+                var mqttClientOptions = mqttClientOptionsBuilder.Build();
+
+                AsyncHelper.RunSync(() => this.mqttClient.ConnectAsync(mqttClientOptions, CancellationToken.None));
+            }
+            catch (Exception ex)
+            {
+                Logger.Info(ex.ToString());
+            }
+        }
+
+        private bool ValidateServerCertificate(MqttClientCertificateValidationEventArgs context)
+        {
+            Logger.Trace("ValidateServerCertificate");
+            try
+            {
+                X509Certificate2 serverCertificate = new X509Certificate2(context.Certificate.GetRawCertData());
+
+                // Serverzertifikat beim ersten Mal abspeichern
+                if (!File.Exists(ServerCertificatePath))
+                {
+                    Logger.Info("Saving server certificate to disk.");
+                    Logger.Info(serverCertificate.Thumbprint);
+                    Logger.Info(serverCertificate.Subject);
+                    Logger.Info(serverCertificate.SubjectName);
+                    Logger.Info(serverCertificate.Issuer);
+                    Logger.Info(serverCertificate.IssuerName);
+                    Logger.Info(serverCertificate.NotAfter);
+                    Logger.Info(serverCertificate.NotBefore);
+                    Logger.Info(serverCertificate.GetKeyAlgorithm());
+                    File.WriteAllBytes(ServerCertificatePath, serverCertificate.Export(X509ContentType.Cert));
                 }
                 else
                 {
-                    Console.Out.WriteLine("m_mqttClient is null.");
+                    // Bereits gespeichertes Serverzertifikat laden
+                    var savedCertificate = new X509Certificate2(File.ReadAllBytes(ServerCertificatePath));
+
+                    if (!serverCertificate.Thumbprint.Equals(savedCertificate.Thumbprint, StringComparison.OrdinalIgnoreCase))
+                    {
+                        Logger.Warn("Server certificate thumbprint mismatch!");
+                        return false;
+                    }
                 }
+
+                // Zusätzlich eigenes CA-Zertifikat prüfen, falls vorhanden
+                if (File.Exists(CustomCaCertificatePath))
+                {
+                    var customCaCertificate = new X509Certificate2(File.ReadAllBytes(CustomCaCertificatePath));
+                    using var chain = new X509Chain();
+                    chain.ChainPolicy.ExtraStore.Add(customCaCertificate);
+                    chain.ChainPolicy.VerificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority;
+                    chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
+
+                    bool isValid = chain.Build(serverCertificate);
+
+                    if (!isValid)
+                    {
+                        Logger.Warn("Custom CA validation failed.");
+                    }
+
+                    return isValid;
+                }
+
+                // Wenn kein eigenes CA vorhanden ist, akzeptieren wir das gespeicherte Zertifikat
+                return true;
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Logger.Info(e.ToString());
+                Logger.Error($"Certificate validation error: {ex.Message}");
+                return false;
             }
         }
+
         private void Connect_Client_Using_Tcp()
         {
+            Logger.Trace("MQTT Connect with TCP");
             if (this.mqttClient != null)
             {
                 MqttClientOptions mqttClientOptions;
