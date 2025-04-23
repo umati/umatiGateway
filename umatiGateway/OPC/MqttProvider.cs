@@ -646,7 +646,7 @@ namespace UmatiGateway.OPC
                 }
 
             }
-            this.printPlaceholderNodes(optionalMandatoryPlaceholders, nodeId, parent, placeholderNodes);
+            //this.printPlaceholderNodes(optionalMandatoryPlaceholders, nodeId, parent, placeholderNodes);
 
             List<NodeId> hierarchicalChilds = this.client.BrowseLocalNodeIds(nodeId, BrowseDirection.Forward, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true);
             foreach (NodeId child in hierarchicalChilds)
@@ -668,7 +668,7 @@ namespace UmatiGateway.OPC
                 {
                     if (placeHolderObject != null)
                     {
-                        Console.Write($"{child} = {childNode.BrowseName} is a PlaceHolder.");
+                        //Console.Write($"{child} = {childNode.BrowseName} is a PlaceHolder.");
                         if (typeDefinition != null)
                         {
                             Logger.Trace($"TypeDefinition: {typeDefinition}");
@@ -701,7 +701,7 @@ namespace UmatiGateway.OPC
                     JObject childObject = new JObject();
                     if (jObject.ContainsKey(browseName))
                     {
-                        Console.Out.WriteLine($"Warning double browseName {browseName}");
+                        //Console.Out.WriteLine($"Warning double browseName {browseName}");
                         continue;
                     }
 
@@ -848,9 +848,26 @@ namespace UmatiGateway.OPC
                 this.GetTypeParentNodeIds(typeParent, typeParents);
             }
         }
+        private List<NodeId> GetOptionalAndMandatoryPlaceHolderIntroducedFromParents( NodeId nodeId, RelativePath relativePath)
+        {
+            List<NodeId> discoveredNodeIds = this.client.BrowseLocalNodeIds(nodeId, BrowseDirection.Inverse, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true);
+            foreach(NodeId discoveredNodeId in discoveredNodeIds)
+            {
+                NodeId? parentTypeDefinition = this.client.BrowseTypeDefinition(discoveredNodeId);
+                if(parentTypeDefinition != null)
+                {
+                    QualifiedName test = new QualifiedName("TighteningSystem/AssetManagement/Assets", 1);
+                    //List<NodeId> nodeIdsd = this.client.GetOptionalAndMandatoryPlaceholdersForBrowsePath(parentTypeDefinition, new BrowsePath());
+                }
+                //this.GetOptionalAndMandatoryPlaceHolderIntroducedFromParents(discoveredNodeId, relativePath = new RelativePath(relativePath, ));
+            }
+            return discoveredNodeIds;
+        }
+
         private List<NodeId> GetOptionalAndMandatoryPlaceHolders(NodeId nodeId, NodeId? parent)
         {
             List<NodeId> optionalMandatoryPlaceholdersOverParent = new List<NodeId>();
+            List<NodeId> OptionalPlaceholdersByTypeClasses = new List<NodeId>();
             if (parent != null)
             {
                 Node? node = this.client.ReadNode(nodeId);
@@ -877,8 +894,6 @@ namespace UmatiGateway.OPC
                             }
 
                         }
-                        Logger.Trace("Here");
-                        //
                     }
                 }
 
@@ -889,6 +904,12 @@ namespace UmatiGateway.OPC
             if (ptypeDefinition != null)
             {
                 optionalMandatoryPlaceholders = this.client.GetOptionalAndMandatoryPlaceholders(ptypeDefinition);
+            }
+            List<TypeClassNode> TypeClassNodes = this.client.GetTypeClassNodesForNodeId(nodeId);
+            OptionalPlaceholdersByTypeClasses = this.client.GetOptionalAndMandatoryPlaceholdersForTypeClassNodes(TypeClassNodes);
+            foreach(NodeId TypeClassNodeId in OptionalPlaceholdersByTypeClasses)
+            {
+                optionalMandatoryPlaceholders.AddRange(this.client.GetOptionalAndMandatoryPlaceholders(TypeClassNodeId));
             }
             optionalMandatoryPlaceholders.AddRange(optionalMandatoryPlaceholdersOverParent);
             return optionalMandatoryPlaceholders;
@@ -1725,7 +1746,7 @@ namespace UmatiGateway.OPC
                             {
                                 foreach (KeyValuePair<NodeId, PublishedBrowsePaths> entry in machineNode.KnownBrowsePaths)
                                 {
-                                    Console.Write(entry.Value.ToString());
+                                    //Console.Write(entry.Value.ToString());
                                     this.client.SubscribeToDataChanges(entry.Key, this.updateDataValue);
                                 }
                             }
@@ -1930,7 +1951,7 @@ namespace UmatiGateway.OPC
             }
             public void printPlaceholderNode(UmatiGatewayApp client)
             {
-                Console.Write($"PlaceHolderNodeId: {placeholderNodeId} = ");
+                Logger.Trace($"PlaceHolderNodeId: {placeholderNodeId} = ");
                 Node? placeholderNodeIdNode = client.ReadNode(placeholderNodeId);
                 if (placeholderNodeIdNode != null)
                 {
@@ -1940,7 +1961,7 @@ namespace UmatiGateway.OPC
                 {
                     Logger.Trace($"Unknown");
                 }
-                Console.Write($"TypeDefinitionNodeId: {typeDefinitionNodeId} = ");
+                Logger.Trace($"TypeDefinitionNodeId: {typeDefinitionNodeId} = ");
                 Node? TypeDefinitionNodeIdNode = client.ReadNode(typeDefinitionNodeId);
                 if (TypeDefinitionNodeIdNode != null)
                 {
@@ -1954,7 +1975,7 @@ namespace UmatiGateway.OPC
                 Logger.Trace("SubTypeNodeIds:");
                 foreach (NodeId nodeId in subTypeNodeIds)
                 {
-                    Console.Write($"SubTypeNodeId: {nodeId} = ");
+                    Logger.Trace($"SubTypeNodeId: {nodeId} = ");
                     Node? subTypeNode = client.ReadNode(nodeId);
                     if (subTypeNode != null)
                     {
