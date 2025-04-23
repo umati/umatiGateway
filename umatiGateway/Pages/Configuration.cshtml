@@ -31,6 +31,10 @@
             <input type="text" class="settings-input" id="ClientId" name="MqttClientId" value="@Model.configuration.mqttClientId">
             <label for="Prefix" class="settings-label">Prefix</label>
             <input type="text"class="settings-input" id="Prefix" name="MqttPrefix" value="@Model.configuration.mqttPrefix">
+            <label for="CertificateFile" class="settings-label">Certificate File</label>
+            <input type="text" class="settings-input" id="CertificateFile" name="CertificateFile" value="@Model.configuration.mqttCertificateFile">
+            <label for="CertificatePassword" class="settings-label">Certificate Password</label>
+            <input type="text" class="settings-input" id="CertificatePassword" name="CertificatePassword" value="@Model.configuration.mqttCertificatePassword">
         </div>
         <div class="column">
             <legend class="settings-legend">&nbsp</legend>

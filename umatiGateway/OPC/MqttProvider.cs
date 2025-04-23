@@ -32,6 +32,9 @@ using Org.BouncyCastle.Tls.Crypto;
 using System.Collections.Concurrent;
 using NLog;
 using UmatiGateway.OPC.CustomEncoding;
+using System.Runtime.ConstrainedExecution;
+using System.Security.Cryptography.X509Certificates;
+using Microsoft.Extensions.Options;
 
 
 namespace UmatiGateway.OPC
@@ -42,6 +45,7 @@ namespace UmatiGateway.OPC
     public class MqttProvider : OpcUaEventListener
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+        private Boolean allowuntrustedServerCerts = true;
         private MqttClientFactory mqttFactory = new MqttClientFactory();
         private IMqttClient? mqttClient = null;
         private const string CLIENT_ID = "TestClient";
@@ -197,6 +201,7 @@ namespace UmatiGateway.OPC
                         .WithProtocolVersion(MQTTnet.Formatter.MqttProtocolVersion.V500)
                         .Build();
                     }
+                    ApplyTlsClientCertificateIfPresent(mqttClientOptions, this.client.configuration.mqttCertificateFile, this.client.configuration.mqttCertificatePassword);
                     AsyncHelper.RunSync(() => this.mqttClient.ConnectAsync(mqttClientOptions, CancellationToken.None));
                 }
                 else
@@ -236,12 +241,63 @@ namespace UmatiGateway.OPC
                         .WithProtocolVersion(MQTTnet.Formatter.MqttProtocolVersion.V500)
                         .Build();
                     }
+                    ApplyTlsClientCertificateIfPresent(mqttClientOptions, this.client.configuration.mqttCertificateFile, this.client.configuration.mqttCertificatePassword);
                     AsyncHelper.RunSync(() => this.mqttClient.ConnectAsync(mqttClientOptions, CancellationToken.None));
                 }
             }
             else
             {
                 Console.Out.WriteLine("The MqttClient is null");
+            }
+        }
+
+        private void ApplyTlsClientCertificateIfPresent(MqttClientOptions options, string certificatePath, string password)
+        {
+            if (string.IsNullOrWhiteSpace(certificatePath))
+            {
+                // Kein Zertifikat angegeben – nichts tun
+                return;
+            }
+
+            X509Certificate2 cert;
+            try
+            {
+                cert = new X509Certificate2(certificatePath, password);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Fehler beim Laden des Zertifikats: {ex.Message}");
+                return;
+            }
+
+            var tlsOptions = new MqttClientTlsOptions
+            {
+                UseTls = true,
+                SslProtocol = System.Security.Authentication.SslProtocols.Tls12,
+
+                CertificateSelectionHandler = ctx => cert,
+                CertificateValidationHandler = ctx =>
+                {
+                    if (this.allowuntrustedServerCerts)
+                        return true;
+
+                    return ctx.SslPolicyErrors == System.Net.Security.SslPolicyErrors.None;
+                }
+            };
+
+            switch (options?.ChannelOptions)
+            {
+                case MqttClientTcpOptions tcp:
+                    tcp.TlsOptions = tlsOptions;
+                    break;
+
+                case MqttClientWebSocketOptions ws:
+                    ws.TlsOptions = tlsOptions;
+                    break;
+
+                default:
+                    Console.WriteLine("TLS konnte nicht gesetzt werden – unbekannter ChannelOptions-Typ.");
+                    break;
             }
         }
 

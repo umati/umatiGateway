@@ -123,6 +123,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Configuration\Certificates\Mqtt_Client.pfx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Configuration\Files\LocalConfigLocalSampleServerCertificates.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Configuration\Files\LocalConfigLocalSampleServer.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
