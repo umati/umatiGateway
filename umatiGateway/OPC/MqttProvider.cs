@@ -34,6 +34,8 @@ using NLog;
 using UmatiGateway.OPC.CustomEncoding;
 
 
+using System.Security.Cryptography.X509Certificates;
+
 namespace UmatiGateway.OPC
 {
     /// <summary>
@@ -84,6 +86,11 @@ namespace UmatiGateway.OPC
         private Dictionary<NodeId, string> placeholderVariablesWithTypeDefinition = new Dictionary<NodeId, string>();
         private NodeId? resultFolder = null;
 
+        // @Fixme: Move to config
+        private const string ServerCertificatePath = "broker_cert.pem";
+        private const string CustomCaCertificatePath = "custom_ca.crt";
+
+
         public MqttProvider(UmatiGatewayApp client)
         {
             this.client = client;
@@ -100,6 +107,7 @@ namespace UmatiGateway.OPC
         }
         public void Connect()
         {
+            Console.WriteLine("MQTT Connect with TCP");
             if (!TimerSetup)
             {
                 aTimer.Interval = PollTimer;
@@ -147,6 +155,13 @@ namespace UmatiGateway.OPC
                 this.connectionPort = port;
                 this.user = user;
                 this.pwd = pwd;
+                Logger.Info("=== MQTT Connection Configuration ===");
+                Logger.Info($"Connection String : {this.connectionString}");
+                Logger.Info($"Connection Type   : {this.connectionType}");
+                Logger.Info($"Connection Port   : {this.connectionPort}");
+                Logger.Info($"Username          : {(string.IsNullOrEmpty(this.user) ? "<empty>" : this.user)}");
+                Logger.Info($"Password Length   : {(string.IsNullOrEmpty(this.pwd) ? 0 : this.pwd.Length)}");
+
                 if (this.connectionType == TCP)
                 {
                     this.Connect_Client_Using_Tcp();
@@ -174,43 +189,140 @@ namespace UmatiGateway.OPC
                 connected = false;
             }
         }
+
         private void Connect_Client_Using_WebSockets()
         {
+            Logger.Trace("MQTT Connect with Websockets");
+
             try
             {
-                if (this.mqttClient != null)
+                if (this.mqttClient == null)
                 {
-                    MqttClientOptions mqttClientOptions;
-                    if (this.user != null && this.user != "" && this.pwd != null)
+                    Logger.Warn("m_mqttClient is null.");
+                    return;
+                }
+
+                var tlsParameters = new MqttClientTlsOptions
+                {
+                    UseTls = true,
+                    CertificateValidationHandler = ValidateServerCertificate
+                };
+
+                var mqttClientOptionsBuilder = new MqttClientOptionsBuilder()
+                    .WithWebSocketServer(options => options.WithUri(this.connectionString))
+                    .WithProtocolVersion(MQTTnet.Formatter.MqttProtocolVersion.V500);
+
+                if (!string.IsNullOrEmpty(this.user) && this.pwd != null)
+                {
+                    mqttClientOptionsBuilder = mqttClientOptionsBuilder.WithCredentials(this.user, this.pwd);
+                }
+
+                mqttClientOptionsBuilder = mqttClientOptionsBuilder.WithTlsOptions(tlsParameters);
+
+                var mqttClientOptions = mqttClientOptionsBuilder.Build();
+
+                AsyncHelper.RunSync(() => this.mqttClient.ConnectAsync(mqttClientOptions, CancellationToken.None));
+            }
+            catch (Exception ex)
+            {
+                Logger.Info(ex.ToString());
+            }
+        }
+
+        private bool ValidateServerCertificate(MqttClientCertificateValidationEventArgs context)
+        {
+            Logger.Trace("ValidateServerCertificate");
+
+            try
+            {
+                var serverCertificate = new X509Certificate2(context.Certificate.GetRawCertData());
+
+                // Zertifikatsinformationen loggen
+                Logger.Info("=== Server Certificate Details ===");
+                Logger.Info($"Thumbprint       : {serverCertificate.Thumbprint}");
+                Logger.Info($"Subject          : {serverCertificate.Subject}");
+                Logger.Info($"Subject Name     : {serverCertificate.SubjectName.Name}");
+                Logger.Info($"Issuer           : {serverCertificate.Issuer}");
+                Logger.Info($"Issuer Name      : {serverCertificate.IssuerName.Name}");
+                Logger.Info($"Valid From       : {serverCertificate.NotBefore}");
+                Logger.Info($"Valid Until      : {serverCertificate.NotAfter}");
+                Logger.Info($"Key Algorithm    : {serverCertificate.GetKeyAlgorithm()}");
+
+                // Zertifikat speichern, falls nicht vorhanden
+                if (!File.Exists(ServerCertificatePath))
+                {
+                    Logger.Info("Saving server certificate to disk.");
+                    File.WriteAllBytes(ServerCertificatePath, serverCertificate.Export(X509ContentType.Cert));
+                }
+
+                // Schritt 1: Standardmäßige Zertifikatsvalidierung
+                using (var chain = new X509Chain())
+                {
+                    chain.ChainPolicy.RevocationMode = X509RevocationMode.Online;
+                    chain.ChainPolicy.RevocationFlag = X509RevocationFlag.ExcludeRoot;
+                    chain.ChainPolicy.VerificationFlags = X509VerificationFlags.NoFlag;
+
+                    bool isValid = chain.Build(serverCertificate);
+
+                    if (isValid)
                     {
-                        mqttClientOptions = new MqttClientOptionsBuilder()
-                        .WithWebSocketServer(options => { options.WithUri(this.connectionString); })
-                        .WithProtocolVersion(MQTTnet.Formatter.MqttProtocolVersion.V500)
-                        .WithCredentials(this.user, this.pwd)
-                        .WithTlsOptions(o => { })
-                        .Build();
+                        Logger.Info("Standard system certificate validation succeeded.");
+                        return true;
                     }
                     else
                     {
-                        mqttClientOptions = new MqttClientOptionsBuilder()
-                        .WithWebSocketServer(options => { options.WithUri(this.connectionString); })
-                        .WithProtocolVersion(MQTTnet.Formatter.MqttProtocolVersion.V500)
-                        .Build();
+                        Logger.Warn("Standard certificate validation failed. Attempting fallback to custom CA.");
+                        foreach (var status in chain.ChainStatus)
+                        {
+                            Logger.Info($" - Status: {status.Status}, Info: {status.StatusInformation?.Trim()}");
+                        }
                     }
-                    AsyncHelper.RunSync(() => this.mqttClient.ConnectAsync(mqttClientOptions, CancellationToken.None));
+                }
+
+                // Schritt 2: Validierung mit benutzerdefinierter CA (falls vorhanden)
+                if (File.Exists(CustomCaCertificatePath))
+                {
+                    var customCaCertificate = new X509Certificate2(File.ReadAllBytes(CustomCaCertificatePath));
+                    using var customChain = new X509Chain();
+                    customChain.ChainPolicy.ExtraStore.Add(customCaCertificate);
+                    customChain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
+                    customChain.ChainPolicy.VerificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority;
+                    customChain.ChainPolicy.TrustMode = X509ChainTrustMode.CustomRootTrust;
+                    customChain.ChainPolicy.CustomTrustStore.Add(customCaCertificate);
+
+                    bool isCustomValid = customChain.Build(serverCertificate);
+
+                    if (isCustomValid)
+                    {
+                        Logger.Info("Validation succeeded with custom CA certificate.");
+                        return true;
+                    }
+                    else
+                    {
+                        Logger.Warn("Custom CA validation failed.");
+                        foreach (var status in customChain.ChainStatus)
+                        {
+                            Logger.Info($" - Status: {status.Status}, Info: {status.StatusInformation?.Trim()}");
+                        }
+                    }
                 }
                 else
                 {
-                    Console.Out.WriteLine("m_mqttClient is null.");
+                    Logger.Warn("Custom CA certificate not found.");
                 }
+
+                return false;
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Logger.Info(e.ToString());
+                Logger.Error($"Certificate validation error: {ex.Message}");
+                return false;
             }
         }
+
         private void Connect_Client_Using_Tcp()
         {
+            Logger.Trace("MQTT Connect with TCP");
             if (this.mqttClient != null)
             {
                 MqttClientOptions mqttClientOptions;
