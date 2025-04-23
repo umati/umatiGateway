@@ -111,7 +111,7 @@ namespace UmatiGateway
                 value = node.Attributes[attributeName]?.Value;
                 if (value == null)
                 {
-                    Logger.Info($"Error on Rerading Configuration: Attribute \"{attributeName}\" of node \"{node.Name}\" is missing.");
+                    Logger.Info($"Reading Configuration: Attribute \"{attributeName}\" of node \"{node.Name}\" is missing.");
                     value = "";
                 }
             }
