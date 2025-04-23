@@ -86,6 +86,11 @@ namespace UmatiGateway.OPC
         private Dictionary<NodeId, string> placeholderVariablesWithTypeDefinition = new Dictionary<NodeId, string>();
         private NodeId? resultFolder = null;
 
+        // @Fixme: Move to config
+        private const string ServerCertificatePath = "broker_cert.pem";
+        private const string CustomCaCertificatePath = "custom_ca.crt";
+
+
         public MqttProvider(UmatiGatewayApp client)
         {
             this.client = client;
@@ -102,7 +107,7 @@ namespace UmatiGateway.OPC
         }
         public void Connect()
         {
-            Console.WriteLine("MQTT Connect with TCP");  
+            Console.WriteLine("MQTT Connect with TCP");
             if (!TimerSetup)
             {
                 aTimer.Interval = PollTimer;
@@ -150,6 +155,13 @@ namespace UmatiGateway.OPC
                 this.connectionPort = port;
                 this.user = user;
                 this.pwd = pwd;
+                Logger.Info("=== MQTT Connection Configuration ===");
+                Logger.Info($"Connection String : {this.connectionString}");
+                Logger.Info($"Connection Type   : {this.connectionType}");
+                Logger.Info($"Connection Port   : {this.connectionPort}");
+                Logger.Info($"Username          : {(string.IsNullOrEmpty(this.user) ? "<empty>" : this.user)}");
+                Logger.Info($"Password Length   : {(string.IsNullOrEmpty(this.pwd) ? 0 : this.pwd.Length)}");
+
                 if (this.connectionType == TCP)
                 {
                     this.Connect_Client_Using_Tcp();
@@ -177,8 +189,6 @@ namespace UmatiGateway.OPC
                 connected = false;
             }
         }
-        private const string ServerCertificatePath = "broker_cert.pem";
-        private const string CustomCaCertificatePath = "custom_ca.crt";
 
         private void Connect_Client_Using_WebSockets()
         {
@@ -188,7 +198,7 @@ namespace UmatiGateway.OPC
             {
                 if (this.mqttClient == null)
                 {
-                    Console.Out.WriteLine("m_mqttClient is null.");
+                    Logger.Warn("m_mqttClient is null.");
                     return;
                 }
 
@@ -222,57 +232,86 @@ namespace UmatiGateway.OPC
         private bool ValidateServerCertificate(MqttClientCertificateValidationEventArgs context)
         {
             Logger.Trace("ValidateServerCertificate");
+
             try
             {
-                X509Certificate2 serverCertificate = new X509Certificate2(context.Certificate.GetRawCertData());
+                var serverCertificate = new X509Certificate2(context.Certificate.GetRawCertData());
 
-                // Serverzertifikat beim ersten Mal abspeichern
+                // Zertifikatsinformationen loggen
+                Logger.Info("=== Server Certificate Details ===");
+                Logger.Info($"Thumbprint       : {serverCertificate.Thumbprint}");
+                Logger.Info($"Subject          : {serverCertificate.Subject}");
+                Logger.Info($"Subject Name     : {serverCertificate.SubjectName.Name}");
+                Logger.Info($"Issuer           : {serverCertificate.Issuer}");
+                Logger.Info($"Issuer Name      : {serverCertificate.IssuerName.Name}");
+                Logger.Info($"Valid From       : {serverCertificate.NotBefore}");
+                Logger.Info($"Valid Until      : {serverCertificate.NotAfter}");
+                Logger.Info($"Key Algorithm    : {serverCertificate.GetKeyAlgorithm()}");
+
+                // Zertifikat speichern, falls nicht vorhanden
                 if (!File.Exists(ServerCertificatePath))
                 {
                     Logger.Info("Saving server certificate to disk.");
-                    Logger.Info(serverCertificate.Thumbprint);
-                    Logger.Info(serverCertificate.Subject);
-                    Logger.Info(serverCertificate.SubjectName);
-                    Logger.Info(serverCertificate.Issuer);
-                    Logger.Info(serverCertificate.IssuerName);
-                    Logger.Info(serverCertificate.NotAfter);
-                    Logger.Info(serverCertificate.NotBefore);
-                    Logger.Info(serverCertificate.GetKeyAlgorithm());
                     File.WriteAllBytes(ServerCertificatePath, serverCertificate.Export(X509ContentType.Cert));
                 }
-                else
-                {
-                    // Bereits gespeichertes Serverzertifikat laden
-                    var savedCertificate = new X509Certificate2(File.ReadAllBytes(ServerCertificatePath));
 
-                    if (!serverCertificate.Thumbprint.Equals(savedCertificate.Thumbprint, StringComparison.OrdinalIgnoreCase))
-                    {
-                        Logger.Warn("Server certificate thumbprint mismatch!");
-                        return false;
-                    }
-                }
-
-                // Zusätzlich eigenes CA-Zertifikat prüfen, falls vorhanden
-                if (File.Exists(CustomCaCertificatePath))
+                // Schritt 1: Standardmäßige Zertifikatsvalidierung
+                using (var chain = new X509Chain())
                 {
-                    var customCaCertificate = new X509Certificate2(File.ReadAllBytes(CustomCaCertificatePath));
-                    using var chain = new X509Chain();
-                    chain.ChainPolicy.ExtraStore.Add(customCaCertificate);
-                    chain.ChainPolicy.VerificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority;
-                    chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
+                    chain.ChainPolicy.RevocationMode = X509RevocationMode.Online;
+                    chain.ChainPolicy.RevocationFlag = X509RevocationFlag.ExcludeRoot;
+                    chain.ChainPolicy.VerificationFlags = X509VerificationFlags.NoFlag;
 
                     bool isValid = chain.Build(serverCertificate);
 
-                    if (!isValid)
+                    if (isValid)
                     {
-                        Logger.Warn("Custom CA validation failed.");
+                        Logger.Info("Standard system certificate validation succeeded.");
+                        return true;
                     }
-
-                    return isValid;
+                    else
+                    {
+                        Logger.Warn("Standard certificate validation failed. Attempting fallback to custom CA.");
+                        foreach (var status in chain.ChainStatus)
+                        {
+                            Logger.Info($" - Status: {status.Status}, Info: {status.StatusInformation?.Trim()}");
+                        }
+                    }
                 }
 
-                // Wenn kein eigenes CA vorhanden ist, akzeptieren wir das gespeicherte Zertifikat
-                return true;
+                // Schritt 2: Validierung mit benutzerdefinierter CA (falls vorhanden)
+                if (File.Exists(CustomCaCertificatePath))
+                {
+                    var customCaCertificate = new X509Certificate2(File.ReadAllBytes(CustomCaCertificatePath));
+                    using var customChain = new X509Chain();
+                    customChain.ChainPolicy.ExtraStore.Add(customCaCertificate);
+                    customChain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
+                    customChain.ChainPolicy.VerificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority;
+                    customChain.ChainPolicy.TrustMode = X509ChainTrustMode.CustomRootTrust;
+                    customChain.ChainPolicy.CustomTrustStore.Add(customCaCertificate);
+
+                    bool isCustomValid = customChain.Build(serverCertificate);
+
+                    if (isCustomValid)
+                    {
+                        Logger.Info("Validation succeeded with custom CA certificate.");
+                        return true;
+                    }
+                    else
+                    {
+                        Logger.Warn("Custom CA validation failed.");
+                        foreach (var status in customChain.ChainStatus)
+                        {
+                            Logger.Info($" - Status: {status.Status}, Info: {status.StatusInformation?.Trim()}");
+                        }
+                    }
+                }
+                else
+                {
+                    Logger.Warn("Custom CA certificate not found.");
+                }
+
+                return false;
             }
             catch (Exception ex)
             {
