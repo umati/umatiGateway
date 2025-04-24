@@ -552,7 +552,7 @@ namespace UmatiGateway.OPC
                 string MyTopic1 = this.mqttPrefix + "/" + this.clientId + "/" + "gw-version";
                 MqttApplicationMessage applicationMessage1 = new MqttApplicationMessageBuilder()
                 .WithTopic(MyTopic1)
-                .WithPayload("Umatigateway_1.0.0")
+                .WithPayload($"umatiGateway-{Assembly.GetExecutingAssembly().GetName().Version?.ToString()}")
                 .Build();
                 if (this.mqttClient != null)
                 {
