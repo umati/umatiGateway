@@ -880,7 +880,7 @@ namespace UmatiGateway.OPC
                                 if (shortenVariables)
                                 {
                                     List<NodeId> nodeIds = new List<NodeId>();
-                                    if(this.client.configuration.includeStructuredComponents)
+                                    if (this.client.configuration.includeStructuredComponents)
                                     {
                                         nodeIds = this.client.BrowseLocalNodeIds(child, BrowseDirection.Forward, (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true);
                                     }
@@ -1368,7 +1368,7 @@ namespace UmatiGateway.OPC
             else
             {
                 dataType = etoId;
-                Logger.Trace($"DataType NodeId: { dataType} Took otherId as NodeId");
+                Logger.Trace($"DataType NodeId: {dataType} Took otherId as NodeId");
             }
             Dictionary<NodeId, Node> dataTypes = this.client.TypeDictionaries.GetDataTypes();
             NodeId search = dataType;
