@@ -56,7 +56,7 @@ namespace UmatiGateway
             XmlAttribute readExtraLibs = xmlDocument.CreateAttribute("ReadExtraLibs");
             readExtraLibs.Value = configuration.readExtraLibs.ToString();
             umatiGatewayConfigNode.Attributes.Append(readExtraLibs);
-            XmlAttribute includeStructuredComponents = xmlDocument.CreateAttribute("includeSTructuredComponents");
+            XmlAttribute includeStructuredComponents = xmlDocument.CreateAttribute("includeStructuredComponents");
             includeStructuredComponents.Value = configuration.includeStructuredComponents.ToString();
             umatiGatewayConfigNode.Attributes.Append(includeStructuredComponents);
             XmlAttribute pollTime = xmlDocument.CreateAttribute("pollTime");
