@@ -18,6 +18,7 @@ namespace UmatiGateway
         public bool singleThreadPolling = false;
         public int pollTime = 2000;
         public string loglevel = "Info";
+        public bool includeStructuredComponents = true;
 
         public string configVersion = "";
         public string opcServerEndpoint = "";

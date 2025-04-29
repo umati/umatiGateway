@@ -1,2 +1,2 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<umatiGatewayConfig version="1.0" autostart="True" file="./Configuration/Files/LocalConfigLocalSampleServer.xml" logLevel="Debug" ReadExtraLibs="False" singleThreadPolling="False" pollTime="1000" />
+<umatiGatewayConfig version="1.0" autostart="False" file="./Configuration/Files/LocalConfigLocalSampleServer.xml" logLevel="Debug" ReadExtraLibs="False" includeStructuredComponents="True" singleThreadPolling="False" pollTime="1000" />

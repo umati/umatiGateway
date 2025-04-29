@@ -55,6 +55,15 @@ namespace UmatiGateway
                         {
                             configuration.readExtraLibs = false;
                         }
+                        string includeStructuredComponents = this.ReadAttribute(node, "includeStructuredComponents");
+                        if (string.Equals(includeStructuredComponents, "true", StringComparison.OrdinalIgnoreCase))
+                        {
+                            configuration.includeStructuredComponents = true;
+                        }
+                        else
+                        {
+                            configuration.includeStructuredComponents = false;
+                        }
                         string SingleThreadPolling = this.ReadAttribute(node, "singleThreadPolling");
                         if (string.Equals(SingleThreadPolling, "true", StringComparison.OrdinalIgnoreCase))
                         {

@@ -53,6 +53,15 @@
                 </label>
                 <span class="on">On</span>
             </div>
+            <label for="IncludeStructuredComponents" class="settings-label">Include Structured Components</label>
+            <div class="settings-on-off-label">
+                <span class="off">Off</span>
+                <label class="settings-switch">
+                    <input id="IncludeStructuredComponents" size="60" type="checkbox" name="IncludeStructuredcComponents" value="true" @(Model.configuration.includeStructuredComponents ? "checked" : "")>
+                    <span class="settings-slider"></span>
+                </label>
+                <span class="on">On</span>
+            </div>
             <label for="LogLevel" class="settings-label">Log Level</label>
             @removeTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.SelectTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers
             @removeTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.OptionTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers

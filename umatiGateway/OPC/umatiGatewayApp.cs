@@ -513,6 +513,32 @@ namespace UmatiGateway.OPC
             }
             return nodeList;
         }
+        public List<NodeId> BrowseLocalNodeIdsExcludeReference(NodeId rootNodeId, BrowseDirection browseDirection, uint nodeClassMask, NodeId referenceTypeIds, bool includeSubTypes, NodeId excludedReferenceTypeId)
+        {
+            List<NodeId> nodeList = new List<NodeId>();
+            BrowseResultCollection browseResults = BrowseNode(rootNodeId, browseDirection, nodeClassMask, referenceTypeIds, includeSubTypes, excludedReferenceTypeId);
+            if (browseResults.Count == 2)
+            {
+                BrowseResult allNodesResult = browseResults[0];
+                ReferenceDescriptionCollection allReferences = allNodesResult.References;
+                foreach (ReferenceDescription reference in allReferences)
+                {
+                    nodeList.Add(new NodeId(reference.NodeId.Identifier, reference.NodeId.NamespaceIndex));
+                }
+                BrowseResult excludedNodesResult = browseResults[1];
+                ReferenceDescriptionCollection excludedReferences = excludedNodesResult.References;
+                foreach (ReferenceDescription excludedReference in excludedReferences)
+                {
+                    nodeList.Remove(new NodeId(excludedReference.NodeId.Identifier, excludedReference.NodeId.NamespaceIndex));
+                }
+            }
+            else
+            {
+                Logger.Error("Number of BrowseResults does not match 2.");
+            }
+            return nodeList;
+        }
+
         public NodeId? BrowseLocalNodeIdWithBrowseName(NodeId rootNodeId, BrowseDirection browseDirection, uint nodeClassMask, NodeId referenceTypeIds, bool includeSubTypes, QualifiedName browseName)
         {
             BrowseResultCollection browseResults = BrowseNode(rootNodeId, browseDirection, nodeClassMask, referenceTypeIds, includeSubTypes);
@@ -690,15 +716,18 @@ namespace UmatiGateway.OPC
                 browsePath.RelativePath = relativePath;
                 browsePathCollection.Add(browsePath);
             }
-            m_session.TranslateBrowsePathsToNodeIds(null, browsePathCollection, out BrowsePathResultCollection results, out DiagnosticInfoCollection diagnosticInfos);
-            foreach (BrowsePathResult result in results)
+            if (browsePathCollection.Count > 0)
             {
-                if (StatusCode.IsGood(result.StatusCode))
+                m_session.TranslateBrowsePathsToNodeIds(null, browsePathCollection, out BrowsePathResultCollection results, out DiagnosticInfoCollection diagnosticInfos);
+                foreach (BrowsePathResult result in results)
                 {
-                    if (result.Targets.Count > 0)
+                    if (StatusCode.IsGood(result.StatusCode))
                     {
-                        NodeId nodeId = ExpandedNodeId.ToNodeId(result.Targets[0].TargetId, this.GetNamespaceTable());
-                        typeClassesFromParent.Add(nodeId);
+                        if (result.Targets.Count > 0)
+                        {
+                            NodeId nodeId = ExpandedNodeId.ToNodeId(result.Targets[0].TargetId, this.GetNamespaceTable());
+                            typeClassesFromParent.Add(nodeId);
+                        }
                     }
                 }
             }
@@ -759,14 +788,41 @@ namespace UmatiGateway.OPC
         {
             if (m_session != null)
             {
+                BrowseDescriptionCollection nodesToBrowse = new BrowseDescriptionCollection();
                 BrowseDescription nodeToBrowse = new BrowseDescription();
                 nodeToBrowse.NodeId = nodeId;
                 nodeToBrowse.BrowseDirection = browseDirection;
                 nodeToBrowse.NodeClassMask = nodeClassMask;
                 nodeToBrowse.ReferenceTypeId = referenceTypeIds;
                 nodeToBrowse.IncludeSubtypes = includeSubTypes;
-                BrowseDescriptionCollection nodesToBrowse = new BrowseDescriptionCollection();
                 nodesToBrowse.Add(nodeToBrowse);
+                m_session.Browse(null, null, 10000, nodesToBrowse, out BrowseResultCollection results, out DiagnosticInfoCollection diagnosticInfos);
+                return results;
+            }
+            else
+            {
+                throw new SystemException("Session not Connected");
+            }
+        }
+        public BrowseResultCollection BrowseNode(NodeId nodeId, BrowseDirection browseDirection, uint nodeClassMask, NodeId referenceTypeIds, Boolean includeSubTypes, NodeId excludedReferenceTypeId)
+        {
+            if (m_session != null)
+            {
+                BrowseDescriptionCollection nodesToBrowse = new BrowseDescriptionCollection();
+                BrowseDescription nodeToBrowse = new BrowseDescription();
+                nodeToBrowse.NodeId = nodeId;
+                nodeToBrowse.BrowseDirection = browseDirection;
+                nodeToBrowse.NodeClassMask = nodeClassMask;
+                nodeToBrowse.ReferenceTypeId = referenceTypeIds;
+                nodeToBrowse.IncludeSubtypes = includeSubTypes;
+                nodesToBrowse.Add(nodeToBrowse);
+                BrowseDescription excludedNodeToBrowse = new BrowseDescription();
+                excludedNodeToBrowse.NodeId = nodeId;
+                excludedNodeToBrowse.BrowseDirection = browseDirection;
+                excludedNodeToBrowse.NodeClassMask = nodeClassMask;
+                excludedNodeToBrowse.ReferenceTypeId = excludedReferenceTypeId;
+                excludedNodeToBrowse.IncludeSubtypes = true;
+                nodesToBrowse.Add(excludedNodeToBrowse);
                 m_session.Browse(null, null, 10000, nodesToBrowse, out BrowseResultCollection results, out DiagnosticInfoCollection diagnosticInfos);
                 return results;
             }

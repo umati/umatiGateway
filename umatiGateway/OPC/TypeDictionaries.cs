@@ -133,7 +133,7 @@ namespace UmatiGateway.OPC
             string? DefaultByteorder = null;
             string? opc = null;
             string? ua = null;
-            Dictionary <string, string> extraNameSpaces = new Dictionary<string, string>();
+            Dictionary<string, string> extraNameSpaces = new Dictionary<string, string>();
             while (reader.Read())
             {
                 switch (reader.NodeType)
@@ -231,10 +231,11 @@ namespace UmatiGateway.OPC
                                     this.errorMemmory.Add("The Name of the enumeration is null");
                                 }
                                 string? isOptionSet = reader.GetAttribute("IsOptionhSet");
-                                if(isOptionSet != null && string.Equals(isOptionSet,"true",StringComparison.OrdinalIgnoreCase))
+                                if (isOptionSet != null && string.Equals(isOptionSet, "true", StringComparison.OrdinalIgnoreCase))
                                 {
                                     generatedEnumeratedType.IsOptionSet = true;
-                                } else
+                                }
+                                else
                                 {
                                     generatedEnumeratedType.IsOptionSet = false;
                                 }
