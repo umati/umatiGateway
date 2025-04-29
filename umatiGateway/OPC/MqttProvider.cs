@@ -43,6 +43,7 @@ namespace UmatiGateway.OPC
     /// </summary>
     public class MqttProvider : OpcUaEventListener
     {
+        private readonly object _lockObject = new object();
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         private MqttClientFactory mqttFactory = new MqttClientFactory();
         private IMqttClient? mqttClient = null;
@@ -66,7 +67,7 @@ namespace UmatiGateway.OPC
         private Boolean connected = false;
         private System.Timers.Timer aTimer = new System.Timers.Timer();
         private bool firstReadFinished = false;
-        private bool debug = false;
+        private bool debug = true;
         private bool ReadInProgress = false;
         public bool singleThreadPolling = false;
         public bool ConnectedOnce = false;
@@ -107,7 +108,7 @@ namespace UmatiGateway.OPC
         }
         public void Connect()
         {
-            Console.WriteLine("MQTT Connect with TCP");
+            Logger.Info("MQTT Connect with TCP");
             if (!TimerSetup)
             {
                 aTimer.Interval = PollTimer;
@@ -361,209 +362,230 @@ namespace UmatiGateway.OPC
 
         public bool WriteMessage(JObject jObject, string machineId, String type)
         {
-            try
+            lock (_lockObject)
             {
-                JObject sortedJsonObj = this.SortJsonKeysRecursively(jObject);
-                string MyTopic = this.mqttPrefix + "/" + this.clientId + "/" + type + "/" + machineId;
-                MqttApplicationMessage applicationMessage = new MqttApplicationMessageBuilder()
-                .WithTopic(MyTopic)
-                .WithPayload(sortedJsonObj.ToString(Newtonsoft.Json.Formatting.Indented))
-                .Build();
-                if (this.mqttClient != null)
+                try
                 {
-                    _ = this.mqttClient.PublishAsync(applicationMessage, CancellationToken.None).Result;
-                }
-                return true;
-            }
-            catch (Exception e)
-            {
-                Logger.Info(e.ToString());
-                this.connected = false;
-                throw;
-                //return false;
-            }
-        }
-        public bool WriteIdentification(JArray jArray, string machineId, String type)
-        {
-            try
-            {
-                string MyTopic = this.mqttPrefix + "/" + this.clientId + "/" + "list/" + type;
-                MqttApplicationMessage applicationMessage = new MqttApplicationMessageBuilder()
-                .WithTopic(MyTopic)
-                .WithPayload(jArray.ToString(Newtonsoft.Json.Formatting.Indented))
-                .Build();
-                if (this.mqttClient != null)
-                {
-                    _ = this.mqttClient.PublishAsync(applicationMessage, CancellationToken.None).Result;
-
-                }
-                return true;
-            }
-            catch (Exception e)
-            {
-                Logger.Error("Unable to publish Identification", e);
-                throw;
-            }
-        }
-        public void publishOnlineMachines()
-        {
-            try
-            {
-                foreach (NodeId machine in this.onlineMachines)
-                {
-                    string MyTopic = this.mqttPrefix + "/" + this.clientId + "/" + "online/";
-                    MyTopic += this.getInstanceNsu(machine);
+                    JObject sortedJsonObj = this.SortJsonKeysRecursively(jObject);
+                    string MyTopic = this.mqttPrefix + "/" + this.clientId + "/" + type + "/" + machineId;
                     MqttApplicationMessage applicationMessage = new MqttApplicationMessageBuilder()
                     .WithTopic(MyTopic)
-                    .WithPayload("1")
+                    .WithPayload(sortedJsonObj.ToString(Newtonsoft.Json.Formatting.Indented))
                     .Build();
                     if (this.mqttClient != null)
                     {
                         _ = this.mqttClient.PublishAsync(applicationMessage, CancellationToken.None).Result;
                     }
+                    return true;
+                }
+                catch (Exception e)
+                {
+                    Logger.Info(e.ToString());
+                    this.connected = false;
+                    throw;
+                    //return false;
                 }
             }
-            catch (Exception e)
+        }
+        public bool WriteIdentification(JArray jArray, string machineId, String type)
+        {
+            lock (_lockObject)
             {
-                Logger.Info(e.ToString());
-                //this.connected = false;
-                throw;
+                try
+                {
+                    string MyTopic = this.mqttPrefix + "/" + this.clientId + "/" + "list/" + type;
+                    MqttApplicationMessage applicationMessage = new MqttApplicationMessageBuilder()
+                    .WithTopic(MyTopic)
+                    .WithPayload(jArray.ToString(Newtonsoft.Json.Formatting.Indented))
+                    .Build();
+                    if (this.mqttClient != null)
+                    {
+                        _ = this.mqttClient.PublishAsync(applicationMessage, CancellationToken.None).Result;
+
+                    }
+                    return true;
+                }
+                catch (Exception e)
+                {
+                    Logger.Error("Unable to publish Identification", e);
+                    throw;
+                }
+            }
+        }
+        public void publishOnlineMachines()
+        {
+            lock (_lockObject)
+            {
+                try
+                {
+                    foreach (NodeId machine in this.onlineMachines)
+                    {
+                        string MyTopic = this.mqttPrefix + "/" + this.clientId + "/" + "online/";
+                        MyTopic += this.getInstanceNsu(machine);
+                        MqttApplicationMessage applicationMessage = new MqttApplicationMessageBuilder()
+                        .WithTopic(MyTopic)
+                        .WithPayload("1")
+                        .Build();
+                        if (this.mqttClient != null)
+                        {
+                            _ = this.mqttClient.PublishAsync(applicationMessage, CancellationToken.None).Result;
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    Logger.Info(e.ToString());
+                    //this.connected = false;
+                    throw;
+                }
             }
         }
         public void publishOnlineMachinesMachineNode()
         {
-            try
+            lock (_lockObject)
             {
-                foreach (MachineNode machineNode in this.machineNodes)
+                try
                 {
-                    string MyTopic = this.mqttPrefix + "/" + this.clientId + "/" + "online/";
-                    MyTopic += machineNode.InstanceNamespace;
+                    foreach (MachineNode machineNode in this.machineNodes)
+                    {
+                        string MyTopic = this.mqttPrefix + "/" + this.clientId + "/" + "online/";
+                        MyTopic += machineNode.InstanceNamespace;
+                        MqttApplicationMessage applicationMessage = new MqttApplicationMessageBuilder()
+                        .WithTopic(MyTopic)
+                        .WithPayload("1")
+                        .Build();
+                        if (this.mqttClient != null)
+                        {
+                            _ = this.mqttClient.PublishAsync(applicationMessage, CancellationToken.None).Result;
+                        }
+                        else
+                        {
+                            //ToDo Add Error Handling
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    Logger.Info(e.ToString());
+                    throw;
+                }
+            }
+        }
+        public bool publishBadList()
+        {
+            lock (_lockObject)
+            {
+                try
+                {
+                    string MyTopic = this.mqttPrefix + "/" + this.clientId + "/" + "bad_list/errors";
+                    JArray errorArray = new JArray();
+                    foreach (KeyValuePair<NodeId, IList<string>> entry in this.errors)
+                    {
+                        JObject errorObject = new JObject();
+                        errorObject.Add("NodeId", entry.Key.ToString());
+                        JArray messageArray = new JArray();
+                        foreach (string message in entry.Value)
+                        {
+                            messageArray.Add(message);
+                        }
+                        errorObject.Add("Messages", messageArray);
+                        errorArray.Add(errorObject);
+                    }
                     MqttApplicationMessage applicationMessage = new MqttApplicationMessageBuilder()
                     .WithTopic(MyTopic)
-                    .WithPayload("1")
+                    .WithPayload(errorArray.ToString())
                     .Build();
+                    if (this.mqttClient != null)
+                    {
+                        _ = this.mqttClient.PublishAsync(applicationMessage, CancellationToken.None).Result;
+                    }
+                    return true;
+                }
+                catch (Exception e)
+                {
+                    Logger.Info("Unable to publish BadList", e.ToString());
+                    throw;
+                }
+            }
+        }
+        public void PublishBadListMachineNodes()
+        {
+            lock (_lockObject)
+            {
+                try
+                {
+                    string MyTopic = this.mqttPrefix + "/" + this.clientId + "/" + "bad_list/errors";
+                    JArray machinesErrorArray = new JArray();
+                    foreach (MachineNode machineNode in this.machineNodes)
+                    {
+                        JObject machineErrorObject = new JObject();
+                        machineErrorObject.Add("Machine", machineNode.NodeIdString.ToString());
+                        JArray machineErrorArray = new JArray();
+                        foreach (KeyValuePair<NodeId, IList<string>> entry in machineNode.Errors)
+                        {
+                            JObject errorNode = new JObject();
+                            errorNode.Add("NodeId", entry.Value.ToString());
+                            JArray errorMessages = new JArray();
+                            foreach (string error in entry.Value)
+                            {
+                                errorMessages.Add(error);
+                            }
+                            errorNode.Add("Messages", errorMessages);
+                            machineErrorArray.Add(errorNode);
+                        }
+                        machineErrorObject.Add("Errors", machineErrorArray);
+                    }
+                    MqttApplicationMessage applicationMessage = new MqttApplicationMessageBuilder()
+                        .WithTopic(MyTopic)
+                        .WithPayload(machinesErrorArray.ToString())
+                        .Build();
                     if (this.mqttClient != null)
                     {
                         _ = this.mqttClient.PublishAsync(applicationMessage, CancellationToken.None).Result;
                     }
                     else
                     {
-                        //ToDo Add Error Handling
+                        //TODO handling for this case
                     }
                 }
-            }
-            catch (Exception e)
-            {
-                Logger.Info(e.ToString());
-                throw;
-            }
-        }
-        public bool publishBadList()
-        {
-            try
-            {
-                string MyTopic = this.mqttPrefix + "/" + this.clientId + "/" + "bad_list/errors";
-                JArray errorArray = new JArray();
-                foreach (KeyValuePair<NodeId, IList<string>> entry in this.errors)
+                catch (Exception e)
                 {
-                    JObject errorObject = new JObject();
-                    errorObject.Add("NodeId", entry.Key.ToString());
-                    JArray messageArray = new JArray();
-                    foreach (string message in entry.Value)
-                    {
-                        messageArray.Add(message);
-                    }
-                    errorObject.Add("Messages", messageArray);
-                    errorArray.Add(errorObject);
+                    Logger.Info("Unable to publish BadList", e.ToString());
+                    throw;
                 }
-                MqttApplicationMessage applicationMessage = new MqttApplicationMessageBuilder()
-                .WithTopic(MyTopic)
-                .WithPayload(errorArray.ToString())
-                .Build();
-                if (this.mqttClient != null)
-                {
-                    _ = this.mqttClient.PublishAsync(applicationMessage, CancellationToken.None).Result;
-                }
-                return true;
-            }
-            catch (Exception e)
-            {
-                Logger.Info("Unable to publish BadList", e.ToString());
-                throw;
-            }
-        }
-        public void PublishBadListMachineNodes()
-        {
-            try
-            {
-                string MyTopic = this.mqttPrefix + "/" + this.clientId + "/" + "bad_list/errors";
-                JArray machinesErrorArray = new JArray();
-                foreach (MachineNode machineNode in this.machineNodes)
-                {
-                    JObject machineErrorObject = new JObject();
-                    machineErrorObject.Add("Machine", machineNode.NodeIdString.ToString());
-                    JArray machineErrorArray = new JArray();
-                    foreach (KeyValuePair<NodeId, IList<string>> entry in machineNode.Errors)
-                    {
-                        JObject errorNode = new JObject();
-                        errorNode.Add("NodeId", entry.Value.ToString());
-                        JArray errorMessages = new JArray();
-                        foreach (string error in entry.Value)
-                        {
-                            errorMessages.Add(error);
-                        }
-                        errorNode.Add("Messages", errorMessages);
-                        machineErrorArray.Add(errorNode);
-                    }
-                    machineErrorObject.Add("Errors", machineErrorArray);
-                }
-                MqttApplicationMessage applicationMessage = new MqttApplicationMessageBuilder()
-                    .WithTopic(MyTopic)
-                    .WithPayload(machinesErrorArray.ToString())
-                    .Build();
-                if (this.mqttClient != null)
-                {
-                    _ = this.mqttClient.PublishAsync(applicationMessage, CancellationToken.None).Result;
-                }
-                else
-                {
-                    //TODO handling for this case
-                }
-            }
-            catch (Exception e)
-            {
-                Logger.Info("Unable to publish BadList", e.ToString());
-                throw;
             }
         }
         public bool publishClientOnline()
         {
-            try
+            lock (_lockObject)
             {
-                string MyTopic = this.mqttPrefix + "/" + this.clientId + "/" + "clientOnline";
-                MqttApplicationMessage applicationMessage = new MqttApplicationMessageBuilder()
-                .WithTopic(MyTopic)
-                .WithPayload("1")
-                .Build();
-                if (this.mqttClient != null)
+                try
                 {
-                    _ = this.mqttClient.PublishAsync(applicationMessage, CancellationToken.None).Result;
+                    string MyTopic = this.mqttPrefix + "/" + this.clientId + "/" + "clientOnline";
+                    MqttApplicationMessage applicationMessage = new MqttApplicationMessageBuilder()
+                    .WithTopic(MyTopic)
+                    .WithPayload("1")
+                    .Build();
+                    if (this.mqttClient != null)
+                    {
+                        _ = this.mqttClient.PublishAsync(applicationMessage, CancellationToken.None).Result;
+                    }
+                    string MyTopic1 = this.mqttPrefix + "/" + this.clientId + "/" + "gw-version";
+                    MqttApplicationMessage applicationMessage1 = new MqttApplicationMessageBuilder()
+                    .WithTopic(MyTopic1)
+                    .WithPayload($"umatiGateway-{Assembly.GetExecutingAssembly().GetName().Version?.ToString()}")
+                    .Build();
+                    if (this.mqttClient != null)
+                    {
+                        _ = this.mqttClient.PublishAsync(applicationMessage1, CancellationToken.None).Result;
+                    }
+                    return true;
                 }
-                string MyTopic1 = this.mqttPrefix + "/" + this.clientId + "/" + "gw-version";
-                MqttApplicationMessage applicationMessage1 = new MqttApplicationMessageBuilder()
-                .WithTopic(MyTopic1)
-                .WithPayload($"umatiGateway-{Assembly.GetExecutingAssembly().GetName().Version?.ToString()}")
-                .Build();
-                if (this.mqttClient != null)
+                catch (Exception e)
                 {
-                    _ = this.mqttClient.PublishAsync(applicationMessage1, CancellationToken.None).Result;
+                    Logger.Info("Unable to publish ClientOnline", e.ToString());
+                    throw;
                 }
-                return true;
-            }
-            catch (Exception e)
-            {
-                Logger.Info("Unable to publish ClientOnline", e.ToString());
-                throw;
             }
         }
 
@@ -780,7 +802,6 @@ namespace UmatiGateway.OPC
                 {
                     if (placeHolderObject != null)
                     {
-                        //Console.Write($"{child} = {childNode.BrowseName} is a PlaceHolder.");
                         if (typeDefinition != null)
                         {
                             Logger.Trace($"TypeDefinition: {typeDefinition}");
@@ -959,21 +980,6 @@ namespace UmatiGateway.OPC
                 typeParents.Add(typeParent);
                 this.GetTypeParentNodeIds(typeParent, typeParents);
             }
-        }
-        private List<NodeId> GetOptionalAndMandatoryPlaceHolderIntroducedFromParents(NodeId nodeId, RelativePath relativePath)
-        {
-            List<NodeId> discoveredNodeIds = this.client.BrowseLocalNodeIds(nodeId, BrowseDirection.Inverse, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true);
-            foreach (NodeId discoveredNodeId in discoveredNodeIds)
-            {
-                NodeId? parentTypeDefinition = this.client.BrowseTypeDefinition(discoveredNodeId);
-                if (parentTypeDefinition != null)
-                {
-                    QualifiedName test = new QualifiedName("TighteningSystem/AssetManagement/Assets", 1);
-                    //List<NodeId> nodeIdsd = this.client.GetOptionalAndMandatoryPlaceholdersForBrowsePath(parentTypeDefinition, new BrowsePath());
-                }
-                //this.GetOptionalAndMandatoryPlaceHolderIntroducedFromParents(discoveredNodeId, relativePath = new RelativePath(relativePath, ));
-            }
-            return discoveredNodeIds;
         }
 
         private List<NodeId> GetOptionalAndMandatoryPlaceHolders(NodeId nodeId, NodeId? parent)
@@ -1632,7 +1638,10 @@ namespace UmatiGateway.OPC
                             else if (field.TypeName == "ua:LocalizedText")
                             {
                                 LocalizedText localizedTextValue = BinaryDecoder.ReadLocalizedText(field.Name);
-                                jObject.Add(field.Name, localizedTextValue.ToString());
+                                JObject localizedTextObject = new JObject();
+                                localizedTextObject.Add("locale", localizedTextValue.Locale);
+                                localizedTextObject.Add("text", localizedTextValue.Text);
+                                jObject.Add(field.Name, localizedTextObject);
                                 //this.Debug("Value: " + localizedTextValue.ToString());
                             }
                             if (field.TypeName == "ua:ExtensionObject")
@@ -1675,30 +1684,108 @@ namespace UmatiGateway.OPC
                                     }
                                 }
                             }
-                            else if (field.TypeName == "tns:ResultEvaluationEnum")
+                            else if (field.TypeName.StartsWith("ns") || field.TypeName.StartsWith("tns:"))
                             {
-                                Int32 int32Value = BinaryDecoder.ReadInt32(field.Name);
-                                jObject.Add(field.Name, int32Value);
-                                //this.Debug("Value: " + int32Value.ToString());
-                            }
-                            else if (field.TypeName.StartsWith("tns:") && field.TypeName != "tns:ResultEvaluationEnum")
-                            {
-                                if (generatedDataClass.DataTypeDefinition != null && generatedDataClass.DataTypeDefinition.tns != null)
+                                string typename = field.TypeName;
+                                string namespaceKey = typename.Substring(0, 3);
+                                string browseName = typename.Substring(4);
+                                string? nameSpaceUrl;
+                                if (generatedDataClass.DataTypeDefinition != null)
                                 {
-                                    GeneratedDataClass? gdc2 = this.GetGeneratedDataClass(generatedDataClass.DataTypeDefinition.tns, field.TypeName.Substring(4));
-                                    if (gdc2 != null)
+                                    if (generatedDataClass.DataTypeDefinition.extraNameSpaces.TryGetValue(namespaceKey, out nameSpaceUrl))
                                     {
-                                        jObject.Add(field.Name, decode(BinaryDecoder, gdc2));
+                                        GeneratedDataClass? gdc2 = this.GetGeneratedDataClass(nameSpaceUrl, browseName);
+                                        if (gdc2 != null)
+                                        {
+                                            if (gdc2 is GeneratedStructure)
+                                            {
+                                                JObject decoded = decode(BinaryDecoder, gdc2);
+                                                jObject.Add(field.Name, decoded);
+                                            }
+                                            else if (gdc2 is GeneratedEnumeratedType)
+                                            {
+                                                GeneratedEnumeratedType gde = (GeneratedEnumeratedType)gdc2;
+                                                if (!gde.IsOptionSet)
+                                                {
+                                                    uint uint32Value = BinaryDecoder.ReadUInt32(field.Name);
+                                                    string valueName = "";
+                                                    foreach (GeneratedEnumeratedValue enumeratedValue in gde.enumValues)
+                                                    {
+                                                        if (enumeratedValue.Value == uint32Value.ToString())
+                                                        {
+                                                            valueName = enumeratedValue.Name;
+                                                            break;
+                                                        }
+                                                    }
+                                                    jObject.Add(field.Name, $"{uint32Value} ({valueName})");
+                                                    //this.Debug("Value: " + uint32Value.ToString());
+
+                                                }
+                                                else
+                                                {
+                                                    uint uint32Value = BinaryDecoder.ReadUInt32(field.Name);
+                                                    List<String> names = new List<String>();
+                                                    foreach (GeneratedEnumeratedValue enumeratedValue in gde.enumValues)
+                                                    {
+                                                        uint bit = uint.Parse(enumeratedValue.Value);
+                                                        if ((uint32Value & (1u << (int)bit)) != 0)
+                                                        {
+                                                            names.Add(enumeratedValue.Name);
+                                                        }
+                                                    }
+                                                    jObject.Add(field.Name, $"{uint32Value} ({string.Join("|", names)})");
+                                                }
+                                            }
+                                        }
+                                        else
+                                        {
+                                            Logger.Error($"Could not find GeneratedDataClass for field: {field}");
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Logger.Error($"Could not find Namespace {namespaceKey} for GeneratedDataClass {generatedDataClass}");
                                     }
                                 }
+                                else
+                                {
+                                    Logger.Error($"Could not find DataTypeDefinition for GeneratedDataClass: {generatedDataClass}");
+                                }
                             }
-
                         }
                     }
                 }
                 else if (generatedDataClass is GeneratedEnumeratedType)
                 {
-                    this.Debug("GeneratedEnum");
+                    GeneratedEnumeratedType gde = (GeneratedEnumeratedType)generatedDataClass;
+                    if (!gde.IsOptionSet)
+                    {
+                        uint uint32Value = BinaryDecoder.ReadUInt32(gde.Name);
+                        string valueName = "";
+                        foreach (GeneratedEnumeratedValue enumeratedValue in gde.enumValues)
+                        {
+                            if (enumeratedValue.Value == uint32Value.ToString())
+                            {
+                                valueName = enumeratedValue.Name;
+                                break;
+                            }
+                        }
+                        jObject.Add(gde.Name, $"{uint32Value} ({valueName})");
+                    }
+                    else
+                    {
+                        uint uint32Value = BinaryDecoder.ReadUInt32(gde.Name);
+                        List<String> names = new List<String>();
+                        foreach (GeneratedEnumeratedValue enumeratedValue in gde.enumValues)
+                        {
+                            uint bit = uint.Parse(enumeratedValue.Value);
+                            if ((uint32Value & (1u << (int)bit)) != 0)
+                            {
+                                names.Add(enumeratedValue.Name);
+                            }
+                        }
+                        jObject.Add(gde.Name, $"{uint32Value} ({string.Join("|", names)})");
+                    }
                 }
             }
             return jObject;
@@ -1858,7 +1945,6 @@ namespace UmatiGateway.OPC
                             {
                                 foreach (KeyValuePair<NodeId, PublishedBrowsePaths> entry in machineNode.KnownBrowsePaths)
                                 {
-                                    //Console.Write(entry.Value.ToString());
                                     this.client.SubscribeToDataChanges(entry.Key, this.updateDataValue);
                                 }
                             }
