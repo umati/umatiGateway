@@ -132,9 +132,6 @@
     <None Update="OPC\Gateway.Config.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="OPC\Gateway.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="Pages\Shared\_Layout.cshtml.css">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

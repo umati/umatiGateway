@@ -1,10 +1,12 @@
 ﻿// SPDX-License-Identifier: Apache-2.0
 // Copyright (c) 2025 FVA GmbH - interop4x. All rights reserved.
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 using Opc.Ua;
 using Opc.Ua.Configuration;
 using System.Text;
 using System.Xml;
+using System.Xml.Linq;
 //ToDo make deep copies in the accessor methods
 namespace UmatiGateway.OPC
 {
@@ -131,6 +133,7 @@ namespace UmatiGateway.OPC
             string? DefaultByteorder = null;
             string? opc = null;
             string? ua = null;
+            Dictionary<string, string> extraNameSpaces = new Dictionary<string, string>();
             while (reader.Read())
             {
                 switch (reader.NodeType)
@@ -218,17 +221,46 @@ namespace UmatiGateway.OPC
                             case ("opc:EnumeratedType"):
                                 generatedComplexType = GeneratedComplexTypes.EnumeratedType;
                                 generatedEnumeratedType = new GeneratedEnumeratedType();
-                                Name = reader.GetAttribute("Name");
-                                if (Name != null)
+                                string? enumeratedTypeName = reader.GetAttribute("Name");
+                                if (enumeratedTypeName != null)
                                 {
-                                    generatedEnumeratedType.Name = Name;
+                                    generatedEnumeratedType.Name = enumeratedTypeName;
                                 }
                                 else
                                 {
-                                    this.errorMemmory.Add("The Name of the structure is null");
+                                    this.errorMemmory.Add("The Name of the enumeration is null");
+                                }
+                                string? isOptionSet = reader.GetAttribute("IsOptionhSet");
+                                if (isOptionSet != null && string.Equals(isOptionSet, "true", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    generatedEnumeratedType.IsOptionSet = true;
+                                }
+                                else
+                                {
+                                    generatedEnumeratedType.IsOptionSet = false;
                                 }
                                 break;
                             case ("opc:EnumeratedValue"):
+                                GeneratedEnumeratedValue generatedEnumeratedValue = new GeneratedEnumeratedValue();
+                                string? enumeratedValueName = reader.GetAttribute("Name");
+                                if (enumeratedValueName != null)
+                                {
+                                    generatedEnumeratedValue.Name = enumeratedValueName;
+                                }
+                                else
+                                {
+                                    this.errorMemmory.Add("The Name of the EnumeratedValue is null");
+                                }
+                                string? value = reader.GetAttribute("Value");
+                                if (value != null)
+                                {
+                                    generatedEnumeratedValue.Value = value;
+                                }
+                                else
+                                {
+                                    this.errorMemmory.Add("The Value of the EnumeratedValue is null");
+                                }
+                                generatedEnumeratedType.enumValues.Add(generatedEnumeratedValue);
                                 break;
                             case ("opc:OpaqueType"):
                                 generatedComplexType = GeneratedComplexTypes.OpaqueType;
@@ -244,7 +276,17 @@ namespace UmatiGateway.OPC
                                 DefaultByteorder = reader.GetAttribute("DefaultByteOrder");
                                 opc = reader.GetAttribute("xmlns:opc");
                                 ua = reader.GetAttribute("xmlns:ua");
-
+                                int attributeCount = reader.AttributeCount;
+                                for (int i = 0; i < attributeCount; i++)
+                                {
+                                    reader.MoveToAttribute(i);
+                                    string name = reader.Name;
+                                    if (name.StartsWith("xmlns:ns"))
+                                    {
+                                        extraNameSpaces.Add(name.Substring(6), reader.Value);
+                                    }
+                                }
+                                reader.MoveToElement();
                                 break;
                             case ("opc:Import"):
                                 break;
@@ -270,8 +312,23 @@ namespace UmatiGateway.OPC
                                     gdd.DefaultByteOrder = DefaultByteorder;
                                     gdd.opc = opc;
                                     gdd.ua = ua;
+                                    gdd.extraNameSpaces = extraNameSpaces;
                                     generatedStructure.DataTypeDefinition = gdd;
                                     this.generatedDataTypes.Add(gdd, generatedStructure);
+                                }
+                                break;
+                            case ("opc:EnumeratedType"):
+                                if (targetNamespace != null)
+                                {
+                                    GeneratedDataTypeDefinition gdd = new GeneratedDataTypeDefinition(targetNamespace, generatedEnumeratedType.Name);
+                                    gdd.xsi = xsi;
+                                    gdd.tns = tns;
+                                    gdd.DefaultByteOrder = DefaultByteorder;
+                                    gdd.opc = opc;
+                                    gdd.ua = ua;
+                                    gdd.extraNameSpaces = extraNameSpaces;
+                                    generatedStructure.DataTypeDefinition = gdd;
+                                    this.generatedDataTypes.Add(gdd, generatedEnumeratedType);
                                 }
                                 break;
                         }
@@ -539,6 +596,7 @@ namespace UmatiGateway.OPC
         public string? opc = null;
         public string? ua = null;
         public string? tns = null;
+        public Dictionary<string, string> extraNameSpaces = new Dictionary<string, string>();
 
         public GeneratedDataTypeDefinition(string nameSpace, string name)
         {
@@ -581,7 +639,18 @@ namespace UmatiGateway.OPC
     public class GeneratedEnumeratedType : GeneratedDataClass
     {
         public string Documentation = "";
+        public bool IsOptionSet = false;
+        public List<GeneratedEnumeratedValue> enumValues = new List<GeneratedEnumeratedValue>();
         public GeneratedEnumeratedType()
+        {
+
+        }
+    }
+    public class GeneratedEnumeratedValue
+    {
+        public string Name = "";
+        public string Value = "";
+        public GeneratedEnumeratedValue()
         {
 
         }
