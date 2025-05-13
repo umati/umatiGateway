@@ -572,7 +572,7 @@ namespace UmatiGateway.OPC
                     string MyTopic1 = this.mqttPrefix + "/" + this.clientId + "/" + "gw-version";
                     MqttApplicationMessage applicationMessage1 = new MqttApplicationMessageBuilder()
                     .WithTopic(MyTopic1)
-                    .WithPayload($"umatiGateway-{Assembly.GetExecutingAssembly().GetName().Version?.ToString()}")
+                    .WithPayload($"umatiGateway-{getUmatiGatewayVersion()}")
                     .Build();
                     if (this.mqttClient != null)
                     {
@@ -587,6 +587,15 @@ namespace UmatiGateway.OPC
                 }
             }
         }
+
+        private static string getUmatiGatewayVersion()
+        {
+            var version = Assembly.GetExecutingAssembly()
+.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion;
+            ;
+            return version;
+        }
+
 
         public void publishNodeMachineNodes()
         {
