@@ -119,7 +119,7 @@ namespace UmatiGateway
                 XmlElement publishedNodeNode = xmlDocument.CreateElement("PublishedNode");
                 XmlAttribute typeNode = xmlDocument.CreateAttribute("type");
                 typeNode.Value = publishedNode.Type;
-                XmlAttribute namespaceUrlNode = xmlDocument.CreateAttribute("namespaceUrl");
+                XmlAttribute namespaceUrlNode = xmlDocument.CreateAttribute("namespaceurl");
                 namespaceUrlNode.Value = publishedNode.NamespaceUrl;
                 XmlAttribute nodeIdNode = xmlDocument.CreateAttribute("nodeId");
                 nodeIdNode.Value = publishedNode.NodeId;
