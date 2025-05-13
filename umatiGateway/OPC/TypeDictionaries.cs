@@ -117,7 +117,7 @@ namespace UmatiGateway.OPC
         }
         private void generateDataClasses(string xmlString)
         {
-            Console.Out.WriteLine(xmlString);
+            Logger.Debug(xmlString);
             XmlTextReader reader = new XmlTextReader(new System.IO.StringReader(xmlString));
             GeneratedStructure generatedStructure = new GeneratedStructure();
             GeneratedEnumeratedType generatedEnumeratedType = new GeneratedEnumeratedType();

@@ -4,9 +4,9 @@
   xmlns:ua="http://opcfoundation.org/UA/2008/02/Types.xsd"
   xmlns="http://opcfoundation.org/UA/SDK/Configuration.xsd"
 >
-  <ApplicationName>Quickstart Reference Client</ApplicationName>
-  <ApplicationUri>urn:localhost:Quickstarts:ReferenceClient</ApplicationUri>
-  <ProductUri>uri:opcfoundation.org:Quickstarts:ReferenceClient</ProductUri>
+  <ApplicationName>umati Gateway</ApplicationName>
+  <ApplicationUri>urn:org:umati:umatigateway:application</ApplicationUri>
+  <ProductUri>urn:org:umati:umatigateway</ProductUri>
   <ApplicationType>Client_1</ApplicationType>
   
   <SecurityConfiguration>
