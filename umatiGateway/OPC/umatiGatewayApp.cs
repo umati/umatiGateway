@@ -88,10 +88,16 @@ namespace UmatiGateway.OPC
             Logger.Info("umatiGateway Version: {Version}", version);
             Logger.Info("Reading Configuration");
             this.configuration = new ConfigurationReader().ReadConfiguration();
+            Logger.Info("Reconfiger Logger");
+            this.ConfigureLogging();
+
+            
             this.opcServerUrl = this.configuration.opcServerEndpoint;
             this.opcUser = this.configuration.opcUser;
             this.opcPwd = this.configuration.opcPassword;
+
             this.readExtraLibs = this.configuration.readExtraLibs;
+            
             this.MqttProvider.connectionString = this.configuration.mqttServerEndpopint;
             this.MqttProvider.user = this.configuration.mqttUser;
             this.MqttProvider.pwd = this.configuration.mqttPassword;
@@ -99,8 +105,8 @@ namespace UmatiGateway.OPC
             this.MqttProvider.mqttPrefix = this.configuration.mqttPrefix;
             this.MqttProvider.singleThreadPolling = this.configuration.singleThreadPolling;
             this.MqttProvider.PollTimer = this.configuration.pollTime;
-            this.opcUser = this.configuration.opcUser;
-            this.opcPwd = this.configuration.opcPassword;
+            
+
             foreach (PublishedNode publishedNode in configuration.publishedNodes)
             {
                 this.MqttProvider.publishedNodes.Add(publishedNode);
@@ -256,7 +262,7 @@ namespace UmatiGateway.OPC
                 this.blockingTransitionChange(this.blockingTransition);
                 try
                 {
-                    m_output.WriteLine("Connecting to... {0}", serverUrl);
+                    Logger.Info("Connecting to... {0}", serverUrl);
 
                     // Get the endpoint by connecting to server's discovery endpoint.
                     // Try to find the first endopint with security.
@@ -289,7 +295,7 @@ namespace UmatiGateway.OPC
 
 
                         // Session created successfully.
-                        m_output.WriteLine("New Session Created with SessionName = {0}", m_session.SessionName);
+                        Logger.Info("New Session Created with SessionName = {0}", m_session.SessionName);
 
                         this.TypeDictionaries = new TypeDictionaries(this);
                         this.TypeDictionaries.ReadExtraLibs = this.readExtraLibs;
