@@ -91,13 +91,13 @@ namespace UmatiGateway.OPC
             Logger.Info("Reconfiger Logger");
             this.ConfigureLogging();
 
-            
+
             this.opcServerUrl = this.configuration.opcServerEndpoint;
             this.opcUser = this.configuration.opcUser;
             this.opcPwd = this.configuration.opcPassword;
 
             this.readExtraLibs = this.configuration.readExtraLibs;
-            
+
             this.MqttProvider.connectionString = this.configuration.mqttServerEndpopint;
             this.MqttProvider.user = this.configuration.mqttUser;
             this.MqttProvider.pwd = this.configuration.mqttPassword;
@@ -105,7 +105,7 @@ namespace UmatiGateway.OPC
             this.MqttProvider.mqttPrefix = this.configuration.mqttPrefix;
             this.MqttProvider.singleThreadPolling = this.configuration.singleThreadPolling;
             this.MqttProvider.PollTimer = this.configuration.pollTime;
-            
+
 
             foreach (PublishedNode publishedNode in configuration.publishedNodes)
             {

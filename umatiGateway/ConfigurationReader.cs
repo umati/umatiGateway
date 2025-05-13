@@ -42,10 +42,10 @@ namespace UmatiGateway
                             case "info": configuration.loglevel = "Info"; break;
                             case "warn": configuration.loglevel = "Warn"; break;
                             case "error": configuration.loglevel = "Error"; break;
-                            default: 
+                            default:
                                 Logger.Warn($"Configuration: Wrong logLevel \"{logLevel}\". Set to default \"INFO\".");
                                 configuration.loglevel = "INFO";
-                            break;
+                                break;
                         }
                         string readExtraLibs = this.ReadAttribute(node, "ReadExtraLibs");
                         if (string.Equals(readExtraLibs, "true", StringComparison.OrdinalIgnoreCase))
@@ -94,7 +94,7 @@ namespace UmatiGateway
                         if (string.IsNullOrWhiteSpace(configuration.configFilePath))
                         {
                             Logger.Error("Configuration: No config file path found!");
-                           throw new Exception("No config file path found!");
+                            throw new Exception("No config file path found!");
                         }
                         else
                         {
@@ -134,7 +134,8 @@ namespace UmatiGateway
             if (attributeName == "password")
             {
                 Logger.Info($"Configuration:  \"{attributeName}\" = \"{value.Length}\"");
-            } else
+            }
+            else
             {
                 Logger.Info($"Configuration:  \"{attributeName}\" = \"{value}\"");
             }
@@ -266,7 +267,7 @@ namespace UmatiGateway
                         }
                         else
                         {
-        
+
                             LogConditionalOnAutostart("OPCNode not found!");
                         }
 
