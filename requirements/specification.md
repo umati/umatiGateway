@@ -178,7 +178,7 @@ The fields of _DataSetMetaData_ should be mapped as follows:
 
 ### Additional Fields
 
-Each DataSet need an Field called "virual_id" which contains the BrowsePath.
+Each DataSet need an Field called "virtual_id" which contains the BrowsePath.
 (e.g.; `5:Production.5:ActiveProgram.5:State`)
 
 The `NamespaceIndex` of the `QulifiedName` are mapped to the Namesapces array of the `DataTypeSchemaHeader`
@@ -196,6 +196,11 @@ The following Reference must be set, other Reference can be send:
 
 - HasSubtype
 - GenerateEvent
+- HasComponent (and all Subtypes)
+- HasOrderComponent
+- HasProperty
+- Organize
+
 
 ### DataSetMetaData Example
 
@@ -215,7 +220,7 @@ The following Reference must be set, other Reference can be send:
   "Name": "nsu=urn:Demo:MachineTool:myMachine/;i=1001",
   "Fields": [
     {
-      "Name": "virual_id",
+      "Name": "virtual_id",
       "Description": "as in Part 14",
       "FieldFlags": "as in Part 14",
       "BuiltInType": "12",

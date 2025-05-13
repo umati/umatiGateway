@@ -8,7 +8,7 @@
     ],
     "Fields": [
       {
-        "Name": "virual_id",
+        "Name": "virtual_id",
         "BuiltInType": 12,
         "DataType": { "id": 12 },
         "ValueRank": -1,

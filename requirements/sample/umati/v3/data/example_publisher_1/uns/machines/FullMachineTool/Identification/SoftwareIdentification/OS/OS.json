@@ -3,7 +3,7 @@
     "Status": 0,
     "Name": "nsu=http://example.com/FullMachineTool/;i=66382",
     "Payload": {
-      "virual_id": "2:Machines.4:FullMachineTool.1:Identification.3:SoftwareIdentification.3:OS",
+      "virtual_id": "2:Machines.4:FullMachineTool.1:Identification.3:SoftwareIdentification.3:OS",
       "Identifier": "Alpine Container",
       "SoftwareRevision": "3.15.4"
     }

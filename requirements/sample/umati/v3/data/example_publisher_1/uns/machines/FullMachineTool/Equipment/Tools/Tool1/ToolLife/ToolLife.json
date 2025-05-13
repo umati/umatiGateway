@@ -3,7 +3,7 @@
     "Status": 0,
     "Name": "nsu=http://example.com/FullMachineTool/;i=58513",
     "Payload": {
-      "virual_id": "2:Machines.4:FullMachineTool.3:Equipment.3:Tools.4:Tool1.3:ToolLife",
+      "virtual_id": "2:Machines.4:FullMachineTool.3:Equipment.3:Tools.4:Tool1.3:ToolLife",
       "Rotations": "512"
     }
   }

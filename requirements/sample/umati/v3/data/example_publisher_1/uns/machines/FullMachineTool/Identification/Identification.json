@@ -3,7 +3,7 @@
     "Status": 0,
     "Name": "nsu=http://example.com/FullMachineTool/;i=66382",
     "Payload": {
-      "virual_id": "2:Machines.4:FullMachineTool.1:Identification",
+      "virtual_id": "2:Machines.4:FullMachineTool.1:Identification",
       "ComponentName": {
         "locale": "",
         "text": "FullMachineTool"
