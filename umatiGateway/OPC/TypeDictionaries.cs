@@ -71,7 +71,8 @@ namespace UmatiGateway.OPC
                 {
                     Logger.Error($"Unable to read binaryTypeDictionary {binaryTypeDictionary}");
                 }
-            };
+            }
+            ;
             if (ReadExtraLibs)
             {
                 this.generateDataClasses(DI);
