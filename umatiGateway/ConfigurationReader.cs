@@ -9,9 +9,12 @@ namespace UmatiGateway
     public class ConfigurationReader
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
+        private bool isAutostart = false;
         public const string VERSION_1_0 = "1.0";
         public const string CONFIG_VERSION_1_0 = "1.0";
         public ConfigurationReader() { }
+
         public Configuration ReadConfiguration()
         {
             Configuration configuration = new Configuration();
@@ -27,14 +30,9 @@ namespace UmatiGateway
                     if (configuration.gatewayConfigVersion == VERSION_1_0)
                     {
                         string autostart = this.ReadAttribute(node, "autostart");
-                        if (string.Equals(autostart, "true", StringComparison.OrdinalIgnoreCase))
-                        {
-                            configuration.autostart = true;
-                        }
-                        else
-                        {
-                            configuration.autostart = false;
-                        }
+                        configuration.autostart = string.Equals(autostart, "true", StringComparison.OrdinalIgnoreCase);
+                        this.isAutostart = configuration.autostart;
+
                         string logLevel = this.ReadAttribute(node, "logLevel");
                         logLevel = logLevel.ToLower();
                         switch (logLevel)
@@ -92,7 +90,8 @@ namespace UmatiGateway
                         configuration.configFilePath = this.ReadAttribute(node, "file");
                         if (string.IsNullOrWhiteSpace(configuration.configFilePath))
                         {
-                            configuration.configFilePath = "";
+                            Logger.Error("Configuration: No config file path found!");
+                           throw new Exception("No config file path found!");
                         }
                         else
                         {
@@ -127,6 +126,13 @@ namespace UmatiGateway
             else
             {
                 Logger.Info($"Error on Reading Configuration: Attribute \"{attributeName}\" of node \"{node.Name}\" is missing. The node \"{node.Name}\" does not contain attributes.");
+            }
+            if (attributeName == "password")
+            {
+                Logger.Info($"Configuration:  \"{attributeName}\" = \"{value.Length}\"");
+            } else
+            {
+                Logger.Info($"Configuration:  \"{attributeName}\" = \"{value}\"");
             }
             return value;
         }
@@ -247,6 +253,7 @@ namespace UmatiGateway
                         XmlNode? opcNode = xmlDoc.SelectSingleNode("/Configuration/OPCConnection");
                         if (opcNode != null)
                         {
+                            Logger.Info($"Configuration:** OPCNode ***");
                             configuration.opcServerEndpoint = this.ReadAttribute(opcNode, "serverendpoint");
                             configuration.opcAuthentication = this.ReadAttribute(opcNode, "authentication");
                             configuration.opcUser = this.ReadAttribute(opcNode, "user");
@@ -255,12 +262,14 @@ namespace UmatiGateway
                         }
                         else
                         {
-                            Logger.Info("OPCNode not found!");
+        
+                            LogConditionalOnAutostart("OPCNode not found!");
                         }
 
                         XmlNode? mqttNode = xmlDoc.SelectSingleNode("/Configuration/MqttConnection");
                         if (mqttNode != null)
                         {
+                            Logger.Info($"Configuration:*** MqttNode ***");
                             configuration.mqttServerEndpopint = this.ReadAttribute(mqttNode, "serverendpoint");
                             configuration.mqttUser = this.ReadAttribute(mqttNode, "user");
                             configuration.mqttPassword = this.ReadAttribute(mqttNode, "password");
@@ -269,11 +278,12 @@ namespace UmatiGateway
                         }
                         else
                         {
-                            Logger.Info("MqttNode not found!");
+                            LogConditionalOnAutostart("MqttNode not found!");
                         }
                         XmlNodeList? publishedNodes = xmlDoc.SelectNodes("/Configuration/PublishedNodes/PublishedNode");
                         if (publishedNodes != null)
                         {
+                            Logger.Info($"Configuration:*** Published Nodes ***");
                             foreach (XmlNode publishedNode in publishedNodes)
                             {
                                 PublishedNode published = new PublishedNode();
@@ -286,7 +296,7 @@ namespace UmatiGateway
                         }
                         else
                         {
-                            Logger.Info("No nodes to pubish found");
+                            LogConditionalOnAutostart("No nodes to pubish found");
                         }
                         XmlNodeList? customEncodings = xmlDoc.SelectNodes("/Configuration/CustomEncodings/CustomEncoding");
                         if (customEncodings != null)
@@ -332,5 +342,16 @@ namespace UmatiGateway
 
         }
 
+        private void LogConditionalOnAutostart(string message)
+        {
+            if (this.isAutostart)
+            {
+                Logger.Error(message);
+            }
+            else
+            {
+                Logger.Info(message);
+            }
+        }
     }
 }
