@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
@@ -81,6 +82,10 @@ namespace UmatiGateway.OPC
 
         public void StartUp()
         {
+            var version = Assembly.GetExecutingAssembly()
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+            ;
+            Logger.Info("umatiGateway Version: {Version}", version);
             Logger.Info("Reading Configuration");
             this.configuration = new ConfigurationReader().ReadConfiguration();
             this.opcServerUrl = this.configuration.opcServerEndpoint;
