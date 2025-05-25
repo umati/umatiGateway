@@ -139,6 +139,8 @@ In the Configuration Tab you can see all currently set configuration settings. Y
 
 ### How to change the port for the Web UI?
 
+#### Changing port by configuring the application
+
 The port for the Web UI can be changed by editing the `application.json` file in the root directory of the application in the follwoing way:
 
 ``` json
@@ -159,6 +161,19 @@ The port for the Web UI can be changed by editing the `application.json` file in
   }
 }
 ```
+#### Changing port by configuring dotnet environment variables
+
+You can change the port by using the ASPNETCore Environment Variable
+
+On Windows:
+Windows(temporary): set ASPNETCORE_URLS=http://localhost:8080
+Windows(permanent): setx ASPNETCORE_URLS http://localhost:8080
+
+On Linux:
+Linux:export ASPNETCORE_URLS=http://localhost:8080
+
+On Docker(All Interfaces):
+docker run -e ASPNETCORE_URLS=http://0.0.0.0:8080 -p 8080:8080
 
 ### How to change the Web UI to use https?
 
