@@ -8,7 +8,7 @@ using NLog;
 using System.Collections.Concurrent;
 using System.Reflection;
 using System.Resources;
-using UmatiGateway.OPC;
+using umatiGateway.Core.OPC;
 
 namespace UmatiGateway.Pages
 {
@@ -33,7 +33,7 @@ namespace UmatiGateway.Pages
         public OPCConnectionModel(ClientFactory ClientFactory)
         {
             this.ClientFactory = ClientFactory;
-            ResourceManager rm = new ResourceManager("UmatiGateway.Pages.TestPage", Assembly.GetExecutingAssembly());
+            ResourceManager rm = new ResourceManager("UmatiGateway.Pages.Ressource", Assembly.GetExecutingAssembly());
             string? Label_ConnectionUrl_Translated = rm.GetString("TestPage_Label_ConnectionUrl");
             if (Label_ConnectionUrl_Translated != null) { this.LabelConnectionUrl = Label_ConnectionUrl_Translated; }
         }
@@ -42,9 +42,9 @@ namespace UmatiGateway.Pages
         {
             this.ConnectionUrl = ConnectionUrl;
             UmatiGatewayApp client = this.getClient();
-            client.configuration.opcServerEndpoint = this.ConnectionUrl;
-            client.configuration.opcUser = OpcUser ?? "";
-            client.configuration.opcPassword = OpcPassword ?? "";
+            client.ActiveConfiguration.OPCConnection.ServerEndpoint = this.ConnectionUrl;
+            client.ActiveConfiguration.OPCConnection.UserName = OpcUser ?? "";
+            client.ActiveConfiguration.OPCConnection.Password = OpcPassword ?? "";
             if (ConnectionUrl != null)
             {
                 _ = client.ConnectAsync(this.ConnectionUrl).Result;
@@ -100,9 +100,9 @@ namespace UmatiGateway.Pages
                     this.OPCSessionName = client.Session.SessionName;
 
                 }
-                this.ConnectionUrl = client.getOpcConnectionUrl();
-                this.OpcUser = client.configuration.opcUser;
-                this.OpcPassword = client.configuration.opcPassword;
+                this.ConnectionUrl = client.ActiveConfiguration.OPCConnection.ServerEndpoint;
+                this.OpcUser = client.ActiveConfiguration.OPCConnection.UserName;
+                this.OpcPassword = client.ActiveConfiguration.OPCConnection.Password;
             }
         }
         public IActionResult OnGetStreamUpdates()

@@ -2,6 +2,7 @@
 @* Copyright (c) 2025 FVA GmbH - interop4x. All rights reserved. *@
 
 @page
+@using umatiGateway.Core.OPC
 @model UmatiGateway.Pages.OPCSubscriptionsModel
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @{
@@ -12,7 +13,7 @@
 <p>Subscribe to elements you want to publish.</p>
 
 @{
-    void DrawTreeNode(OPC.TreeNode node)
+    void DrawTreeNode(TreeNode node)
     {
         <ul style= "margin-left:10px;margin-top:0px; padding: 0px;">
             <button style="border: none; background-color: inherit; margin-left:10px; padding: 1px 1px; font-size: 10px; cursor: pointer; display: inline-block; height:10px"

@@ -21,10 +21,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Pages\TestPage.resx" />
+    <Resource Include="Pages\Ressource.resx" />
   </ItemGroup>
 
   <ItemGroup>
+    <Content Update="Pages\PubSub.cshtml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Update="Pages\Configuration.cshtml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -38,9 +41,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Update="Pages\OPCSubscriptions.cshtml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Update="Pages\Privacy.cshtml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Update="Pages\Settings.cshtml">
@@ -124,13 +124,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Configuration\Files\LocalConfigLocalSampleServer.xml">
+    <None Update="umatiGatewayConfig.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Configuration\umatiGatewayConfig.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="OPC\Gateway.Config.xml">
+    <None Update="Core\OPC\Gateway.Config.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Pages\Shared\_Layout.cshtml.css">
@@ -139,6 +136,14 @@
     <None Update="Properties\launchSettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Core\External\Opc.Ua.PubSub\Opc.Ua.PubSub.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Core\Validation\" />
   </ItemGroup>
 
 </Project>

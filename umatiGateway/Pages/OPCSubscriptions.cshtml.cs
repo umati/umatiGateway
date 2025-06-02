@@ -7,7 +7,7 @@ using Microsoft.Extensions.Localization;
 using Opc.Ua;
 using System.Reflection;
 using System.Resources;
-using UmatiGateway.OPC;
+using umatiGateway.Core.OPC;
 
 namespace UmatiGateway.Pages
 {

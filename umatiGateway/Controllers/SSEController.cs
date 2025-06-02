@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using NLog;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
-using UmatiGateway.OPC;
+using umatiGateway.Core.OPC;
 
 namespace UmatiGateway
 {

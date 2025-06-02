@@ -1,0 +1,61 @@
+﻿@* SPDX-License-Identifier: Apache-2.0 *@
+@* Copyright (c) 2025 FVA GmbH - interop4x. All rights reserved. *@
+
+@page
+@model UmatiGateway.Pages.PubSubModel
+@{
+    ViewData["Title"] = "PubSub";
+}
+<h1>Umati PubSub</h1>
+
+<p>Configure your Umati PubSub.</p>
+
+<form method="post">
+    <div style="float:left; width:49%">
+        <fieldset class="settings-fieldset">
+            <legend class="settings-legend">PubSub Provider</legend>
+            <label for="MqttUser" class="settings-label">User</label>
+            <input type="text" class="settings-input" id="MqttUser" name="MqttUser" value="@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.UserName">
+            <label for="Password" class="settings-label">Password</label>
+            <input type="password" class="settings-input" id="Password" name="MqttPassword" value="@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.Password">
+            <label for="ClientId" class="settings-label">ClientId</label>
+            <input type="text" class="settings-input" id="ClientId" name="MqttClientId" value="@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.ClientId">
+            <label for="Prefix" class="settings-label">Prefix</label>
+            <input type="text" class="settings-input" id="Prefix" name="MqttPrefix" value="@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.Prefix">
+            <label for="MqttConnection" class="settings-label">ConnectionUrl</label>
+            <input id="MqttConnection" class="settings-input" type="text" name="ConnectionUrl" value="@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.ServerEndpoint">
+            <div class="settings-button-container">
+                <button asp-page-handler="Connect" class="settings-button">Connect</button>
+                <button asp-page-handler="Disconnect" class="settings-button" style="margin-left:10px">Disconnect</button>
+            </div>
+        </fieldset>
+    </div>
+    <div style="float:right; width:49%">
+        <fieldset class="settings-fieldset">
+            <legend class="settings-legend">PubSub Nodes</legend>
+            <table class="nodetable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Type</th>
+                        <th>NamespaceUrl</th>
+                        <th>Identifier</th>
+                        <th>BaseType</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (var i = 0; i < Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.PubSubNodes.Count; i++)
+                    {
+                        <tr>
+                            <td>@(i + 1)</td>
+                            <td>@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.PubSubNodes[i].Type</td>
+                            <td>@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.PubSubNodes[i].NamespaceUrl</td>
+                            <td>@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.PubSubNodes[i].NodeId</td>
+                            <td>@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.PubSubNodes[i].BaseType</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </fieldset>
+    </div>
+</form>

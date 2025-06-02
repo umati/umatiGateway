@@ -14,20 +14,11 @@
     <div style="float:left; width:49%">
         <fieldset class="settings-fieldset">
             <legend class="settings-legend">Application Configuration</legend>
-            <label for="Autostart" class="settings-label">AutoStart</label>
-            <div class="settings-on-off-label">
-                <span class="off">Off</span>
-                <label class="settings-switch">
-                    <input id="Autostart"  type="checkbox" name="AutoStart" value="true" @(Model.configuration.autostart ? "checked" : "")>
-                    <span class="settings-slider"></span>
-                </label>
-                <span class="on">On</span>
-            </div>
             <label for="ReadExtraLibs" class="settings-label">Read Extra Libs</label>
             <div class="settings-on-off-label">
                 <span class="off">Off</span>
                 <label class="settings-switch">
-                    <input id="ReadExtraLibs" size="60" type="checkbox" name="ReadExtraLibs" value="true" @(Model.configuration.readExtraLibs ? "checked" : "")>
+                    <input id="ReadExtraLibs" size="60" type="checkbox" name="ReadExtraLibs" value="true" @(Model.configuration.OPCConnection.ReadExtraLibs ? "checked" : "")>
                     <span class="settings-slider"></span>
                 </label>
                 <span class="on">On</span>
@@ -35,8 +26,6 @@
 
             <label for="ConfigurationFile" class="settings-label">ConfigurationFile</label>
             <input type="file" id="file" name="file" style="display:none" />
-            <input type="text" id="configFilePath" name="configFilePath" style="display:none" value="@Model.configuration.configFilePath" />
-            <label for="file" class="settings-label-as-textfield file-name"> @Model.configuration.configFilePath</label>
             <button type="submit" asp-page-handler="Save" class="settings-button">Speichern</button>
         </fieldset>
     </div>
