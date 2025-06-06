@@ -190,7 +190,7 @@ namespace umatiGateway.Core.PubSub
         public void Subscribe(HierarchicalNode hierarchicalNode)
         {   //Make a Pre subscription List
             PreSubscribe(hierarchicalNode.NodeId);
-            client.SubscribeToDataChanges(hierarchicalNode.NodeId, updateDataValue);
+            //client.SubscribeToDataChanges(hierarchicalNode.NodeId, updateDataValue);
             foreach (HierarchicalNode hierarchicalChildNode in hierarchicalNode.hierarchicalChilds.Values)
             {
                 Subscribe(hierarchicalChildNode);

@@ -41,6 +41,51 @@ namespace umatiGateway.Core.Configuration
             return $"PublishedNode(Type={Type}, NamespaceUrl={NamespaceUrl}, NodeId={NodeId}, BaseType={BaseType})";
         }
     }
+    public class PublishedChildNodes : PublishedNode
+    {
+        public List<Filter> Filter { get; set; } = new List<Filter>();
+        public PublishedChildNodes()
+        {
+
+        }
+    }
+    public class Filter
+    {
+        public FilterType FilterType { get; set; }
+        public List<Conditions> ConditionsList { get; set; } = new List<Conditions> ();
+    }
+    public enum FilterType
+    {
+        Blacklist,
+        Whitelist
+    }
+    public class Conditions
+    {
+        public ConditionType ConditionType { get; set; } = ConditionType.And;
+        public List<Condition> ConditionList { get; set; } = new List<Condition>();
+    }
+    public class Condition
+    {
+        
+    }
+    public enum ConditionType
+    {
+        And,
+        Or
+    }
+    public class TypeIdCondition : Condition
+    {
+        public string Type { get; set; } = "";
+        public string NamespaceUrl { get; set; } = "";
+        public string NodeId { get; set; } = "";
+    }
+    public class RelationCondition : Condition
+    {
+        public string Type { get; set; } = "";
+        public string NamespaceUrl { get; set; } = "";
+        public string NodeId { get; set; } = "";
+        public bool IncludeSubTypes { get; set; } = false;
+    }
     public class PubSubNode
     {
         public string Type { get; set; } = "";

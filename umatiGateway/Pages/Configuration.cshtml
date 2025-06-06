@@ -133,13 +133,44 @@
                 <tbody>
                     @for (var i = 0; i < Model.Configuration.MqttProviderConfig.PublishedNodes.Count; i++)
                     {
-                        <tr>
-                            <td>@(i + 1)</td>
+                        if (@Model.Configuration.MqttProviderConfig.PublishedNodes[i].GetType().Name == "PublishedNode")
+                        {
+                            <tr>
+                                <td>@(i + 1)</td>
                                 <td><input name="PublishedNodes[@i].type" value="@Model.Configuration.MqttProviderConfig.PublishedNodes[i].Type" readonly style="width: auto; border: none; outline: none;background-color: transparent;"></td>
                                 <td><input name="PublishedNodes[@i].namespaceUrl" value="@Model.Configuration.MqttProviderConfig.PublishedNodes[i].NamespaceUrl" readonly style="width: auto; border: none; outline: none; background-color: transparent;"></td>
                                 <td><input name="PublishedNodes[@i].nodeId" value="@Model.Configuration.MqttProviderConfig.PublishedNodes[i].NodeId" readonly style="width: auto; border: none; outline: none; background-color: transparent;"></td>
                                 <td><input name="PublishedNodes[@i].BaseType" value="@Model.Configuration.MqttProviderConfig.PublishedNodes[i].BaseType" readonly style="width: auto; border: none; outline: none; background-color: transparent;"></td>
-                        </tr>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+            <label for="PublishedChildNodes" class="settings-label">Published Child Nodes</label>
+            <table id="PublishedChildNodes" class="nodetable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Type</th>
+                        <th>NamespaceUrl</th>
+                        <th>Identifier</th>
+                        <th>BaseType</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (var i = 0; i < Model.Configuration.MqttProviderConfig.PublishedNodes.Count; i++)
+                    {
+                        if (@Model.Configuration.MqttProviderConfig.PublishedNodes[i].GetType().Name == "PublishedChildNodes")
+                        {
+                                
+                                <tr>
+                                <td>@(i + 1)</td>
+                                <td><input name="PublishedNodes[@i].type" value="@Model.Configuration.MqttProviderConfig.PublishedNodes[i].Type" readonly style="width: auto; border: none; outline: none;background-color: transparent;"></td>
+                                <td><input name="PublishedNodes[@i].namespaceUrl" value="@Model.Configuration.MqttProviderConfig.PublishedNodes[i].NamespaceUrl" readonly style="width: auto; border: none; outline: none; background-color: transparent;"></td>
+                                <td><input name="PublishedNodes[@i].nodeId" value="@Model.Configuration.MqttProviderConfig.PublishedNodes[i].NodeId" readonly style="width: auto; border: none; outline: none; background-color: transparent;"></td>
+                                <td><input name="PublishedNodes[@i].BaseType" value="@Model.Configuration.MqttProviderConfig.PublishedNodes[i].BaseType" readonly style="width: auto; border: none; outline: none; background-color: transparent;"></td>
+                            </tr>
+                        }
                     }
                 </tbody>
             </table>

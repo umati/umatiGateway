@@ -46,13 +46,45 @@
                 <tbody>
                     @for (var i = 0; i < Model.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.PublishedNodes.Count; i++)
                     {
-                        <tr>
-                            <td>@(i + 1)</td>
-                            <td>@Model.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.PublishedNodes[i].Type</td>
-                            <td>@Model.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.PublishedNodes[i].NamespaceUrl</td>
-                            <td>@Model.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.PublishedNodes[i].NodeId</td>
-                            <td>@Model.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.PublishedNodes[i].BaseType</td>
-                        </tr>
+                        if (@Model.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.PublishedNodes[i].GetType().Name == "PublishedNode")
+                        {
+                            <tr>
+                                <td>@(i + 1)</td>
+                                <td>@Model.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.PublishedNodes[i].Type</td>
+                                <td>@Model.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.PublishedNodes[i].NamespaceUrl</td>
+                                <td>@Model.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.PublishedNodes[i].NodeId</td>
+                                <td>@Model.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.PublishedNodes[i].BaseType</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </fieldset>
+        <fieldset class="settings-fieldset">
+            <legend class="settings-legend">Published Child Nodes</legend>
+            <table class="nodetable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Type</th>
+                        <th>NamespaceUrl</th>
+                        <th>Identifier</th>
+                        <th>BaseType</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (var i = 0; i < Model.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.PublishedNodes.Count; i++)
+                    {
+                        if(@Model.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.PublishedNodes[i].GetType().Name == "PublishedChildNodes")
+                        {
+                            <tr>
+                                <td>@(i + 1)</td>
+                                <td>@Model.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.PublishedNodes[i].Type</td>
+                                <td>@Model.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.PublishedNodes[i].NamespaceUrl</td>
+                                <td>@Model.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.PublishedNodes[i].NodeId</td>
+                                <td>@Model.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.PublishedNodes[i].BaseType</td>
+                            </tr>
+                        }
                     }
                 </tbody>
             </table>

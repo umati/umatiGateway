@@ -35,6 +35,7 @@ namespace umatiGateway.Core.Configuration
         public const string PREFIX = "prefix";
         public const string PUBLISHED_NODES = "PublishedNodes";
         public const string PUBLISHED_NODE = "PublishedNode";
+        public const string PUBLISHED_CHILD_NODES = "PublishedChildNodes";
         public const string TYPE = "type";
         public const string NAMESPACE_URL = "namespaceurl";
         public const string NODE_ID = "nodeId";
@@ -46,6 +47,12 @@ namespace umatiGateway.Core.Configuration
         public const string CUSTOM_ENCODING = "CustomEncoding";
         public const string NAME = "name";
         public const string ACTIVE = "active";
+        public const string FILTER = "Filter";
+        public const string CONDITIONS = "Conditions";
+        public const string TYPE_ID_CONDITION = "TypeIdCondition";
+        public const string RELATION_CONDITION = "RelationCondition";
+        public const string INCLUDE_SUB_TYPES = "includeSubTypes";
+
         
         public UmatiConfigurationManager() { }
 
@@ -127,6 +134,89 @@ namespace umatiGateway.Core.Configuration
                                         publishedNode.NodeId = ReadAttribute(publishedNodeNode, NODE_ID);
                                         publishedNode.BaseType = ReadAttribute(publishedNodeNode, BASE_TYPE);
                                         publishedNodes.Add(publishedNode);
+                                    }
+                                }
+                                XmlNodeList? publishedChildNodeList = publishedNodesNode.SelectNodes(PUBLISHED_CHILD_NODES);
+                                if (publishedChildNodeList != null)
+                                {
+                                    foreach (XmlNode publishedChildNodesNode in publishedChildNodeList)
+                                    {
+                                        PublishedChildNodes publishedChildNodes = new PublishedChildNodes();
+                                        Console.WriteLine(publishedChildNodes.GetType().Name);
+                                        publishedChildNodes.Type = ReadAttribute(publishedChildNodesNode, TYPE);
+                                        publishedChildNodes.NamespaceUrl = ReadAttribute(publishedChildNodesNode, NAMESPACE_URL);
+                                        publishedChildNodes.NodeId = ReadAttribute(publishedChildNodesNode, NODE_ID);
+                                        publishedChildNodes.BaseType = ReadAttribute(publishedChildNodesNode, BASE_TYPE);
+                                        XmlNode? filterNode = publishedChildNodesNode.SelectSingleNode(FILTER);
+                                        if (filterNode != null)
+                                        {
+                                            Filter filter = new Filter();
+                                            string? filterString = ReadAttribute(filterNode, TYPE);
+                                            if(filterString != null)
+                                            {
+                                                if(Enum.TryParse<FilterType>(filterString, out FilterType result))
+                                                {
+                                                    filter.FilterType = result;
+                                                }
+                                                else
+                                                {
+                                                    Logger.Error($"Unknown FilterType in node {filterNode} in attribute {TYPE}: {filterString}");
+                                                }
+                                            }
+                                            XmlNodeList? conditionsNodeList = filterNode.SelectNodes(CONDITIONS);
+                                            if (conditionsNodeList != null)
+                                            {
+                                                List<Conditions> conditionsList = new List<Conditions>();
+                                                foreach (XmlNode conditionsNode in conditionsNodeList)
+                                                {
+                                                    Conditions conditions = new Conditions();
+                                                    string? conditionsTypeString = ReadAttribute(conditionsNode, TYPE);
+                                                    if (conditionsTypeString != null)
+                                                    {
+                                                        if (Enum.TryParse<ConditionType>(conditionsTypeString, out ConditionType result))
+                                                        {
+                                                            conditions.ConditionType = result;
+                                                        }
+                                                        else
+                                                        {
+                                                            Logger.Error($"Unknown ConditionType in node {conditionsNode} in attribute {TYPE}: {conditionsTypeString}");
+                                                        }
+                                                    }
+                                                    List<Condition> conditionList = new List<Condition>();
+                                                    XmlNodeList? typeIDConditionNodeList = conditionsNode.SelectNodes(TYPE_ID_CONDITION);
+                                                    if (typeIDConditionNodeList != null)
+                                                    {
+                                                        foreach (XmlNode typeIdConditionNode in typeIDConditionNodeList)
+                                                        {
+                                                            TypeIdCondition typeIdCondition = new TypeIdCondition();
+                                                            typeIdCondition.Type = ReadAttribute(typeIdConditionNode, TYPE);
+                                                            typeIdCondition.NamespaceUrl = ReadAttribute(typeIdConditionNode, NAMESPACE_URL);
+                                                            typeIdCondition.NodeId = ReadAttribute(typeIdConditionNode, NODE_ID);
+                                                            conditionList.Add(typeIdCondition);
+                                                        }
+                                                    }
+                                                    XmlNodeList? relationConditionNodeList = conditionsNode.SelectNodes(RELATION_CONDITION);
+                                                    if (relationConditionNodeList != null)
+                                                    {
+                                                        foreach (XmlNode relationConditionNode in relationConditionNodeList)
+                                                        {
+                                                            RelationCondition relationCondition = new RelationCondition();
+                                                            relationCondition.Type = ReadAttribute(relationConditionNode, TYPE);
+                                                            relationCondition.NamespaceUrl = ReadAttribute(relationConditionNode, NAMESPACE_URL);
+                                                            relationCondition.NodeId = ReadAttribute(relationConditionNode, NODE_ID);
+                                                            string includeSubComponents = ReadAttribute(relationConditionNode, INCLUDE_SUB_TYPES);
+                                                            relationCondition.IncludeSubTypes = string.Equals(includeStructuredComponents, "true", StringComparison.OrdinalIgnoreCase) ? true : false;
+                                                            conditionList.Add(relationCondition);
+                                                        }
+                                                    }
+                                                    conditions.ConditionList = conditionList;
+                                                    conditionsList.Add(conditions);
+                                                }
+                                                filter.ConditionsList = conditionsList;
+                                            }
+                                            publishedChildNodes.Filter.Add(filter);
+                                        }
+                                        publishedNodes.Add(publishedChildNodes);
                                     }
                                 }
                             }
@@ -277,27 +367,104 @@ namespace umatiGateway.Core.Configuration
             mqttConnectionNode.Attributes.Append(publishInterval);
             mqttConnectionNode.AppendChild(customEncodingsNode);
             XmlElement publishedNodesNode = xmlDocument.CreateElement(PUBLISHED_NODES);
-            foreach (PublishedNode publishedNode in configuration.MqttProviderConfig.PublishedNodes)
+            foreach (PublishedNode publishedNodeObj in configuration.MqttProviderConfig.PublishedNodes)
             {
-                XmlElement publishedNodeNode = xmlDocument.CreateElement(PUBLISHED_NODE);
-                XmlAttribute typeNode = xmlDocument.CreateAttribute(TYPE);
-                typeNode.Value = publishedNode.Type;
-                XmlAttribute namespaceUrlNode = xmlDocument.CreateAttribute(NAMESPACE_URL);
-                namespaceUrlNode.Value = publishedNode.NamespaceUrl;
-                XmlAttribute nodeIdNode = xmlDocument.CreateAttribute(NODE_ID);
-                nodeIdNode.Value = publishedNode.NodeId;
-                XmlAttribute basetypeNode = xmlDocument.CreateAttribute(BASE_TYPE);
-                basetypeNode.Value = publishedNode.BaseType;
-                publishedNodeNode.Attributes.Append(typeNode);
-                publishedNodeNode.Attributes.Append(namespaceUrlNode);
-                publishedNodeNode.Attributes.Append(nodeIdNode);
-                publishedNodeNode.Attributes.Append(basetypeNode);
-                publishedNodesNode.AppendChild(publishedNodeNode);
+                Console.WriteLine(publishedNodeObj.GetType().Name);
+                switch (publishedNodeObj)
+                {
+                    case PublishedChildNodes publishedChildNodes:
+                        XmlElement publishedChildNodesNode = xmlDocument.CreateElement(PUBLISHED_CHILD_NODES);
+                        XmlAttribute typeNode = xmlDocument.CreateAttribute(TYPE);
+                        typeNode.Value = publishedChildNodes.Type;
+                        XmlAttribute namespaceUrlNode = xmlDocument.CreateAttribute(NAMESPACE_URL);
+                        namespaceUrlNode.Value = publishedChildNodes.NamespaceUrl;
+                        XmlAttribute nodeIdNode = xmlDocument.CreateAttribute(NODE_ID);
+                        nodeIdNode.Value = publishedChildNodes.NodeId;
+                        XmlAttribute basetypeNode = xmlDocument.CreateAttribute(BASE_TYPE);
+                        basetypeNode.Value = publishedChildNodes.BaseType;
+                        publishedChildNodesNode.Attributes.Append(typeNode);
+                        publishedChildNodesNode.Attributes.Append(namespaceUrlNode);
+                        publishedChildNodesNode.Attributes.Append(nodeIdNode);
+                        publishedChildNodesNode.Attributes.Append(basetypeNode);
+                        foreach (Filter filter in publishedChildNodes.Filter)
+                        {
+                            XmlElement filterNode = xmlDocument.CreateElement(FILTER);
+                            XmlAttribute filterType = xmlDocument.CreateAttribute(TYPE);
+                            filterType.Value = filter.FilterType.ToString();
+                            filterNode.Attributes.Append(filterType);
+                            foreach (Conditions conditions in filter.ConditionsList)
+                            {
+                                XmlElement conditionsNode = xmlDocument.CreateElement(CONDITIONS);
+                                XmlAttribute conditionsType = xmlDocument.CreateAttribute(TYPE);
+                                conditionsType.Value = conditions.ConditionType.ToString();
+                                conditionsNode.Attributes.Append(conditionsType);
+                                foreach(Condition condition in conditions.ConditionList)
+                                {
+                                    switch (condition)
+                                    {
+                                        case TypeIdCondition typeIdCondition:
+                                            XmlElement typeIdConditionNode = xmlDocument.CreateElement(TYPE_ID_CONDITION);
+                                            XmlAttribute typeIdConditionType = xmlDocument.CreateAttribute(TYPE);
+                                            typeIdConditionType.Value = typeIdCondition.Type.ToString();
+                                            XmlAttribute typeIdConditionTypeNamespaceUrl = xmlDocument.CreateAttribute(NAMESPACE_URL);
+                                            typeIdConditionTypeNamespaceUrl.Value = typeIdCondition.NamespaceUrl;
+                                            XmlAttribute typeIdConditionTypeNodeId = xmlDocument.CreateAttribute(NODE_ID);
+                                            typeIdConditionTypeNodeId.Value = typeIdCondition.NodeId.ToString();
+                                            typeIdConditionNode.Attributes.Append(typeIdConditionType);
+                                            typeIdConditionNode.Attributes.Append(typeIdConditionTypeNamespaceUrl);
+                                            typeIdConditionNode.Attributes.Append(typeIdConditionTypeNodeId);
+                                            conditionsNode.AppendChild(typeIdConditionNode);
+                                            break;
+                                        case RelationCondition relationCondition:
+                                            XmlElement relationConditionNode = xmlDocument.CreateElement(RELATION_CONDITION);
+                                            XmlAttribute relationConditionType = xmlDocument.CreateAttribute(TYPE);
+                                            relationConditionType.Value = relationCondition.Type.ToString();
+                                            XmlAttribute relationConditionTypeNamespaceUrl = xmlDocument.CreateAttribute(NAMESPACE_URL);
+                                            relationConditionTypeNamespaceUrl.Value = relationCondition.NamespaceUrl;
+                                            XmlAttribute relationConditionTypeNodeId = xmlDocument.CreateAttribute(NODE_ID);
+                                            relationConditionTypeNodeId.Value = relationCondition.NodeId.ToString();
+                                            XmlAttribute relationConditionTypeIncludeSubTypes = xmlDocument.CreateAttribute(INCLUDE_SUB_TYPES);
+                                            relationConditionTypeIncludeSubTypes.Value = relationCondition.IncludeSubTypes.ToString();
+                                            relationConditionNode.Attributes.Append(relationConditionType);
+                                            relationConditionNode.Attributes.Append(relationConditionTypeNamespaceUrl);
+                                            relationConditionNode.Attributes.Append(relationConditionTypeNodeId);
+                                            relationConditionNode.Attributes.Append(relationConditionTypeIncludeSubTypes);
+                                            conditionsNode.AppendChild(relationConditionNode);
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                }
+                                filterNode.AppendChild(conditionsNode);
+                            }
+                            publishedChildNodesNode.AppendChild(filterNode);
+                        }
+                        publishedNodesNode.AppendChild(publishedChildNodesNode);
+                        break;
+                    case PublishedNode publishedNode:
+                        XmlElement publishedNodeNode = xmlDocument.CreateElement(PUBLISHED_NODE);
+                        XmlAttribute typeNode1 = xmlDocument.CreateAttribute(TYPE);
+                        typeNode1.Value = publishedNode.Type;
+                        XmlAttribute namespaceUrlNode1 = xmlDocument.CreateAttribute(NAMESPACE_URL);
+                        namespaceUrlNode1.Value = publishedNode.NamespaceUrl;
+                        XmlAttribute nodeIdNode1 = xmlDocument.CreateAttribute(NODE_ID);
+                        nodeIdNode1.Value = publishedNode.NodeId;
+                        XmlAttribute basetypeNode1 = xmlDocument.CreateAttribute(BASE_TYPE);
+                        basetypeNode1.Value = publishedNode.BaseType;
+                        publishedNodeNode.Attributes.Append(typeNode1);
+                        publishedNodeNode.Attributes.Append(namespaceUrlNode1);
+                        publishedNodeNode.Attributes.Append(nodeIdNode1);
+                        publishedNodeNode.Attributes.Append(basetypeNode1);
+                        publishedNodesNode.AppendChild(publishedNodeNode);
+                        break;
+                    default:
+                        Logger.Error($"Unknown SubType of Published Node: {publishedNodeObj.GetType()}");
+                        break;
+                }
             }
             mqttConnectionNode.AppendChild(publishedNodesNode);
             configurationNode.AppendChild(opcConnectionNode);
             configurationNode.AppendChild(mqttConnectionNode);
-            configurationNode.AppendChild(publishedNodesNode);
             xmlDocument.AppendChild(configurationNode);
             XmlWriterSettings settings = new XmlWriterSettings { Indent = true, IndentChars = "  ", NewLineOnAttributes = false, Encoding = Encoding.UTF8 };
             StringBuilder sb = new StringBuilder();

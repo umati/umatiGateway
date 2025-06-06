@@ -24,7 +24,7 @@ namespace UmatiGateway.Pages
             string MqttConnectionUrl, string MqttUser, string MqttPassword, string MqttClientId, string MqttPrefix,
             bool? AutoStart, bool? readExtraLibs, bool? includeStructuredComponents, string LogLevel, string configfilePath, List<CustomEncoding> CustomEncodings, List<PublishedNode> PublishedNodes)
         {
-            Configuration.OPCConnection.ServerEndpoint = OpcConnectionUrl ?? "";
+            /*Configuration.OPCConnection.ServerEndpoint = OpcConnectionUrl ?? "";
             Configuration.OPCConnection.UserName = OpcUser ?? "";
             Configuration.OPCConnection.Password = OpcPassword ?? "";
             Configuration.OPCConnection.ServerEndpoint = MqttConnectionUrl ?? "";
@@ -36,9 +36,9 @@ namespace UmatiGateway.Pages
             Configuration.MqttProviderConfig.IncludeStructuredComponents = includeStructuredComponents ?? false;
             Configuration.LogLevel = LogLevel;
             Configuration.MqttProviderConfig.CustomEncodings = CustomEncodings ?? new List<CustomEncoding>();
-            Configuration.MqttProviderConfig.PublishedNodes = PublishedNodes ?? new List<PublishedNode>();
+            Configuration.MqttProviderConfig.PublishedNodes = PublishedNodes ?? new List<PublishedNode>();*/
             UmatiConfigurationManager configManager = new UmatiConfigurationManager();
-            var byteArray = Encoding.UTF8.GetBytes(configManager.GetConfigurationAsString(Configuration));
+            var byteArray = Encoding.UTF8.GetBytes(configManager.GetConfigurationAsString(this.Configuration));
             return File(byteArray, "application/xml", "umatiGatewayConfig.xml");
         }
     }

@@ -57,6 +57,10 @@ namespace umatiGateway.Core.OPC
         public UmatiGatewayApp(ApplicationConfiguration configuration, TextWriter writer, Action<IList, IList> validateResponse)
         {
             ConfigureLogging();
+            ActiveConfiguration = new UmatiConfigurationManager().ReadConfiguration();
+            Logger.Info("Reconfiger Logger");
+            Logger.Info("Reading Configuration");
+            ConfigureLogging();
             m_validateResponse = validateResponse;
             m_output = writer;
             m_configuration = configuration;
@@ -105,10 +109,7 @@ namespace umatiGateway.Core.OPC
             var version = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
             
             Logger.Info("umatiGateway Version: {Version}", version);
-            Logger.Info("Reading Configuration");
-            ActiveConfiguration = new UmatiConfigurationManager().ReadConfiguration();
-            Logger.Info("Reconfiger Logger");
-            ConfigureLogging();
+            
 
 
             opcServerUrl = ActiveConfiguration.OPCConnection.ServerEndpoint;
@@ -116,25 +117,6 @@ namespace umatiGateway.Core.OPC
             opcPwd = ActiveConfiguration.OPCConnection.Password;
 
             readExtraLibs = ActiveConfiguration.OPCConnection.ReadExtraLibs;
-
-            MqttProvider.connectionString = ActiveConfiguration.MqttProviderConfig.ServerEndpoint;
-            MqttProvider.user = ActiveConfiguration.MqttProviderConfig.UserName;
-            MqttProvider.pwd = ActiveConfiguration.MqttProviderConfig.Password;
-            MqttProvider.clientId = ActiveConfiguration.MqttProviderConfig.ClientId;
-            MqttProvider.mqttPrefix = ActiveConfiguration.MqttProviderConfig.Prefix;
-            MqttProvider.PollTimer = ActiveConfiguration.MqttProviderConfig.PublishInterval;
-
-
-            foreach (PublishedNode publishedNode in ActiveConfiguration.MqttProviderConfig.PublishedNodes)
-            {
-                MqttProvider.publishedNodes.Add(publishedNode);
-                //Publish to machine nodes
-                MachineNode machineNode = new MachineNode(publishedNode.NodeId, publishedNode.NamespaceUrl);
-                machineNode.NodeIdType = publishedNode.Type;
-                machineNode.BaseType = publishedNode.BaseType;
-                MqttProvider.publishedMachines.Add(machineNode);
-            }
-
 
             //this.MqttProvider.customEncodingManager.;
             StartConfiguration startConfiguration = ActiveConfiguration.StartConfiguration;
@@ -151,24 +133,7 @@ namespace umatiGateway.Core.OPC
         }
         public void publishNode(NodeId nodeId)
         {
-            if (nodeId != null)
-            {
-                object? identifier = nodeId.Identifier;
-                string? stringId = nodeId.Identifier.ToString();
-                if (stringId != null)
-                {
-                    //Publish to normal nodes
-                    PublishedNode publishedNode = new PublishedNode();
-                    publishedNode.Type = nodeId.IdType.ToString();
-                    publishedNode.NodeId = stringId;
-                    publishedNode.NamespaceUrl = GetNamespaceTable().GetString(nodeId.NamespaceIndex);
-                    MqttProvider.publishedNodes.Add(publishedNode);
-                    //Publish to machine nodes
-                    MachineNode machineNode = new MachineNode(stringId, GetNamespaceTable().GetString(nodeId.NamespaceIndex));
-                    machineNode.NodeIdType = nodeId.IdType.ToString();
-                    MqttProvider.publishedMachines.Add(machineNode);
-                }
-            }
+            Logger.Error("Please Implement");
         }
 
 
@@ -871,60 +836,6 @@ namespace umatiGateway.Core.OPC
                 throw new SystemException("Session Not Connected");
             }
 
-        }
-        /// <summary>
-        /// Create Subscription and MonitoredItems for DataChanges
-        /// </summary>
-        public uint SubscribeToDataChanges(List<NodeId> nodeIds, MonitoredItemNotificationEventHandler eventHandler)
-        {
-            uint subscriptionId = 0;
-            if (m_session == null || m_session.Connected == false)
-            {
-                m_output.WriteLine("Session not connected!");
-                return 0;
-            }
-
-            try
-            {
-                // Create a subscription for receiving data change notifications
-
-                // Define Subscription parameters
-                if (subscription == null)
-                {
-                    subscription = new Subscription(m_session.DefaultSubscription);
-                    subscription.DisplayName = "Subscription for NodeIds";
-                    subscription.PublishingEnabled = true;
-                    subscription.PublishingInterval = 1000;
-                    m_session.AddSubscription(subscription);
-                    // Create the subscription on Server side
-                    subscription.Create();
-                    subscriptionId = subscription.Id;
-                }
-
-                m_output.WriteLine("New Subscription created with SubscriptionId = {0}.", subscription.Id);
-
-                // Create MonitoredItems for data changes (Reference Server)
-                foreach (NodeId nodeId in nodeIds)
-                {
-                    MonitoredItem intMonitoredItem = new MonitoredItem(subscription.DefaultItem);
-                    // Int32 Node - Objects\CTT\Scalar\Simulation\Int32
-                    intMonitoredItem.StartNodeId = nodeId;
-                    intMonitoredItem.AttributeId = Attributes.Value;
-                    intMonitoredItem.DisplayName = "Subscription";
-                    intMonitoredItem.SamplingInterval = 1000;
-                    intMonitoredItem.Notification += eventHandler;
-
-                    subscription.AddItem(intMonitoredItem);
-                }
-                // Create the monitored items on Server side
-                subscription.ApplyChanges();
-                m_output.WriteLine("MonitoredItems created for SubscriptionId = {0}");
-            }
-            catch (Exception ex)
-            {
-                m_output.WriteLine("Subscribe error: {0}", ex.Message);
-            }
-            return subscriptionId;
         }
 
         /// <summary>

@@ -7,6 +7,14 @@
 	<MqttProvider serverendpoint="mqtt://localhost:1883" user="" password="" clientId="fva/matthias2" prefix="umati/v2" includeStructuredComponents="False" publishInterval="5000">
 		<PublishedNodes>
 			<PublishedNode type="Numeric" namespaceurl="http://vdma.org/UA/LaserSystem-Example/" nodeId="5003" baseType="" />
+			<PublishedChildNodes type="Numeric" namespaceurl="http://opcfoundation.org/UA/Machinery/" nodeId="1001">
+				<Filter type="Whitelist">
+					<Conditions type="And">
+						<TypeIdCondition type="Numeric" namespaceurl="http://opcfoundation.org/UA/Woodworking/" nodeId="2"/>
+						<RelationCondition type="Numeric" namespaceurl="http://opcfoundation.org/UA/" nodeId="35" includeSubTypes="false"/>
+					</Conditions>
+				</Filter>
+			</PublishedChildNodes>
 		</PublishedNodes>
 		<CustomEncodings>
 			<CustomEncoding name="GMSResultDataTypeEncoding" active="False" />
