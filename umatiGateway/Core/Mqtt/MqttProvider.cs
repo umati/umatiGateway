@@ -106,7 +106,9 @@ namespace umatiGateway.Core.Mqtt
         private void ResolveConfiguration()
         {
             List<PublishedNode> publishedNodes = this.client.ActiveConfiguration.MqttProviderConfig.PublishedNodes;
-            foreach(PublishedNode publishedConfigNode in publishedNodes)
+            PublishedNodeFilter publishedNodeFilter = new PublishedNodeFilter(this.client);
+            this.machineNodes.AddRange(publishedNodeFilter.FilterMachineNodes(publishedNodes));
+            /*foreach(PublishedNode publishedConfigNode in publishedNodes)
             {
                 switch (publishedConfigNode)
                 {
@@ -115,6 +117,8 @@ namespace umatiGateway.Core.Mqtt
                         if (resolvedNodeId != null)
                         {
                             List<NodeId> childNodes = client.BrowseLocalNodeIds(resolvedNodeId, BrowseDirection.Forward, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true);
+
+
                             foreach (NodeId child in childNodes)
                             {
                                 MachineNode childMachineNode = new MachineNode(publishedChildNodes.NodeId, publishedChildNodes.NamespaceUrl);
@@ -148,7 +152,7 @@ namespace umatiGateway.Core.Mqtt
                     default:
                         break;
                 }
-            }
+            }*/
         }
         private NodeId? ResolveNodeId(string nodeIdType, string nodeId, string namespaceurl, string baseType)
         {
