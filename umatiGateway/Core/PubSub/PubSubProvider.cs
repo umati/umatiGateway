@@ -152,18 +152,18 @@ namespace umatiGateway.Core.PubSub
 
         private void CreateSubscriptions()
         {
-            List<PubSubNode> pubSubNodes = client.ActiveConfiguration.PubSubProviderConfig.PubSubNodes;
-            foreach (PubSubNode pubSubNode in pubSubNodes)
+            List<PublishedNode> publishedNodes = client.ActiveConfiguration.PubSubProviderConfig.PublishedNodes;
+            foreach (PublishedNode publishedNode in publishedNodes)
             {
-                CreateSubscription(pubSubNode);
+                CreateSubscription(publishedNode);
             }
 
 
         }
-        private void CreateSubscription(PubSubNode pubSubNode)
+        private void CreateSubscription(PublishedNode publishedNode)
         {
             NodeId? nodeId = null;
-            nodeId = ResolveNodeId(pubSubNode);
+            nodeId = ResolveNodeId(publishedNode);
             if (nodeId != null)
             {
                 HierarchicalNode? hierarchicalNode = ReadNodeIdAsHierarchicalNode(null, nodeId);
@@ -179,9 +179,8 @@ namespace umatiGateway.Core.PubSub
             }
             else
             {
-                Logger.Error($"Unable to get node Id for PubSubNode: {pubSubNode}");
+                Logger.Error($"Unable to get node Id for Pub: {publishedNode}");
             }
-
         }
         private void PreSubscribe(NodeId nodeId)
         {
@@ -557,23 +556,23 @@ namespace umatiGateway.Core.PubSub
                 Logger.Error("Other notification");
             }
         }
-        public NodeId? ResolveNodeId(PubSubNode pubSubNode)
+        public NodeId? ResolveNodeId(PublishedNode publishedNode)
         {
-            string type = pubSubNode.Type.ToUpper();
+            string type = publishedNode.Type.ToUpper();
             NodeId? nodeId = null;
-            int namespaceIndex = client.GetNamespaceTable().GetIndex(pubSubNode.NamespaceUrl);
+            int namespaceIndex = client.GetNamespaceTable().GetIndex(publishedNode.NamespaceUrl);
             if (namespaceIndex != -1)
             {
                 switch (type)
                 {
-                    case "NUMERIC": nodeId = new NodeId(Convert.ToUInt32(pubSubNode.NodeId), (ushort)namespaceIndex); break;
-                    case "STRING": nodeId = new NodeId(pubSubNode.NodeId, (ushort)namespaceIndex); break;
+                    case "NUMERIC": nodeId = new NodeId(Convert.ToUInt32(publishedNode.NodeId), (ushort)namespaceIndex); break;
+                    case "STRING": nodeId = new NodeId(publishedNode.NodeId, (ushort)namespaceIndex); break;
                     default: break;
                 }
             }
             else
             {
-                Logger.Error($"Unable to get NamespaceIndex for NameSpaceUrl: {pubSubNode.NamespaceUrl}");
+                Logger.Error($"Unable to get NamespaceIndex for NameSpaceUrl: {publishedNode.NamespaceUrl}");
             }
             return nodeId;
         }

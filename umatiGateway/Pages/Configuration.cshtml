@@ -197,14 +197,14 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @for (var i = 0; i < Model.Configuration.PubSubProviderConfig.PubSubNodes.Count; i++)
+                    @for (var i = 0; i < Model.Configuration.PubSubProviderConfig.PublishedNodes.Count; i++)
                     {
                         <tr>
                             <td>@(i + 1)</td>
-                                <td><input name="PubSubNodes[@i].type" value="@Model.Configuration.PubSubProviderConfig.PubSubNodes[i].Type" readonly style="width: auto; border: none; outline: none;background-color: transparent;"></td>
-                                <td><input name="PubSubNodes[@i].namespaceUrl" value="@Model.Configuration.PubSubProviderConfig.PubSubNodes[i].NamespaceUrl" readonly style="width: auto; border: none; outline: none; background-color: transparent;"></td>
-                                <td><input name="PubSubNodes[@i].nodeId" value="@Model.Configuration.PubSubProviderConfig.PubSubNodes[i].NodeId" readonly style="width: auto; border: none; outline: none; background-color: transparent;"></td>
-                                <td><input name="PubSubNodes[@i].BaseType" value="@Model.Configuration.PubSubProviderConfig.PubSubNodes[i].BaseType" readonly style="width: auto; border: none; outline: none; background-color: transparent;"></td>
+                                <td><input name="PubSubNodes[@i].type" value="@Model.Configuration.PubSubProviderConfig.PublishedNodes[i].Type" readonly style="width: auto; border: none; outline: none;background-color: transparent;"></td>
+                                <td><input name="PubSubNodes[@i].namespaceUrl" value="@Model.Configuration.PubSubProviderConfig.PublishedNodes[i].NamespaceUrl" readonly style="width: auto; border: none; outline: none; background-color: transparent;"></td>
+                                <td><input name="PubSubNodes[@i].nodeId" value="@Model.Configuration.PubSubProviderConfig.PublishedNodes[i].NodeId" readonly style="width: auto; border: none; outline: none; background-color: transparent;"></td>
+                                <td><input name="PubSubNodes[@i].BaseType" value="@Model.Configuration.PubSubProviderConfig.PublishedNodes[i].BaseType" readonly style="width: auto; border: none; outline: none; background-color: transparent;"></td>
                         </tr>
                     }
                 </tbody>

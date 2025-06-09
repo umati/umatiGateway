@@ -86,17 +86,7 @@ namespace umatiGateway.Core.Configuration
         public string NodeId { get; set; } = "";
         public bool IncludeSubTypes { get; set; } = false;
     }
-    public class PubSubNode
-    {
-        public string Type { get; set; } = "";
-        public string NamespaceUrl { get; set; } = "";
-        public string NodeId { get; set; } = "";
-        public string BaseType { get; set; } = "";
-        public override string ToString()
-        {
-            return $"PubSubNode(Type={Type}, NamespaceUrl={NamespaceUrl}, NodeId={NodeId}, BaseType={BaseType})";
-        }
-    }
+
     public class CustomEncoding
     {
         public string Name { get; set; } = "";
@@ -142,12 +132,12 @@ namespace umatiGateway.Core.Configuration
         public string Password { get; set; } = "";
         public string ClientId { get; set; } = "";
         public string Prefix { get; set; } = "";
-        public List <PubSubNode> PubSubNodes { get; set; } = new List<PubSubNode> { };
+        public List <PublishedNode> PublishedNodes { get; set; } = new List<PublishedNode> { };
         public override string ToString()
         {
-            var nodes = string.Join(", ", PubSubNodes.Select(n => n.ToString()));
+            var nodes = string.Join(", ", PublishedNodes.Select(n => n.ToString()));
             return $"PubSubProviderConfig(Server={ServerEndpoint}, User={UserName}, Password={UmatiConfigurationUtils.MaskPassword(Password)}, " +
-                   $"ClientId={ClientId}, Prefix={Prefix}, PubSubNodes=[{nodes}])";
+                   $"ClientId={ClientId}, Prefix={Prefix}, PublishedNodes=[{nodes}])";
         }
     }
     public class OPCConnection
