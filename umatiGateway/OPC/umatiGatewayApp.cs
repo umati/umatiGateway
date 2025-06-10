@@ -727,7 +727,7 @@ namespace UmatiGateway.OPC
                 browsePath.RelativePath = relativePath;
                 browsePathCollection.Add(browsePath);
             }
-            if (browsePathCollection.Count > 0)
+            if (browsePathCollection.Count > 0 && m_session != null)
             {
                 m_session.TranslateBrowsePathsToNodeIds(null, browsePathCollection, out BrowsePathResultCollection results, out DiagnosticInfoCollection diagnosticInfos);
                 foreach (BrowsePathResult result in results)
