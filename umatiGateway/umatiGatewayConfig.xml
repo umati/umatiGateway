@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <umatiGatewayConfig version="2.0" logLevel="Info">
 	<StartConfiguration startWebUI="True" startOPCConnection="False" startMqttProvider="False" startPubSubProvider="false"/>
-	<WebUI url="localhost:8080"></WebUI>
+	<WebUI url="http://127.0.0.1:8000"></WebUI>
 	<!-- <OPCConnection serverendpoint="opc.tcp://opcua.umati.app:4840" authentication="None" user ="" password="" ReadExtraLibs="False"/> -->
 	<OPCConnection serverendpoint="opc.tcp://localhost:4840" authentication="None" user ="" password="" ReadExtraLibs="False"/>
 	<MqttProvider serverendpoint="mqtt://localhost:1883" user="" password="" clientId="fva/matthias2" prefix="umati/v2" includeStructuredComponents="False" publishInterval="5000">
