@@ -143,7 +143,7 @@ jobs:
         with:
           context: ./umatiGateway
           file: "./umatiGateway/umatiGateway/Dockerfile"
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -155,7 +155,7 @@ jobs:
         with:
           context: ./umatiGateway
           file: "./umatiGateway/umatiGateway/Dockerfile"
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: localhost:5000/umati/umatigateway:${{ steps.meta.outputs.version }}
           labels: ${{ steps.meta.outputs.labels }}
