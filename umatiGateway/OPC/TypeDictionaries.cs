@@ -274,9 +274,21 @@ namespace UmatiGateway.OPC
                                 }
                                 xsi = reader.GetAttribute("xmlns:xsi");
                                 tns = reader.GetAttribute("xmlns:tns");
+                                if (tns != null)
+                                {
+                                    extraNameSpaces.Add("tns", tns);
+                                }
                                 DefaultByteorder = reader.GetAttribute("DefaultByteOrder");
                                 opc = reader.GetAttribute("xmlns:opc");
+                                if (opc != null)
+                                {
+                                    extraNameSpaces.Add("opc", opc);
+                                }
                                 ua = reader.GetAttribute("xmlns:ua");
+                                if (ua != null)
+                                {
+                                    extraNameSpaces.Add("ua", ua);
+                                }
                                 int attributeCount = reader.AttributeCount;
                                 for (int i = 0; i < attributeCount; i++)
                                 {
