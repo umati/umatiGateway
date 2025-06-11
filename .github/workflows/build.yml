@@ -61,7 +61,7 @@ jobs:
       contents: read
     strategy:
       matrix:
-        os: [windows-2019, windows-2022]
+        os: [windows-2022, windows-2025]
         build_type: [Debug, Release]
       fail-fast: false
     runs-on: ${{ matrix.os }}
@@ -138,24 +138,24 @@ jobs:
           driver-opts: network=host
 
       - name: Build and Push container image to ${{ env.REGISTRY }}
-        uses: docker/build-push-action@v6.17.0
+        uses: docker/build-push-action@v6.18.0
         if: github.event_name != 'pull_request'
         with:
           context: ./umatiGateway
           file: "./umatiGateway/umatiGateway/Dockerfile"
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           provenance: false
 
       - name: Build and Push container image to local registry
-        uses: docker/build-push-action@v6.17.0
+        uses: docker/build-push-action@v6.18.0
         if: github.event_name == 'pull_request'
         with:
           context: ./umatiGateway
           file: "./umatiGateway/umatiGateway/Dockerfile"
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: localhost:5000/umati/umatigateway:${{ steps.meta.outputs.version }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -180,7 +180,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Download artifacts
-        uses: dawidd6/action-download-artifact@v9
+        uses: dawidd6/action-download-artifact@v10
         with:
           github_token: ${{secrets.GITHUB_TOKEN}}
           workflow: build.yml
@@ -196,7 +196,7 @@ jobs:
       - name: Display structure of downloaded files
         run: ls -R
       - name: Release
-        uses: softprops/action-gh-release@v2.2.2
+        uses: softprops/action-gh-release@v2.3.0
         with:
           generate_release_notes: true
           fail_on_unmatched_files: true
