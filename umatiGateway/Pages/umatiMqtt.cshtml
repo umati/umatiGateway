@@ -11,7 +11,7 @@
 <p>Configure your MQTT connection.</p>
 
 <form method="post">
-    <div style="float:left; width:49%">
+    <div style="float:left; width:20%">
         <fieldset class="settings-fieldset">
             <legend class="settings-legend">Mqtt Connection</legend>
             <label for="MqttUser" class="settings-label">User</label>
@@ -30,17 +30,26 @@
             </div>
         </fieldset>
     </div>
-    <div style="float:right; width:49%">
+    <div style="float:right; width:79%">
         <fieldset class="settings-fieldset">
             <legend class="settings-legend">Published Nodes</legend>
             <table class="nodetable">
                 <thead>
+                    <colgroup>
+                        <col style="width: 3ch;">
+                        <col style="width: 10ch;">
+                        <col style="width: 10%;">
+                        <col style="width: 10%;">
+                        <col style="width: 10%;">
+                        <col style="width: 10ch;">
+                    </colgroup>
                     <tr>
                         <th>#</th>
                         <th>Type</th>
                         <th>NamespaceUrl</th>
                         <th>Identifier</th>
                         <th>BaseType</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -54,6 +63,10 @@
                                 <td>@Model.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.PublishedNodes[i].NamespaceUrl</td>
                                 <td>@Model.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.PublishedNodes[i].NodeId</td>
                                 <td>@Model.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.PublishedNodes[i].BaseType</td>
+                                <td>
+                                    <Button asp-page-handler="RemoveNodeMqttConfig" asp-route-index=@i
+                                    class="settings-button"><img src="~/css/delete.png" /></Button>
+                                </td>
                             </tr>
                         }
                     }
@@ -64,12 +77,21 @@
             <legend class="settings-legend">Published Child Nodes</legend>
             <table class="nodetable">
                 <thead>
+                    <colgroup>
+                        <col style="width: 3ch;">
+                        <col style="width: 10ch;">
+                        <col style="width: 10%;">
+                        <col style="width: 10%;">
+                        <col style="width: 10%;">
+                        <col style="width: 10ch;">
+                    </colgroup>
                     <tr>
                         <th>#</th>
                         <th>Type</th>
                         <th>NamespaceUrl</th>
                         <th>Identifier</th>
                         <th>BaseType</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -83,8 +105,45 @@
                                 <td>@Model.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.PublishedNodes[i].NamespaceUrl</td>
                                 <td>@Model.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.PublishedNodes[i].NodeId</td>
                                 <td>@Model.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.PublishedNodes[i].BaseType</td>
+                                <td><Button asp-page-handler="RemoveNodeMqttConfig" asp-route-index=@i class ="settings-button"><img src="~/css/delete.png" /></Button></td>
                             </tr>
                         }
+                    }
+                </tbody>
+            </table>
+        </fieldset>
+        <fieldset class="settings-fieldset">
+            <legend class="settings-legend">Resolved Nodes</legend>
+            <table class="nodetable">
+                <thead>
+                    <colgroup>
+                        <col style="width: 3ch;">
+                        <col style="width: 10ch;">
+                        <col style="width: 10%;">
+                        <col style="width: 10%;">
+                        <col style="width: 10%;">
+                        <col style="width: 15ch;">
+                    </colgroup>
+                    <tr>
+                        <th>#</th>
+                        <th>Type</th>
+                        <th>NamespaceUrl</th>
+                        <th>Identifier</th>
+                        <th>BaseType</th>
+                        <th>NodeId</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (var i = 0; i < Model.UmatiGatewayApp.MqttProvider.MachineNodes.Count(); i++)
+                    {
+                        <tr>
+                            <td>@(i + 1)</td>
+                            <td>@Model.UmatiGatewayApp.MqttProvider.MachineNodes[i].NodeIdType</td>
+                            <td>@Model.UmatiGatewayApp.MqttProvider.MachineNodes[i].NamespaceUrl</td>
+                            <td>@Model.UmatiGatewayApp.MqttProvider.MachineNodes[i].NodeIdString</td>
+                            <td>@Model.UmatiGatewayApp.MqttProvider.MachineNodes[i].BaseType</td>
+                            <td>@Model.UmatiGatewayApp.MqttProvider.MachineNodes[i].ResolvedNodeId</td>
+                        </tr>
                     }
                 </tbody>
             </table>

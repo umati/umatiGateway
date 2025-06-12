@@ -1,28 +1,17 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright (c) 2025 FVA GmbH - interop4x. All rights reserved.
-using System;
+
 using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Reflection.Metadata;
-using System.Text;
-using System.Threading.Tasks;
-using MQTTnet.Exceptions;
 using Newtonsoft.Json.Linq;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
 using Opc.Ua;
 using Opc.Ua.Client;
-using Opc.Ua.Client.ComplexTypes;
-using Opc.Ua.Schema.Binary;
 using umatiGateway.Core.Configuration;
 using umatiGateway.Core.Mqtt;
 using umatiGateway.Core.PubSub;
-using static Opc.Ua.RelativePathFormatter;
-using static Org.BouncyCastle.Math.EC.ECCurve;
 
 namespace umatiGateway.Core.OPC
 {
@@ -30,6 +19,7 @@ namespace umatiGateway.Core.OPC
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         public PubSubProvider PubSubProvider { get; set; }
+        public MqttProvider MqttProvider;
         public Session? Session => m_session;
         public TypeDictionaries TypeDictionaries;
         public string opcServerUrl = "";
@@ -42,7 +32,7 @@ namespace umatiGateway.Core.OPC
         public UmatiConfiguration loadedConfiguration = new UmatiConfiguration();
         public Subscription? subscription = null;
         public List<OpcUaEventListener> opcUaEventListeners = new List<OpcUaEventListener>();
-        public MqttProvider MqttProvider;
+        
         private ApplicationConfiguration m_configuration;
         private Session? m_session;
         private readonly TextWriter m_output;
@@ -107,11 +97,7 @@ namespace umatiGateway.Core.OPC
         public void StartUp()
         {
             var version = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
-            
             Logger.Info("umatiGateway Version: {Version}", version);
-            
-
-
             opcServerUrl = ActiveConfiguration.OPCConnection.ServerEndpoint;
             opcUser = ActiveConfiguration.OPCConnection.UserName;
             opcPwd = ActiveConfiguration.OPCConnection.Password;
@@ -131,11 +117,6 @@ namespace umatiGateway.Core.OPC
                 MqttProvider.Connect();
             }
         }
-        public void publishNode(NodeId nodeId)
-        {
-            Logger.Error("Please Implement");
-        }
-
 
 
         public void DisconnectMqtt()
@@ -891,6 +872,38 @@ namespace umatiGateway.Core.OPC
                 m_output.WriteLine("Subscribe error: {0}", ex.Message);
             }
             return subscriptionId;
+        }
+
+        public void AddNodeUmatiMqttConfig(NodeId nodeId)
+        {
+            
+            string? namespaceUrl = this.GetNamespaceTable().GetString(nodeId.NamespaceIndex);
+            string? identifier = nodeId.Identifier.ToString();
+            if (namespaceUrl != null && identifier != null)
+            {
+                PublishedNode publishedNode = new PublishedNode();
+                publishedNode.NamespaceUrl = namespaceUrl;
+                publishedNode.Type = nodeId.IdType.ToString();
+                publishedNode.NodeId = identifier;
+                publishedNode.BaseType = "";
+                this.ActiveConfiguration.MqttProviderConfig.PublishedNodes.Add(publishedNode);
+            }
+            else
+            {
+                Logger.Error($"Unable to create PublishedNode from NodeId: {nodeId}");
+            }
+        }
+        public void RemoveNodeMqttConfig(PublishedNode publishedNode)
+        {
+            this.ActiveConfiguration.MqttProviderConfig.PublishedNodes.Remove(publishedNode);
+        }
+        public void AddNodeOpcPubSubConfig(NodeId nodeId)
+        {
+
+        }
+        public void RemoveNodePubSubConfig(PublishedNode publishedNode)
+        {
+            this.ActiveConfiguration.PubSubProviderConfig.PublishedNodes.Remove(publishedNode);
         }
 
         private void blockingTransitionChange(BlockingTransition blockingTransition)

@@ -14,6 +14,7 @@ using umatiGateway.Core.Configuration;
 using Opc.Ua.PubSub;
 using UmatiGateway;
 using umatiGateway.Core.OPC;
+using umatiGateway.Core.Mqtt;
 
 namespace umatiGateway.Core.PubSub
 {
@@ -49,7 +50,6 @@ namespace umatiGateway.Core.PubSub
         public PubSubProvider(UmatiGatewayApp client)
         {
             this.client = client;
-            //this.mqttClient = this.mqttClientFactory.CreateMqttClient();
 
             // Init Config
             PubSubConfigurationDataType = new PubSubConfigurationDataType
@@ -152,18 +152,20 @@ namespace umatiGateway.Core.PubSub
 
         private void CreateSubscriptions()
         {
+            PublishedNodeFilter publishedNodeFilter = new PublishedNodeFilter(client);
             List<PublishedNode> publishedNodes = client.ActiveConfiguration.PubSubProviderConfig.PublishedNodes;
-            foreach (PublishedNode publishedNode in publishedNodes)
+            List<MachineNode> machineNodes = publishedNodeFilter.FilterMachineNodes(publishedNodes);
+            foreach (MachineNode machineNode in machineNodes)
             {
-                CreateSubscription(publishedNode);
+                CreateSubscription(machineNode);
             }
 
 
         }
-        private void CreateSubscription(PublishedNode publishedNode)
+        private void CreateSubscription(MachineNode machineNode)
         {
             NodeId? nodeId = null;
-            nodeId = ResolveNodeId(publishedNode);
+            nodeId = machineNode.ResolvedNodeId;
             if (nodeId != null)
             {
                 HierarchicalNode? hierarchicalNode = ReadNodeIdAsHierarchicalNode(null, nodeId);
@@ -179,7 +181,7 @@ namespace umatiGateway.Core.PubSub
             }
             else
             {
-                Logger.Error($"Unable to get node Id for Pub: {publishedNode}");
+                Logger.Error($"Unable to get node Id for Pub: {machineNode}");
             }
         }
         private void PreSubscribe(NodeId nodeId)

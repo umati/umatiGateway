@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright (c) 2025 FVA GmbH - interop4x. All rights reserved.
-using Microsoft.AspNetCore.Components.Forms.Mapping;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Http;
 using umatiGateway.Core.Configuration;
 using umatiGateway.Core.OPC;
 
@@ -25,6 +23,12 @@ namespace UmatiGateway.Pages
         public IActionResult OnPostDisconnect()
         {
             this.UmatiGatewayApp.MqttProvider.Disconnect();
+            return RedirectToPage();
+        }
+        public IActionResult OnPostRemoveNodeMqttConfig(int index)
+        {
+            PublishedNode publishedNode = this.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.PublishedNodes[index];
+            this.UmatiGatewayApp.RemoveNodeMqttConfig(publishedNode);
             return RedirectToPage();
         }
     }

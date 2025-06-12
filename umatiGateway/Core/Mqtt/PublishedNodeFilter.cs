@@ -36,6 +36,8 @@ namespace umatiGateway.Core.Mqtt
                                     childMachineNode.BaseType = publishedChildNodes.BaseType;
                                     childMachineNode.PublishedNodeType = "PublishedChildNodes";
                                     childMachineNode.ResolvedNodeId = child;
+                                    childMachineNode.NamespaceUrl = this.client.GetNamespaceTable().GetString(child.NamespaceIndex);
+                                    childMachineNode.NodeIdString = child.Identifier.ToString() ?? "";
                                     filteredMachineNodes.Add(child, childMachineNode);
                                 } else
                                 {

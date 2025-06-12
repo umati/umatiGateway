@@ -32,7 +32,7 @@
     </div>
     <div style="float:right; width:49%">
         <fieldset class="settings-fieldset">
-            <legend class="settings-legend">PubSub Nodes</legend>
+            <legend class="settings-legend">Published Nodes</legend>
             <table class="nodetable">
                 <thead>
                     <tr>
@@ -41,6 +41,61 @@
                         <th>NamespaceUrl</th>
                         <th>Identifier</th>
                         <th>BaseType</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (var i = 0; i < Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.PublishedNodes.Count; i++)
+                    {
+                        <tr>
+                            <td>@(i + 1)</td>
+                            <td>@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.PublishedNodes[i].Type</td>
+                            <td>@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.PublishedNodes[i].NamespaceUrl</td>
+                            <td>@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.PublishedNodes[i].NodeId</td>
+                            <td>@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.PublishedNodes[i].BaseType</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </fieldset>
+        <fieldset class="settings-fieldset">
+            <legend class="settings-legend">Published Child Nodes</legend>
+            <table class="nodetable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Type</th>
+                        <th>NamespaceUrl</th>
+                        <th>Identifier</th>
+                        <th>BaseType</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (var i = 0; i < Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.PublishedNodes.Count; i++)
+                    {
+                        <tr>
+                            <td>@(i + 1)</td>
+                            <td>@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.PublishedNodes[i].Type</td>
+                            <td>@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.PublishedNodes[i].NamespaceUrl</td>
+                            <td>@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.PublishedNodes[i].NodeId</td>
+                            <td>@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.PublishedNodes[i].BaseType</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </fieldset>
+        <fieldset class="settings-fieldset">
+            <legend class="settings-legend">Resolved Nodes</legend>
+            <table class="nodetable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Type</th>
+                        <th>NamespaceUrl</th>
+                        <th>Identifier</th>
+                        <th>BaseType</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>

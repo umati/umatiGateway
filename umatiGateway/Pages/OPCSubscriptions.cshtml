@@ -122,7 +122,10 @@
                                     </tr>
                                     <tr>
                                         <td align="right">
-                                            <button asp-page-handler="PublishNode" class="button" name="uuid" value="@selectedNode.uid">Publish</button>
+                                            <button asp-page-handler="AddNodeMqttConfig" class="button" name="uuid" value="@selectedNode.uid">Publish</button>
+                                        </td>
+                                        <td align="right">
+                                            <button asp-page-handler="AddNodeOpcPubSub" class="button" name="uuid" value="@selectedNode.uid">Publish</button>
                                         </td>
                                     </tr>
                                 </table>

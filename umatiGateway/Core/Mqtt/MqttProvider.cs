@@ -48,6 +48,7 @@ namespace umatiGateway.Core.Mqtt
     {
         private readonly object _lockObject = new object();
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+        public List<MachineNode> MachineNodes {get; set; } = new List<MachineNode>();
         private MqttClientFactory mqttFactory = new MqttClientFactory();
         private IMqttClient? mqttClient = null;
         private const string CLIENT_ID = "TestClient";
@@ -76,12 +77,10 @@ namespace umatiGateway.Core.Mqtt
         private JSONConverter jsonConverter = new JSONConverter();
         private bool shortenVariables = true;
         private BlockingCollection<NodeId> changedNodes = new BlockingCollection<NodeId>();
-        private List<MachineNode> machineNodes = new List<MachineNode>();
         private Dictionary<NodeId, string> placeholderVariablesWithTypeDefinition = new Dictionary<NodeId, string>();
         private NodeId? resultFolder = null;
         private List<string> filteredPlaceholderTags = new List<string>();
         private string connectionType = WEBSOCKET;
-        private MqttProviderConfig config;
 
         // @Fixme: Move to config
         private const string ServerCertificatePath = "broker_cert.pem";
@@ -91,7 +90,6 @@ namespace umatiGateway.Core.Mqtt
         public MqttProvider(UmatiGatewayApp client)
         {
             this.client = client;
-            this.config = client.ActiveConfiguration.MqttProviderConfig;
             mqttClient = mqttFactory.CreateMqttClient();
         }
 
@@ -107,81 +105,13 @@ namespace umatiGateway.Core.Mqtt
         {
             List<PublishedNode> publishedNodes = this.client.ActiveConfiguration.MqttProviderConfig.PublishedNodes;
             PublishedNodeFilter publishedNodeFilter = new PublishedNodeFilter(this.client);
-            this.machineNodes.AddRange(publishedNodeFilter.FilterMachineNodes(publishedNodes));
-            /*foreach(PublishedNode publishedConfigNode in publishedNodes)
-            {
-                switch (publishedConfigNode)
-                {
-                    case PublishedChildNodes publishedChildNodes:
-                        NodeId? resolvedNodeId = this.ResolveNodeId(publishedChildNodes.Type, publishedChildNodes.NodeId, publishedChildNodes.NamespaceUrl, publishedChildNodes.BaseType);
-                        if (resolvedNodeId != null)
-                        {
-                            List<NodeId> childNodes = client.BrowseLocalNodeIds(resolvedNodeId, BrowseDirection.Forward, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true);
-
-
-                            foreach (NodeId child in childNodes)
-                            {
-                                MachineNode childMachineNode = new MachineNode(publishedChildNodes.NodeId, publishedChildNodes.NamespaceUrl);
-                                childMachineNode.NodeIdType = publishedChildNodes.Type;
-                                childMachineNode.BaseType = publishedChildNodes.BaseType;
-                                childMachineNode.PublishedNodeType = "PublishedChildNodes";
-                                childMachineNode.ResolvedNodeId = child;
-                                this.machineNodes.Add(childMachineNode);
-                            }
-                        }
-                        else
-                        {
-                            Logger.Error($"PublishedChildNodes could not be resolved to a NodeId{publishedChildNodes}");
-                        }
-                            break;
-                    case PublishedNode publishedNode:
-                        NodeId? nodeId = this.ResolveNodeId(publishedNode.Type, publishedNode.NodeId, publishedNode.NamespaceUrl, publishedNode.BaseType);
-                        if (nodeId != null)
-                        {
-                            MachineNode machineNode = new MachineNode(publishedNode.NodeId, publishedNode.NamespaceUrl);
-                            machineNode.NodeIdType = publishedNode.Type;
-                            machineNode.BaseType = publishedNode.BaseType;
-                            machineNode.ResolvedNodeId = nodeId;
-                            this.machineNodes.Add(machineNode);
-                        } 
-                        else
-                        {
-                            Logger.Error($"PublishedNode could not be resolved to a NodeId{publishedNode}");
-                        }
-                        break;
-                    default:
-                        break;
-                }
-            }*/
+            this.MachineNodes.AddRange(publishedNodeFilter.FilterMachineNodes(publishedNodes));
+            Console.Out.WriteLine();
         }
-        private NodeId? ResolveNodeId(string nodeIdType, string nodeId, string namespaceurl, string baseType)
-        {
-            NodeId? resolvedNodeId = null;
-            Logger.Debug($"Read Machine Node: {nodeIdType}\t{nodeId}\t{namespaceurl}\t{baseType}");
-            int namespaceIndex = client.GetNamespaceTable().GetIndex(namespaceurl);
-            if (nodeIdType == "Numeric")
-            {
-                resolvedNodeId = new NodeId(Convert.ToUInt32(nodeId), (ushort)namespaceIndex);
-                Logger.Debug($"Resolved NodeId is:\t{resolvedNodeId}");
-            }
-            else if (nodeIdType == "String")
-            {
-                resolvedNodeId = new NodeId(nodeId, (ushort)namespaceIndex);
-                Logger.Debug($"Resolved NodeId is:\t{resolvedNodeId}");
-            }
-            else
-            {
-                Logger.Error($"Unknown NodeIdType {nodeIdType}");
-            }
-            return resolvedNodeId;
-        }
+
         public void Connect()
         {
-            /*
-            foreach (string ignoredPlaceholderTag in this.config.IgnoredPlaceholderTags)
-            {
-                filteredPlaceholderTags.Add(ignoredPlaceholderTag);
-            } */
+            MqttProviderConfig config = this.client.ActiveConfiguration.MqttProviderConfig;
             Logger.Info("MQTT Connect with TCP");
             if (!TimerSetup)
             {
@@ -203,6 +133,7 @@ namespace umatiGateway.Core.Mqtt
         }
         public void Reconnect()
         {
+            MqttProviderConfig config = this.client.ActiveConfiguration.MqttProviderConfig;
             if (!connected)
             {
                 Connect(config.ServerEndpoint, connectionType, "4321", config.UserName, config.Password);
@@ -210,6 +141,7 @@ namespace umatiGateway.Core.Mqtt
         }
         public void Connect(string connectionString, string connectionType, string port, string user, string pwd)
         {
+            MqttProviderConfig config = this.client.ActiveConfiguration.MqttProviderConfig;
             try
             {
                 this.connectionType = connectionType;
@@ -251,7 +183,7 @@ namespace umatiGateway.Core.Mqtt
         private void Connect_Client_Using_WebSockets()
         {
             Logger.Trace("MQTT Connect with Websockets");
-
+            MqttProviderConfig config = this.client.ActiveConfiguration.MqttProviderConfig;
             try
             {
                 if (mqttClient == null)
@@ -381,6 +313,7 @@ namespace umatiGateway.Core.Mqtt
         private void Connect_Client_Using_Tcp()
         {
             Logger.Trace("MQTT Connect with TCP");
+            MqttProviderConfig config = this.client.ActiveConfiguration.MqttProviderConfig;
             if (mqttClient != null)
             {
                 MqttClientOptions mqttClientOptions;
@@ -421,6 +354,7 @@ namespace umatiGateway.Core.Mqtt
         {
             lock (_lockObject)
             {
+                MqttProviderConfig config = this.client.ActiveConfiguration.MqttProviderConfig;
                 try
                 {
                     JObject sortedJsonObj = SortJsonKeysRecursively(jObject);
@@ -448,6 +382,7 @@ namespace umatiGateway.Core.Mqtt
         {
             lock (_lockObject)
             {
+                MqttProviderConfig config = this.client.ActiveConfiguration.MqttProviderConfig;
                 try
                 {
                     string MyTopic = config.Prefix + "/" + config.ClientId + "/" + "list/" + type;
@@ -473,9 +408,10 @@ namespace umatiGateway.Core.Mqtt
         {
             lock (_lockObject)
             {
+                MqttProviderConfig config = this.client.ActiveConfiguration.MqttProviderConfig;
                 try
                 {
-                    foreach (MachineNode machineNode in machineNodes)
+                    foreach (MachineNode machineNode in MachineNodes)
                     {
                         string MyTopic = config.Prefix + "/" + config.ClientId + "/" + "online/";
                         MyTopic += machineNode.InstanceNamespace;
@@ -504,6 +440,7 @@ namespace umatiGateway.Core.Mqtt
         {
             lock (_lockObject)
             {
+                MqttProviderConfig config = this.client.ActiveConfiguration.MqttProviderConfig;
                 try
                 {
                     string MyTopic = config.Prefix + "/" + config.ClientId + "/" + "bad_list/errors";
@@ -541,11 +478,12 @@ namespace umatiGateway.Core.Mqtt
         {
             lock (_lockObject)
             {
+                MqttProviderConfig config = this.client.ActiveConfiguration.MqttProviderConfig;
                 try
                 {
                     string MyTopic = config.Prefix + "/" + config.ClientId + "/" + "bad_list/errors";
                     JArray machinesErrorArray = new JArray();
-                    foreach (MachineNode machineNode in machineNodes)
+                    foreach (MachineNode machineNode in MachineNodes)
                     {
                         JObject machineErrorObject = new JObject();
                         machineErrorObject.Add("Machine", machineNode.NodeIdString.ToString());
@@ -588,6 +526,7 @@ namespace umatiGateway.Core.Mqtt
         {
             lock (_lockObject)
             {
+                MqttProviderConfig config = this.client.ActiveConfiguration.MqttProviderConfig;
                 try
                 {
                     string MyTopic = config.Prefix + "/" + config.ClientId + "/" + "clientOnline";
@@ -631,7 +570,7 @@ namespace umatiGateway.Core.Mqtt
         {
             try
             {
-                foreach (MachineNode machineNode in machineNodes)
+                foreach (MachineNode machineNode in MachineNodes)
                 {
                     NodeId? machineNodeId = machineNode.ResolvedNodeId;
                     if (machineNodeId != null)
@@ -675,7 +614,7 @@ namespace umatiGateway.Core.Mqtt
         {
             try
             {
-                foreach (MachineNode machineNode in machineNodes)
+                foreach (MachineNode machineNode in MachineNodes)
                 {
                     if (string.IsNullOrEmpty(machineNode.BaseType))
                     {
@@ -1155,8 +1094,9 @@ namespace umatiGateway.Core.Mqtt
         {
             try
             {
+                MqttProviderConfig config = this.client.ActiveConfiguration.MqttProviderConfig;
                 JArray identificationArray = new JArray();
-                foreach (MachineNode machineNode in machineNodes)
+                foreach (MachineNode machineNode in MachineNodes)
                 {
                     if (machineNode != null && machineNode.ResolvedNodeId != null)
                     {
@@ -1949,12 +1889,12 @@ namespace umatiGateway.Core.Mqtt
                             Logger.Info("Publish Identification Machine Node");
                             publishIdentificationMachineNodes();
                             Logger.Info("Publish Identification Machine Node finish.");
-                            foreach (MachineNode machineNode in machineNodes)
+                            foreach (MachineNode machineNode in MachineNodes)
                             {
                                 List<NodeId> nodeIdsToSubscribe = new List<NodeId>();
                                 foreach (KeyValuePair<NodeId, PublishedBrowsePaths> entry in machineNode.KnownBrowsePaths)
                                 {
-                                    //client.SubscribeToDataChanges(entry.Key, updateDataValue);
+                                    nodeIdsToSubscribe.Add(entry.Key);
                                 }
                                 client.SubscribeToDataChanges(nodeIdsToSubscribe, updateDataValue);
                             }
@@ -2036,7 +1976,7 @@ namespace umatiGateway.Core.Mqtt
             try
             {
                 Logger.Debug("Read Instance Nsu for Online Machines");
-                foreach (MachineNode machineNode1 in machineNodes)
+                foreach (MachineNode machineNode1 in MachineNodes)
                 {
                     NodeId? machine = machineNode1.ResolvedNodeId;
                     if (machine != null)
@@ -2077,7 +2017,7 @@ namespace umatiGateway.Core.Mqtt
                     }
                 }
                 Logger.Debug("Read Instance Nsu for published Machines");
-                foreach (MachineNode machineNode in machineNodes)
+                foreach (MachineNode machineNode in MachineNodes)
                 {
                     Logger.Debug($"Machine:\t{machineNode.NodeIdType}\t{machineNode.NamespaceUrl}\t{machineNode.NodeIdString}\t{machineNode.BaseType}");
                     NodeId? machineNodeId = machineNode.ResolvedNodeId;
@@ -2121,7 +2061,7 @@ namespace umatiGateway.Core.Mqtt
 
         private void updateDataValue(MonitoredItem monitoredItem, MonitoredItemNotificationEventArgs monitoredItemsArgs)
         {
-            foreach (MachineNode machineNode in machineNodes)
+            foreach (MachineNode machineNode in MachineNodes)
             {
                 Dictionary<NodeId, PublishedBrowsePaths> machineBrowsePaths = machineNode.KnownBrowsePaths;
                 if (machineBrowsePaths.TryGetValue(monitoredItem.ResolvedNodeId, out PublishedBrowsePaths? path))
@@ -2237,7 +2177,7 @@ namespace umatiGateway.Core.Mqtt
         }
         public void updateNode(NodeId affectedNode)
         {
-            foreach (MachineNode machineNode in machineNodes)
+            foreach (MachineNode machineNode in MachineNodes)
             {
                 Dictionary<NodeId, PublishedBrowsePaths> machineBrowsePaths = machineNode.KnownBrowsePaths;
                 if (machineBrowsePaths.TryGetValue(affectedNode, out PublishedBrowsePaths? path))

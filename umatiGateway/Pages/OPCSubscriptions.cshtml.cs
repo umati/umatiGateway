@@ -33,7 +33,7 @@ namespace UmatiGateway.Pages
             }
 
         }
-        public IActionResult OnPostPublishNode(string uuid)
+        public IActionResult OnPostAddNodeMqttConfig(string uuid)
         {
             UmatiGatewayApp? client = this.getClient();
             if (client != null)
@@ -43,7 +43,22 @@ namespace UmatiGateway.Pages
                 TreeNode? selectedTreeNode = this.GetForUid(uuid);
                 if (selectedTreeNode != null)
                 {
-                    client.publishNode(selectedTreeNode.NodeData.node.NodeId);
+                    client.AddNodeUmatiMqttConfig(selectedTreeNode.NodeData.node.NodeId);
+                }
+            }
+            return new PageResult();
+        }
+        public IActionResult OnPostAddNodeOpcPubSubConfig(string uuid)
+        {
+            UmatiGatewayApp? client = this.getClient();
+            if (client != null)
+            {
+                this.BrowseTree = client.BrowseTree;
+                this.BrowseTree.SelectedTreeNode = uuid;
+                TreeNode? selectedTreeNode = this.GetForUid(uuid);
+                if (selectedTreeNode != null)
+                {
+                    client.AddNodeOpcPubSubConfig(selectedTreeNode.NodeData.node.NodeId);
                 }
             }
             return new PageResult();
