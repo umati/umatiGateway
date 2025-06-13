@@ -30,7 +30,7 @@ namespace UmatiGateway.Pages
             SessionId = "";
             ConnectionUrl = "localhost";
             ClientId = "fva/matthias2";
-            Prefix = "Umati/v2";
+            Prefix = "umati/v2";
             Port = "1883";
             ConnectionTypes = new string[] { "Websocket", "Tcp" };
             publishedNodes = new List<PublishedNode>();
