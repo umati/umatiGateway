@@ -876,39 +876,30 @@ namespace UmatiGateway.OPC
                                 this.placeholderVariablesWithTypeDefinition.Add(child, this.getInstanceNsu(typeDefinition, false));
                             }
                             JToken dataValue = getDataValueAsObject(child);
-                            bool isProperty = false;
                             bool shorten = false;
                             bool useValueIndentation = true;
-
-                            if (typeDefinition == VariableTypeIds.PropertyType)
+                            if (shortenVariables)
                             {
-                                isProperty = true;
-                            }
-                            else
-                            {
-                                if (shortenVariables)
+                                List<NodeId> nodeIds = new List<NodeId>();
+                                if (this.client.configuration.includeStructuredComponents)
                                 {
-                                    List<NodeId> nodeIds = new List<NodeId>();
-                                    if (this.client.configuration.includeStructuredComponents)
-                                    {
-                                        nodeIds = this.client.BrowseLocalNodeIds(child, BrowseDirection.Forward, (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true);
-                                    }
-                                    else
-                                    {
-                                        nodeIds = this.client.BrowseLocalNodeIdsExcludeReference(child, BrowseDirection.Forward, (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true, ReferenceTypeIds.HasStructuredComponent);
-                                    }
-                                    if (nodeIds.Count == 0)
-                                    {
-                                        shorten = true;
-                                    }
-                                    if (this.getInstanceNsu(typeDefinition, false) == "nsu=http://opcfoundation.org/UA/GMS/;i=2004")
-                                    {
-                                        Logger.Trace("Not use ValueIndentation");
-                                        useValueIndentation = false;
-                                    }
+                                    nodeIds = this.client.BrowseLocalNodeIds(child, BrowseDirection.Forward, (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true);
+                                }
+                                else
+                                {
+                                    nodeIds = this.client.BrowseLocalNodeIdsExcludeReference(child, BrowseDirection.Forward, (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true, ReferenceTypeIds.HasStructuredComponent);
+                                }
+                                if (nodeIds.Count == 0)
+                                {
+                                    shorten = true;
+                                }
+                                if (this.getInstanceNsu(typeDefinition, false) == "nsu=http://opcfoundation.org/UA/GMS/;i=2004")
+                                {
+                                    Logger.Trace("Not use ValueIndentation");
+                                    useValueIndentation = false;
                                 }
                             }
-                            if (isProperty || shorten || !useValueIndentation)
+                            if (shorten || !useValueIndentation)
                             {
                                 if (dataValue is JValue)
                                 {
