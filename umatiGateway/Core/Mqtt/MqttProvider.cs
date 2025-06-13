@@ -832,10 +832,7 @@ namespace umatiGateway.Core.Mqtt
                             JToken dataValue = getDataValueAsObject(child);
                             bool shorten = false;
                             bool useValueIndentation = true;
-                            if (shortenVariables)
-                            {
-                                List<NodeId> nodeIds = new List<NodeId>();
-                                /*if (this.client.configuration.includeStructuredComponents)
+                                if (shortenVariables)
                                 {
                                     List<NodeId> nodeIds = new List<NodeId>();
                                     if (client.ActiveConfiguration.MqttProviderConfig.IncludeStructuredComponents)
@@ -855,8 +852,7 @@ namespace umatiGateway.Core.Mqtt
                                         Logger.Trace("Not use ValueIndentation");
                                         useValueIndentation = false;
                                     }
-                                }*/
-                            }
+                                }
                             if (shorten || !useValueIndentation)
                             {
                                 if (dataValue is JValue)
