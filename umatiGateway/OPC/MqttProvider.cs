@@ -1933,10 +1933,12 @@ namespace UmatiGateway.OPC
                             Logger.Info("Publish Identification Machine Node finish.");
                             foreach (MachineNode machineNode in this.machineNodes)
                             {
+                                List<NodeId> nodeIdsToSubscribe = new List<NodeId>();
                                 foreach (KeyValuePair<NodeId, PublishedBrowsePaths> entry in machineNode.KnownBrowsePaths)
                                 {
-                                    this.client.SubscribeToDataChanges(entry.Key, this.updateDataValue);
+                                    nodeIdsToSubscribe.Add(entry.Key);
                                 }
+                                client.SubscribeToDataChanges(nodeIdsToSubscribe, updateDataValue);
                             }
                             ReadInProgress = false;
                             firstReadFinished = true;
