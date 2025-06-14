@@ -942,11 +942,10 @@ namespace UmatiGateway.OPC
             }
 
         }
-
         /// <summary>
         /// Create Subscription and MonitoredItems for DataChanges
         /// </summary>
-        public uint SubscribeToDataChanges(NodeId nodeId, MonitoredItemNotificationEventHandler eventHandler)
+        public uint SubscribeToDataChanges(List<NodeId> nodeIds, MonitoredItemNotificationEventHandler eventHandler)
         {
             uint subscriptionId = 0;
             if (m_session == null || m_session.Connected == false)
@@ -972,23 +971,24 @@ namespace UmatiGateway.OPC
                     subscriptionId = subscription.Id;
                 }
 
-                m_output.WriteLine("New Subscription created with SubscriptionId = {0}.", subscription.Id);
+                m_output.WriteLine($"New Subscription created with SubscriptionId = {subscriptionId}.");
 
                 // Create MonitoredItems for data changes (Reference Server)
+                foreach (NodeId nodeId in nodeIds)
+                {
+                    MonitoredItem intMonitoredItem = new MonitoredItem(subscription.DefaultItem);
+                    // Int32 Node - Objects\CTT\Scalar\Simulation\Int32
+                    intMonitoredItem.StartNodeId = nodeId;
+                    intMonitoredItem.AttributeId = Attributes.Value;
+                    intMonitoredItem.DisplayName = "Subscription";
+                    intMonitoredItem.SamplingInterval = 1000;
+                    intMonitoredItem.Notification += eventHandler;
 
-                MonitoredItem intMonitoredItem = new MonitoredItem(subscription.DefaultItem);
-                // Int32 Node - Objects\CTT\Scalar\Simulation\Int32
-                intMonitoredItem.StartNodeId = nodeId;
-                intMonitoredItem.AttributeId = Attributes.Value;
-                intMonitoredItem.DisplayName = "Subscription";
-                intMonitoredItem.SamplingInterval = 1000;
-                intMonitoredItem.Notification += eventHandler;
-
-                subscription.AddItem(intMonitoredItem);
-
+                    subscription.AddItem(intMonitoredItem);
+                }
                 // Create the monitored items on Server side
                 subscription.ApplyChanges();
-                m_output.WriteLine("MonitoredItems created for SubscriptionId = {0} with NodeId {1}.", subscription.Id, nodeId);
+                m_output.WriteLine("MonitoredItems created for SubscriptionId = {0}");
             }
             catch (Exception ex)
             {
