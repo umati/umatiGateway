@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-06/schema#",
-  "$ref": "#/definitions/Welcome1",
+  "$ref": "#/definitions/Welcome9",
   "definitions": {
-    "Welcome1": {
+    "Welcome9": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -29,7 +29,7 @@
         "Notification",
         "Production"
       ],
-      "title": "Welcome1"
+      "title": "Welcome9"
     },
     "Equipment": {
       "type": "object",
@@ -40,6 +40,9 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
+        "<GroupIdentifier>": {
+          "$ref": "#/definitions/Equipment"
+        },
         "Manufacturer": {
           "$ref": "#/definitions/Manufacturer"
         },
@@ -52,7 +55,12 @@
           "type": "string"
         }
       },
-      "required": ["Manufacturer", "ProductInstanceUri", "SerialNumber"],
+      "required": [
+        "<GroupIdentifier>",
+        "Manufacturer",
+        "ProductInstanceUri",
+        "SerialNumber"
+      ],
       "title": "Identification"
     },
     "Manufacturer": {

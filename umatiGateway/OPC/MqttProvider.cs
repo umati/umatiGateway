@@ -35,6 +35,7 @@ using UmatiGateway.OPC.CustomEncoding;
 
 
 using System.Security.Cryptography.X509Certificates;
+using System.Runtime.CompilerServices;
 
 namespace UmatiGateway.OPC
 {
@@ -85,7 +86,7 @@ namespace UmatiGateway.OPC
         private List<MachineNode> machineNodes = new List<MachineNode>();
         private Dictionary<NodeId, string> placeholderVariablesWithTypeDefinition = new Dictionary<NodeId, string>();
         private NodeId? resultFolder = null;
-
+        private List<string> filteredPlaceholderTags = new List<string>();
         // @Fixme: Move to config
         private const string ServerCertificatePath = "broker_cert.pem";
         private const string CustomCaCertificatePath = "custom_ca.crt";
@@ -107,6 +108,10 @@ namespace UmatiGateway.OPC
         }
         public void Connect()
         {
+            foreach (string ignoredPlaceholderTag in this.client.configuration.IgnoredPlaceholderTags)
+            {
+                filteredPlaceholderTags.Add(ignoredPlaceholderTag);
+            }
             Logger.Info("MQTT Connect with TCP");
             if (!TimerSetup)
             {
@@ -774,7 +779,7 @@ namespace UmatiGateway.OPC
                 {
                     NodeId? placeHolderTypeDefinition = this.client.BrowseTypeDefinition(placeholder);
                     string phBrowseName = placeholderNode.BrowseName.Name;
-                    if (!jObject.ContainsKey(phBrowseName))
+                    if (!jObject.ContainsKey(phBrowseName) && !filteredPlaceholderTags.Contains(phBrowseName))
                     {
                         JObject placeholderType = new JObject();
                         jObject.Add(phBrowseName, placeholderType);
@@ -1024,18 +1029,21 @@ namespace UmatiGateway.OPC
                             {
                                 optionalMandatoryPlaceholdersOverParent.AddRange(this.client.GetOptionalAndMandatoryPlaceholders(typeNodeIdofNodeIDFromSubType));
                             }
-
                         }
                     }
                 }
-
             }
-            // Check for OptionalPlaceholder and MandatoryPlaceholder in the parents TypeDefinition
+            // Check for OptionalPlaceholder and MandatoryPlaceholder in the node Type
             List<NodeId> optionalMandatoryPlaceholders = new List<NodeId>();
             NodeId? ptypeDefinition = this.client.BrowseTypeDefinition(nodeId);
             if (ptypeDefinition != null)
             {
-                optionalMandatoryPlaceholders = this.client.GetOptionalAndMandatoryPlaceholders(ptypeDefinition);
+                List<NodeId> typeAndSuperTypes = new List<NodeId>();
+                SuperTypeList(ptypeDefinition, typeAndSuperTypes);
+                foreach (NodeId typeDefinition in typeAndSuperTypes)
+                {
+                    optionalMandatoryPlaceholders.AddRange(this.client.GetOptionalAndMandatoryPlaceholders(typeDefinition));
+                }
             }
             List<TypeClassNode> TypeClassNodes = this.client.GetTypeClassNodesForNodeId(nodeId);
             OptionalPlaceholdersByTypeClasses = this.client.GetOptionalAndMandatoryPlaceholdersForTypeClassNodes(TypeClassNodes);
@@ -1045,6 +1053,30 @@ namespace UmatiGateway.OPC
             }
             optionalMandatoryPlaceholders.AddRange(optionalMandatoryPlaceholdersOverParent);
             return optionalMandatoryPlaceholders;
+        }
+        private bool NodeIsSubTypeOf(NodeId typeNodeIdToProve, NodeId typeNodeId)
+        {
+            List<NodeId> subTypes = new List<NodeId>();
+            SubTypeList(typeNodeId, subTypes);
+            return subTypes.Contains(typeNodeIdToProve);
+        }
+        private void SubTypeList(NodeId typeNodeId, List<NodeId> subTypes)
+        {
+            subTypes.Add(typeNodeId);
+            List<NodeId> subTypesOfType = this.client.BrowseLocalNodeIds(typeNodeId, BrowseDirection.Forward, (int)NodeClass.VariableType | (int)NodeClass.ObjectType, ReferenceTypeIds.HasSubtype, true);
+            foreach (NodeId subType in subTypesOfType)
+            {
+                SubTypeList(subType, subTypes);
+            }
+        }
+        private void SuperTypeList(NodeId typeNodeId, List<NodeId> superTypes)
+        {
+            superTypes.Add(typeNodeId);
+            List<NodeId> superTypesOfType = this.client.BrowseLocalNodeIds(typeNodeId, BrowseDirection.Inverse, (int)NodeClass.VariableType | (int)NodeClass.ObjectType, ReferenceTypeIds.HasSubtype, true);
+            foreach (NodeId superType in superTypesOfType)
+            {
+                SuperTypeList(superType, superTypes);
+            }
         }
 
         private void addKnownBrowsePath(NodeId childNodeId, JToken childObject, NodeId? ParentId, MachineNode? machineNode = null)

@@ -223,6 +223,20 @@ namespace UmatiGateway
                         {
                             Logger.Info("No CustomEncodings found");
                         }
+                        XmlNodeList? ignoredPlaceholderTags = xmlDoc.SelectNodes("/Configuration/IgnoredPlaceholderTags/IgnoredPlaceholderTag");
+                        if (ignoredPlaceholderTags != null)
+                        {
+                            foreach (XmlNode ignoredPlaceholderTagNode in ignoredPlaceholderTags)
+                            {
+                                String name = this.ReadAttribute(ignoredPlaceholderTagNode, "name");
+                                configuration.IgnoredPlaceholderTags.Add(name);
+                            }
+                        }
+                        else
+                        {
+                            Logger.Info("No IgnoredPlaceholderTags found");
+                        }
+
                     }
                     else
                     {
@@ -327,7 +341,19 @@ namespace UmatiGateway
                         {
                             Logger.Info("No CustomEncodings found");
                         }
-
+                        XmlNodeList? ignoredPlaceholderTags = xmlDoc.SelectNodes("/Configuration/IgnoredPlaceholderTags/IgnoredPlaceholderTag");
+                        if (ignoredPlaceholderTags != null)
+                        {
+                            foreach (XmlNode ignoredPlaceholderTagNode in ignoredPlaceholderTags)
+                            {
+                                String name = this.ReadAttribute(ignoredPlaceholderTagNode, "name");
+                                configuration.IgnoredPlaceholderTags.Add(name);
+                            }
+                        }
+                        else
+                        {
+                            Logger.Info("No IgnoredPlaceholderTags found");
+                        }
                     }
                     else
                     {
