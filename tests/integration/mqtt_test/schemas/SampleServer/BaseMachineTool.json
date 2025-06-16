@@ -49,9 +49,7 @@
         "ProductInstanceUri": {
           "type": "string",
           "format": "uri",
-          "qt-uri-protocols": [
-            "http"
-          ]
+          "qt-uri-protocols": ["http"]
         },
         "SerialNumber": {
           "type": "string"
@@ -76,10 +74,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "locale",
-        "text"
-      ],
+      "required": ["locale", "text"],
       "title": "Manufacturer"
     },
     "Monitoring": {
@@ -96,11 +91,7 @@
           "$ref": "#/definitions/Stacklight"
         }
       },
-      "required": [
-        "<MonitoredElement>",
-        "MachineTool",
-        "Stacklight"
-      ],
+      "required": ["<MonitoredElement>", "MachineTool", "Stacklight"],
       "title": "Monitoring"
     },
     "MonitoredElement": {
@@ -111,9 +102,7 @@
           "$ref": "#/definitions/Channel1"
         }
       },
-      "required": [
-        "Channel 1"
-      ],
+      "required": ["Channel 1"],
       "title": "MonitoredElement"
     },
     "Channel1": {
@@ -156,10 +145,7 @@
           "type": "number"
         }
       },
-      "required": [
-        "properties",
-        "value"
-      ],
+      "required": ["properties", "value"],
       "title": "FeedOverride"
     },
     "FeedOverrideProperties": {
@@ -173,10 +159,7 @@
           "$ref": "#/definitions/EURange"
         }
       },
-      "required": [
-        "EURange",
-        "EngineeringUnits"
-      ],
+      "required": ["EURange", "EngineeringUnits"],
       "title": "FeedOverrideProperties"
     },
     "EURange": {
@@ -190,10 +173,7 @@
           "type": "number"
         }
       },
-      "required": [
-        "high",
-        "low"
-      ],
+      "required": ["high", "low"],
       "title": "EURange"
     },
     "EngineeringUnits": {
@@ -213,12 +193,7 @@
           "type": "integer"
         }
       },
-      "required": [
-        "Description",
-        "DisplayName",
-        "NamespaceUri",
-        "UnitId"
-      ],
+      "required": ["Description", "DisplayName", "NamespaceUri", "UnitId"],
       "title": "EngineeringUnits"
     },
     "MachineTool": {
@@ -232,10 +207,7 @@
           "type": "integer"
         }
       },
-      "required": [
-        "OperationMode",
-        "PowerOnDuration"
-      ],
+      "required": ["OperationMode", "PowerOnDuration"],
       "title": "MachineTool"
     },
     "Stacklight": {
@@ -252,11 +224,7 @@
           "type": "integer"
         }
       },
-      "required": [
-        "<OrderedObject>",
-        "NodeVersion",
-        "StacklightMode"
-      ],
+      "required": ["<OrderedObject>", "NodeVersion", "StacklightMode"],
       "title": "Stacklight"
     },
     "OrderedObject": {
@@ -273,11 +241,7 @@
           "$ref": "#/definitions/Light"
         }
       },
-      "required": [
-        "Light 0",
-        "Light 1",
-        "Light 2"
-      ],
+      "required": ["Light 0", "Light 1", "Light 2"],
       "title": "OrderedObject"
     },
     "Light": {
@@ -325,9 +289,7 @@
           "$ref": "#/definitions/ActiveProgram"
         }
       },
-      "required": [
-        "ActiveProgram"
-      ],
+      "required": ["ActiveProgram"],
       "title": "Production"
     },
     "ActiveProgram": {
@@ -344,11 +306,7 @@
           "$ref": "#/definitions/State"
         }
       },
-      "required": [
-        "Name",
-        "NumberInList",
-        "State"
-      ],
+      "required": ["Name", "NumberInList", "State"],
       "title": "ActiveProgram"
     },
     "State": {
@@ -359,9 +317,7 @@
           "$ref": "#/definitions/CurrentState"
         }
       },
-      "required": [
-        "CurrentState"
-      ],
+      "required": ["CurrentState"],
       "title": "State"
     },
     "CurrentState": {
@@ -375,10 +331,7 @@
           "$ref": "#/definitions/Manufacturer"
         }
       },
-      "required": [
-        "properties",
-        "value"
-      ],
+      "required": ["properties", "value"],
       "title": "CurrentState"
     },
     "CurrentStateProperties": {
@@ -392,10 +345,7 @@
           "type": "integer"
         }
       },
-      "required": [
-        "Id",
-        "Number"
-      ],
+      "required": ["Id", "Number"],
       "title": "CurrentStateProperties"
     }
   }
