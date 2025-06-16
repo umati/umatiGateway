@@ -987,7 +987,12 @@ namespace umatiGateway.Core.Mqtt
             NodeId? ptypeDefinition = client.BrowseTypeDefinition(nodeId);
             if (ptypeDefinition != null)
             {
-                optionalMandatoryPlaceholders = client.GetOptionalAndMandatoryPlaceholders(ptypeDefinition);
+                List<NodeId> typeAndSuperTypes = new List<NodeId>();
+                SuperTypeList(ptypeDefinition, typeAndSuperTypes);
+                foreach (NodeId typeDefinition in typeAndSuperTypes)
+                {
+                    optionalMandatoryPlaceholders.AddRange(this.client.GetOptionalAndMandatoryPlaceholders(typeDefinition));
+                }
             }
             List<TypeClassNode> TypeClassNodes = client.GetTypeClassNodesForNodeId(nodeId);
             OptionalPlaceholdersByTypeClasses = client.GetOptionalAndMandatoryPlaceholdersForTypeClassNodes(TypeClassNodes);
@@ -997,21 +1002,6 @@ namespace umatiGateway.Core.Mqtt
             }
             optionalMandatoryPlaceholders.AddRange(optionalMandatoryPlaceholdersOverParent);
             return optionalMandatoryPlaceholders;
-        }
-        private bool NodeIsSubTypeOf(NodeId typeNodeIdToProve, NodeId typeNodeId)
-        {
-            List<NodeId> subTypes = new List<NodeId>();
-            SubTypeList(typeNodeId, subTypes);
-            return subTypes.Contains(typeNodeIdToProve);
-        }
-        private void SubTypeList(NodeId typeNodeId, List<NodeId> subTypes)
-        {
-            subTypes.Add(typeNodeId);
-            List<NodeId> subTypesOfType = this.client.BrowseLocalNodeIds(typeNodeId, BrowseDirection.Forward, (int)NodeClass.VariableType | (int)NodeClass.ObjectType, ReferenceTypeIds.HasSubtype, true);
-            foreach (NodeId subType in subTypesOfType)
-            {
-                SubTypeList(subType, subTypes);
-            }
         }
         private void SuperTypeList(NodeId typeNodeId, List<NodeId> superTypes)
         {
