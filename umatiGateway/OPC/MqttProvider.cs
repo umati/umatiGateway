@@ -86,8 +86,7 @@ namespace UmatiGateway.OPC
         private List<MachineNode> machineNodes = new List<MachineNode>();
         private Dictionary<NodeId, string> placeholderVariablesWithTypeDefinition = new Dictionary<NodeId, string>();
         private NodeId? resultFolder = null;
-        private List<string> filteredPlaceholderTags = new List<string>(); 
-
+        private List<string> filteredPlaceholderTags = new List<string>();
         // @Fixme: Move to config
         private const string ServerCertificatePath = "broker_cert.pem";
         private const string CustomCaCertificatePath = "custom_ca.crt";
@@ -1065,7 +1064,7 @@ namespace UmatiGateway.OPC
         {
             subTypes.Add(typeNodeId);
             List<NodeId> subTypesOfType = this.client.BrowseLocalNodeIds(typeNodeId, BrowseDirection.Forward, (int)NodeClass.VariableType | (int)NodeClass.ObjectType, ReferenceTypeIds.HasSubtype, true);
-            foreach(NodeId subType in subTypesOfType)
+            foreach (NodeId subType in subTypesOfType)
             {
                 SubTypeList(subType, subTypes);
             }
