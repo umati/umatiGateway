@@ -2,13 +2,16 @@
 <Configuration version="1.0">
   <!-- For authentication with username and password use the line below.-->
   <!-- <OPCConnection serverendpoint="opc.tcp://opcua.umati.app:4843" authentication="None" user ="admin" password="pw1"/> -->
-  <OPCConnection serverendpoint="opc.tcp://127.0.0.1:4840" authentication="None" user="" password="" />
+  <OPCConnection serverendpoint="opc.tcp://127.0.0.1:4841" authentication="None" user="" password="" />
   <MqttConnection serverendpoint="mqtt://localhost:1883" user="" password="" clientId="company/client" prefix="umati/v2" />
   <PublishedNodes>
-	  <PublishedNode type="Numeric" namespaceurl="http://vdma.org/UA/LaserSystem-Example/" nodeId="5003"/>
+	  <PublishedNode type="Numeric" namespaceurl="http://vdma.org/OPCRoboticsTestServer/" nodeId="5018"/>
   </PublishedNodes>
   <CustomEncodings>
     <CustomEncoding name="GMSResultDataTypeEncoding" active="False" />
     <CustomEncoding name="ProcessingCategoryDataTypeEncoding" active="False" />
   </CustomEncodings>
+  <IgnoredPlaceholderTags>
+	  <IgnoredPlaceholderTag name="&lt;ParameterIdentifier&gt;"/>
+  </IgnoredPlaceholderTags>
 </Configuration>

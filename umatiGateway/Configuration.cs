@@ -32,6 +32,7 @@ namespace UmatiGateway
         public string mqttPrefix = "";
         public List<PublishedNode> publishedNodes = [];
         public List<CustomEncoding> customEncodings = [];
+        public List<string> IgnoredPlaceholderTags = new List<string>();
         public Configuration() { }
     }
     public class PublishedNode()
