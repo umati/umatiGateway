@@ -1,1249 +1,575 @@
 {
-    "$schema": "http://json-schema.org/draft-06/schema#",
-    "$ref": "#/definitions/Welcome10",
-    "definitions": {
-        "Welcome10": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "Equipment": {
-                    "$ref": "#/definitions/Equipment"
+  "Equipment": {
+    "Tools": {
+      "<Tool>": {
+        "Multi 1": {
+          "$TypeDefinition": "nsu=http://opcfoundation.org/UA/MachineTool/;i=51",
+          "<Tool>": {
+            "SubTool 0": {
+              "$TypeDefinition": "nsu=http://opcfoundation.org/UA/MachineTool/;i=50",
+              "ControlIdentifier1": 0,
+              "ControlIdentifierInterpretation": 0,
+              "Identifier": "SubTool 0",
+              "Locked": {
+                "properties": {
+                  "ReasonForLocking": "Opc.Ua.ServiceResultException: BadNothingToDo\r\n   at Opc.Ua.Client.Session.ReadValue(NodeId nodeId)\r\n   at UmatiGateway.OPC.UmatiGatewayApp.ReadValue(NodeId nodeId) in D:\\Interop4x\\UmatiGateway_filterPlaceholderTags\\umatiGateway\\umatiGateway\\OPC\\umatiGatewayApp.cs:line 937\r\n   at UmatiGateway.OPC.MqttProvider.getDataValueAsObject(NodeId nodeId) in D:\\Interop4x\\UmatiGateway_filterPlaceholderTags\\umatiGateway\\umatiGateway\\OPC\\MqttProvider.cs:line 1222"
                 },
-                "Identification": {
-                    "$ref": "#/definitions/Identification"
-                },
-                "Monitoring": {
-                    "$ref": "#/definitions/Monitoring"
-                },
-                "Notification": {
-                    "$ref": "#/definitions/Notification"
-                },
-                "Production": {
-                    "$ref": "#/definitions/Production"
+                "value": false
+              },
+              "ToolLife": {
+                "<ToolLifeEntry>": {
+                  "Rotations": {
+                    "$TypeDefinition": "nsu=http://opcfoundation.org/UA/MachineTool/;i=61",
+                    "properties": {
+                      "EngineeringUnits": {
+                        "Description": {
+                          "locale": "",
+                          "text": ""
+                        },
+                        "DisplayName": {
+                          "locale": "",
+                          "text": ""
+                        },
+                        "NamespaceUri": "",
+                        "UnitId": 0
+                      },
+                      "Indication": 7,
+                      "IsCountingUp": true,
+                      "LimitValue": 1048576
+                    },
+                    "value": 512
+                  }
                 }
+              }
             },
-            "required": [
-                "Equipment",
-                "Identification",
-                "Monitoring",
-                "Notification",
-                "Production"
-            ],
-            "title": "Welcome10"
-        },
-        "Equipment": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "Tools": {
-                    "$ref": "#/definitions/Tools"
-                }
-            },
-            "required": [
-                "Tools"
-            ],
-            "title": "Equipment"
-        },
-        "Tools": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "<Tool>": {
-                    "$ref": "#/definitions/ToolsTool"
+            "SubTool 1": {
+              "$TypeDefinition": "nsu=http://opcfoundation.org/UA/MachineTool/;i=50",
+              "ControlIdentifier1": 140,
+              "ControlIdentifierInterpretation": 0,
+              "Identifier": "SubTool 1",
+              "Locked": {
+                "properties": {
+                  "ReasonForLocking": "Opc.Ua.ServiceResultException: BadNothingToDo\r\n   at Opc.Ua.Client.Session.ReadValue(NodeId nodeId)\r\n   at UmatiGateway.OPC.UmatiGatewayApp.ReadValue(NodeId nodeId) in D:\\Interop4x\\UmatiGateway_filterPlaceholderTags\\umatiGateway\\umatiGateway\\OPC\\umatiGatewayApp.cs:line 937\r\n   at UmatiGateway.OPC.MqttProvider.getDataValueAsObject(NodeId nodeId) in D:\\Interop4x\\UmatiGateway_filterPlaceholderTags\\umatiGateway\\umatiGateway\\OPC\\MqttProvider.cs:line 1222"
                 },
-                "NodeVersion": {
-                    "type": "string",
-                    "format": "date-time"
+                "value": false
+              },
+              "ToolLife": {
+                "<ToolLifeEntry>": {
+                  "Rotations": {
+                    "$TypeDefinition": "nsu=http://opcfoundation.org/UA/MachineTool/;i=61",
+                    "properties": {
+                      "EngineeringUnits": {
+                        "Description": {
+                          "locale": "",
+                          "text": ""
+                        },
+                        "DisplayName": {
+                          "locale": "",
+                          "text": ""
+                        },
+                        "NamespaceUri": "",
+                        "UnitId": 0
+                      },
+                      "Indication": 7,
+                      "IsCountingUp": true,
+                      "LimitValue": 1048576
+                    },
+                    "value": 512
+                  }
                 }
+              }
             },
-            "required": [
-                "<Tool>",
-                "NodeVersion"
-            ],
-            "title": "Tools"
-        },
-        "ToolsTool": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "Multi 1": {
-                    "$ref": "#/definitions/Multi1"
+            "SubTool 2": {
+              "$TypeDefinition": "nsu=http://opcfoundation.org/UA/MachineTool/;i=50",
+              "ControlIdentifier1": 280,
+              "ControlIdentifierInterpretation": 0,
+              "Identifier": "SubTool 2",
+              "Locked": {
+                "properties": {
+                  "ReasonForLocking": "Opc.Ua.ServiceResultException: BadNothingToDo\r\n   at Opc.Ua.Client.Session.ReadValue(NodeId nodeId)\r\n   at UmatiGateway.OPC.UmatiGatewayApp.ReadValue(NodeId nodeId) in D:\\Interop4x\\UmatiGateway_filterPlaceholderTags\\umatiGateway\\umatiGateway\\OPC\\umatiGatewayApp.cs:line 937\r\n   at UmatiGateway.OPC.MqttProvider.getDataValueAsObject(NodeId nodeId) in D:\\Interop4x\\UmatiGateway_filterPlaceholderTags\\umatiGateway\\umatiGateway\\OPC\\MqttProvider.cs:line 1222"
                 },
-                "Tool1": {
-                    "$ref": "#/definitions/Tool1"
+                "value": false
+              },
+              "ToolLife": {
+                "<ToolLifeEntry>": {
+                  "Rotations": {
+                    "$TypeDefinition": "nsu=http://opcfoundation.org/UA/MachineTool/;i=61",
+                    "properties": {
+                      "EngineeringUnits": {
+                        "Description": {
+                          "locale": "",
+                          "text": ""
+                        },
+                        "DisplayName": {
+                          "locale": "",
+                          "text": ""
+                        },
+                        "NamespaceUri": "",
+                        "UnitId": 0
+                      },
+                      "Indication": 7,
+                      "IsCountingUp": true,
+                      "LimitValue": 1048576
+                    },
+                    "value": 512
+                  }
                 }
-            },
-            "required": [
-                "Multi 1",
-                "Tool1"
-            ],
-            "title": "ToolsTool"
-        },
-        "Multi1": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "$TypeDefinition": {
-                    "type": "string"
-                },
-                "<Tool>": {
-                    "$ref": "#/definitions/Multi1_<Tool"
-                }
-            },
-            "required": [
-                "$TypeDefinition",
-                "<Tool>"
-            ],
-            "title": "Multi1"
-        },
-        "Multi1_<Tool": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "SubTool 0": {
-                    "$ref": "#/definitions/Tool1"
-                },
-                "SubTool 1": {
-                    "$ref": "#/definitions/Tool1"
-                },
-                "SubTool 2": {
-                    "$ref": "#/definitions/Tool1"
-                }
-            },
-            "required": [
-                "SubTool 0",
-                "SubTool 1",
-                "SubTool 2"
-            ],
-            "title": "Multi1_<Tool"
+              }
+            }
+          }
         },
         "Tool1": {
-            "type": "object",
-            "additionalProperties": false,
+          "$TypeDefinition": "nsu=http://opcfoundation.org/UA/MachineTool/;i=50",
+          "ControlIdentifier1": 2,
+          "ControlIdentifierInterpretation": 0,
+          "Locked": {
             "properties": {
-                "$TypeDefinition": {
-                    "type": "string"
-                },
-                "ControlIdentifier1": {
-                    "type": "integer"
-                },
-                "ControlIdentifierInterpretation": {
-                    "type": "integer"
-                },
-                "Identifier": {
-                    "type": "string"
-                },
-                "Locked": {
-                    "$ref": "#/definitions/Locked"
-                },
-                "ToolLife": {
-                    "$ref": "#/definitions/ToolLife"
-                },
-                "Name": {
-                    "type": "string"
-                }
+              "ReasonForLocking": "Opc.Ua.ServiceResultException: BadNothingToDo\r\n   at Opc.Ua.Client.Session.ReadValue(NodeId nodeId)\r\n   at UmatiGateway.OPC.UmatiGatewayApp.ReadValue(NodeId nodeId) in D:\\Interop4x\\UmatiGateway_filterPlaceholderTags\\umatiGateway\\umatiGateway\\OPC\\umatiGatewayApp.cs:line 937\r\n   at UmatiGateway.OPC.MqttProvider.getDataValueAsObject(NodeId nodeId) in D:\\Interop4x\\UmatiGateway_filterPlaceholderTags\\umatiGateway\\umatiGateway\\OPC\\MqttProvider.cs:line 1222"
             },
-            "required": [
-                "$TypeDefinition",
-                "ControlIdentifier1",
-                "ControlIdentifierInterpretation",
-                "Locked",
-                "ToolLife"
-            ],
-            "title": "Tool1"
-        },
-        "Locked": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
+            "value": false
+          },
+          "Name": "Tool1",
+          "ToolLife": {
+            "<ToolLifeEntry>": {
+              "Rotations": {
+                "$TypeDefinition": "nsu=http://opcfoundation.org/UA/MachineTool/;i=61",
                 "properties": {
-                    "$ref": "#/definitions/LockedProperties"
+                  "EngineeringUnits": {
+                    "Description": {
+                      "locale": "",
+                      "text": ""
+                    },
+                    "DisplayName": {
+                      "locale": "",
+                      "text": ""
+                    },
+                    "NamespaceUri": "",
+                    "UnitId": 0
+                  },
+                  "Indication": 7,
+                  "IsCountingUp": true,
+                  "LimitValue": 1048576
                 },
-                "value": {
-                    "type": "boolean"
-                }
-            },
-            "required": [
-                "properties",
-                "value"
-            ],
-            "title": "Locked"
-        },
-        "LockedProperties": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "ReasonForLocking": {
-                    "type": "string"
-                }
-            },
-            "required": [
-                "ReasonForLocking"
-            ],
-            "title": "LockedProperties"
-        },
-        "ToolLife": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "<ToolLifeEntry>": {
-                    "$ref": "#/definitions/ToolLifeEntry"
-                }
-            },
-            "required": [
-                "<ToolLifeEntry>"
-            ],
-            "title": "ToolLife"
-        },
-        "ToolLifeEntry": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "Rotations": {
-                    "$ref": "#/definitions/Rotations"
-                }
-            },
-            "required": [
-                "Rotations"
-            ],
-            "title": "ToolLifeEntry"
-        },
-        "Rotations": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "$TypeDefinition": {
-                    "type": "string"
-                },
-                "properties": {
-                    "$ref": "#/definitions/RotationsProperties"
-                },
-                "value": {
-                    "type": "integer"
-                }
-            },
-            "required": [
-                "$TypeDefinition",
-                "properties",
-                "value"
-            ],
-            "title": "Rotations"
-        },
-        "RotationsProperties": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "EngineeringUnits": {
-                    "$ref": "#/definitions/EngineeringUnits"
-                },
-                "Indication": {
-                    "type": "integer"
-                },
-                "IsCountingUp": {
-                    "type": "boolean"
-                },
-                "LimitValue": {
-                    "type": "integer"
-                }
-            },
-            "required": [
-                "EngineeringUnits",
-                "Indication",
-                "IsCountingUp",
-                "LimitValue"
-            ],
-            "title": "RotationsProperties"
-        },
-        "EngineeringUnits": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "Description": {
-                    "$ref": "#/definitions/ComponentName"
-                },
-                "DisplayName": {
-                    "$ref": "#/definitions/ComponentName"
-                },
-                "NamespaceUri": {
-                    "type": "string"
-                },
-                "UnitId": {
-                    "type": "integer"
-                }
-            },
-            "required": [
-                "Description",
-                "DisplayName",
-                "NamespaceUri",
-                "UnitId"
-            ],
-            "title": "EngineeringUnits"
-        },
-        "ComponentName": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "locale": {
-                    "$ref": "#/definitions/Locale"
-                },
-                "text": {
-                    "type": "string"
-                }
-            },
-            "required": [
-                "locale",
-                "text"
-            ],
-            "title": "ComponentName"
-        },
-        "Identification": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "<GroupIdentifier>": {
-                    "$ref": "#/definitions/GroupIdentifier"
-                },
-                "ComponentName": {
-                    "$ref": "#/definitions/ComponentName"
-                },
-                "DeviceClass": {
-                    "type": "string"
-                },
-                "Location": {
-                    "type": "string"
-                },
-                "Manufacturer": {
-                    "$ref": "#/definitions/ComponentName"
-                },
-                "Model": {
-                    "$ref": "#/definitions/ComponentName"
-                },
-                "MonthOfConstruction": {
-                    "type": "integer"
-                },
-                "ProductCode": {
-                    "type": "string"
-                },
-                "ProductInstanceUri": {
-                    "type": "string",
-                    "format": "uri",
-                    "qt-uri-protocols": [
-                        "http"
-                    ]
-                },
-                "SerialNumber": {
-                    "type": "string"
-                },
-                "SoftwareIdentification": {
-                    "$ref": "#/definitions/SoftwareIdentification"
-                },
-                "SoftwareRevision": {
-                    "type": "string"
-                },
-                "YearOfConstruction": {
-                    "type": "integer"
-                }
-            },
-            "required": [
-                "<GroupIdentifier>",
-                "ComponentName",
-                "DeviceClass",
-                "Location",
-                "Manufacturer",
-                "Model",
-                "MonthOfConstruction",
-                "ProductCode",
-                "ProductInstanceUri",
-                "SerialNumber",
-                "SoftwareIdentification",
-                "SoftwareRevision",
-                "YearOfConstruction"
-            ],
-            "title": "Identification"
-        },
-        "GroupIdentifier": {
-            "type": "object",
-            "additionalProperties": false,
-            "title": "GroupIdentifier"
-        },
-        "SoftwareIdentification": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "<SoftwareItem>": {
-                    "$ref": "#/definitions/SoftwareItem"
-                }
-            },
-            "required": [
-                "<SoftwareItem>"
-            ],
-            "title": "SoftwareIdentification"
-        },
-        "SoftwareItem": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "OS": {
-                    "$ref": "#/definitions/OS"
-                }
-            },
-            "required": [
-                "OS"
-            ],
-            "title": "SoftwareItem"
-        },
+                "value": 512
+              }
+            }
+          }
+        }
+      },
+      "NodeVersion": "2025-06-16T07:38:16Z"
+    }
+  },
+  "Identification": {
+    "<GroupIdentifier>": {},
+    "ComponentName": {
+      "locale": "",
+      "text": "FullMachineTool"
+    },
+    "DeviceClass": "Machining centre (other)",
+    "Location": "CIMT A3 832/VIRTUAL 1 1/N 48.781340 E 9.165731",
+    "Manufacturer": {
+      "locale": "",
+      "text": "ISW Christian von Arnim"
+    },
+    "Model": {
+      "locale": "",
+      "text": "FullMachineTool"
+    },
+    "MonthOfConstruction": 6,
+    "ProductCode": "2021-47110815",
+    "ProductInstanceUri": "http://www.isw.uni-stuttgart.de/#FullMachineTool",
+    "SerialNumber": "2021-5255470740220189828",
+    "SoftwareIdentification": {
+      "<SoftwareItem>": {
         "OS": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "$TypeDefinition": {
-                    "type": "string"
-                },
-                "Identifier": {
-                    "type": "string"
-                },
-                "SoftwareRevision": {
-                    "type": "string"
-                }
+          "$TypeDefinition": "nsu=http://opcfoundation.org/UA/MachineTool/;i=43",
+          "Identifier": "Alpine Container",
+          "SoftwareRevision": "3.15.4"
+        }
+      }
+    },
+    "SoftwareRevision": "1.00.1",
+    "YearOfConstruction": 2020
+  },
+  "Monitoring": {
+    "<MonitoredElement>": {
+      "Channel 1": {
+        "$TypeDefinition": "nsu=http://opcfoundation.org/UA/MachineTool/;i=16",
+        "ChannelMode": 0,
+        "ChannelState": 1,
+        "FeedOverride": {
+          "properties": {
+            "EngineeringUnits": {
+              "Description": {
+                "locale": "",
+                "text": ""
+              },
+              "DisplayName": {
+                "locale": "",
+                "text": "%"
+              },
+              "NamespaceUri": "",
+              "UnitId": 0
             },
-            "required": [
-                "$TypeDefinition",
-                "Identifier",
-                "SoftwareRevision"
-            ],
-            "title": "OS"
+            "EURange": {
+              "high": 130.0,
+              "low": 0.0
+            }
+          },
+          "value": 110.9699999988079
         },
-        "Monitoring": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "<MonitoredElement>": {
-                    "$ref": "#/definitions/MonitoredElement"
-                },
-                "MachineTool": {
-                    "$ref": "#/definitions/MachineTool"
-                },
-                "Stacklight": {
-                    "$ref": "#/definitions/Stacklight"
-                }
+        "Name": "Channel 1"
+      },
+      "Channel 2": {
+        "$TypeDefinition": "nsu=http://opcfoundation.org/UA/MachineTool/;i=16",
+        "ChannelMode": 0,
+        "ChannelState": 1,
+        "FeedOverride": {
+          "properties": {
+            "EngineeringUnits": {
+              "Description": {
+                "locale": "",
+                "text": ""
+              },
+              "DisplayName": {
+                "locale": "",
+                "text": "%"
+              },
+              "NamespaceUri": "",
+              "UnitId": 0
             },
-            "required": [
-                "<MonitoredElement>",
-                "MachineTool",
-                "Stacklight"
-            ],
-            "title": "Monitoring"
+            "EURange": {
+              "high": 100.0,
+              "low": 0.0
+            }
+          },
+          "value": 18.760000001639128
         },
-        "MonitoredElement": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "Channel 1": {
-                    "$ref": "#/definitions/Channel"
-                },
-                "Channel 2": {
-                    "$ref": "#/definitions/Channel"
-                },
-                "Channel 3": {
-                    "$ref": "#/definitions/Channel"
-                },
-                "Channel 4": {
-                    "$ref": "#/definitions/Channel"
-                },
-                "EDM": {
-                    "$ref": "#/definitions/Edm"
-                },
-                "Laser": {
-                    "$ref": "#/definitions/Laser"
-                },
-                "Spindle 1": {
-                    "$ref": "#/definitions/Spindle1"
-                }
+        "Name": "Channel 2"
+      },
+      "Channel 3": {
+        "$TypeDefinition": "nsu=http://opcfoundation.org/UA/MachineTool/;i=16",
+        "ChannelMode": 0,
+        "ChannelState": 1,
+        "FeedOverride": {
+          "properties": {
+            "EngineeringUnits": {
+              "Description": {
+                "locale": "",
+                "text": ""
+              },
+              "DisplayName": {
+                "locale": "",
+                "text": "%"
+              },
+              "NamespaceUri": "",
+              "UnitId": 0
             },
-            "required": [
-                "Channel 1",
-                "Channel 2",
-                "Channel 3",
-                "Channel 4",
-                "EDM",
-                "Laser",
-                "Spindle 1"
-            ],
-            "title": "MonitoredElement"
+            "EURange": {
+              "high": 120.0,
+              "low": 0.0
+            }
+          },
+          "value": 73.71000000089407
         },
-        "Channel": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "$TypeDefinition": {
-                    "type": "string"
-                },
-                "ChannelMode": {
-                    "type": "integer"
-                },
-                "ChannelState": {
-                    "type": "integer"
-                },
-                "FeedOverride": {
-                    "$ref": "#/definitions/Override"
-                },
-                "Name": {
-                    "type": "string"
-                }
+        "Name": "Channel 3"
+      },
+      "Channel 4": {
+        "$TypeDefinition": "nsu=http://opcfoundation.org/UA/MachineTool/;i=16",
+        "ChannelMode": 0,
+        "ChannelState": 1,
+        "FeedOverride": {
+          "properties": {
+            "EngineeringUnits": {
+              "Description": {
+                "locale": "",
+                "text": ""
+              },
+              "DisplayName": {
+                "locale": "",
+                "text": "%"
+              },
+              "NamespaceUri": "",
+              "UnitId": 0
             },
-            "required": [
-                "$TypeDefinition",
-                "ChannelMode",
-                "ChannelState",
-                "FeedOverride",
-                "Name"
-            ],
-            "title": "Channel"
+            "EURange": {
+              "high": 100.0,
+              "low": 0.0
+            }
+          },
+          "value": 16.62999999988824
         },
+        "Name": "Channel 4"
+      },
+      "EDM": {
+        "$TypeDefinition": "nsu=http://opcfoundation.org/UA/MachineTool/;i=42",
+        "EDMGeneratorState": 3,
+        "IsOn": true,
+        "Name": "EDM"
+      },
+      "Laser": {
+        "$TypeDefinition": "nsu=http://opcfoundation.org/UA/MachineTool/;i=36",
+        "ControllerIsOn": false,
+        "LaserState": 1,
+        "Name": "Laser"
+      },
+      "Spindle 1": {
+        "$TypeDefinition": "nsu=http://opcfoundation.org/UA/MachineTool/;i=22",
+        "IsRotating": true,
+        "IsUsedAsAxis": false,
+        "Name": "Spindle 1",
         "Override": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "properties": {
-                    "$ref": "#/definitions/FeedOverrideProperties"
-                },
-                "value": {
-                    "type": "number"
-                }
+          "properties": {
+            "EngineeringUnits": {
+              "Description": {
+                "locale": "",
+                "text": ""
+              },
+              "DisplayName": {
+                "locale": "",
+                "text": ""
+              },
+              "NamespaceUri": "",
+              "UnitId": 0
             },
-            "required": [
-                "properties",
-                "value"
-            ],
-            "title": "Override"
+            "EURange": {
+              "high": 127.99,
+              "low": 0.0
+            }
+          },
+          "value": 78.0
+        }
+      }
+    },
+    "MachineTool": {
+      "OperationMode": 1,
+      "PowerOnDuration": 3
+    },
+    "Stacklight": {
+      "<OrderedObject>": {
+        "Light 0": {
+          "$TypeDefinition": "nsu=http://opcfoundation.org/UA/IA/;i=1006",
+          "<ControlChannel>": {},
+          "IsPartOfBase": false,
+          "NumberInList": 0,
+          "SignalColor": 1,
+          "SignalMode": 0,
+          "SignalOn": true
         },
-        "FeedOverrideProperties": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "EngineeringUnits": {
-                    "$ref": "#/definitions/EngineeringUnits"
-                },
-                "EURange": {
-                    "$ref": "#/definitions/EURange"
-                }
-            },
-            "required": [
-                "EURange",
-                "EngineeringUnits"
-            ],
-            "title": "FeedOverrideProperties"
+        "Light 1": {
+          "$TypeDefinition": "nsu=http://opcfoundation.org/UA/IA/;i=1006",
+          "<ControlChannel>": {},
+          "IsPartOfBase": false,
+          "NumberInList": 1,
+          "SignalColor": 4,
+          "SignalMode": 0,
+          "SignalOn": false
         },
-        "EURange": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "high": {
-                    "type": "number"
-                },
-                "low": {
-                    "type": "number"
-                }
-            },
-            "required": [
-                "high",
-                "low"
-            ],
-            "title": "EURange"
+        "Light 2": {
+          "$TypeDefinition": "nsu=http://opcfoundation.org/UA/IA/;i=1006",
+          "<ControlChannel>": {},
+          "IsPartOfBase": false,
+          "NumberInList": 2,
+          "SignalColor": 2,
+          "SignalMode": 0,
+          "SignalOn": false
         },
-        "Edm": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "$TypeDefinition": {
-                    "type": "string"
-                },
-                "EDMGeneratorState": {
-                    "type": "integer"
-                },
-                "IsOn": {
-                    "type": "boolean"
-                },
-                "Name": {
-                    "type": "string"
-                }
-            },
-            "required": [
-                "$TypeDefinition",
-                "EDMGeneratorState",
-                "IsOn",
-                "Name"
-            ],
-            "title": "Edm"
-        },
-        "Laser": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "$TypeDefinition": {
-                    "type": "string"
-                },
-                "ControllerIsOn": {
-                    "type": "boolean"
-                },
-                "LaserState": {
-                    "type": "integer"
-                },
-                "Name": {
-                    "type": "string"
-                }
-            },
-            "required": [
-                "$TypeDefinition",
-                "ControllerIsOn",
-                "LaserState",
-                "Name"
-            ],
-            "title": "Laser"
-        },
-        "Spindle1": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "$TypeDefinition": {
-                    "type": "string"
-                },
-                "IsRotating": {
-                    "type": "boolean"
-                },
-                "IsUsedAsAxis": {
-                    "type": "boolean"
-                },
-                "Name": {
-                    "type": "string"
-                },
-                "Override": {
-                    "$ref": "#/definitions/Override"
-                }
-            },
-            "required": [
-                "$TypeDefinition",
-                "IsRotating",
-                "IsUsedAsAxis",
-                "Name",
-                "Override"
-            ],
-            "title": "Spindle1"
-        },
-        "MachineTool": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "OperationMode": {
-                    "type": "integer"
-                },
-                "PowerOnDuration": {
-                    "type": "integer"
-                }
-            },
-            "required": [
-                "OperationMode",
-                "PowerOnDuration"
-            ],
-            "title": "MachineTool"
-        },
-        "Stacklight": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "<OrderedObject>": {
-                    "$ref": "#/definitions/StacklightOrderedObject"
-                },
-                "NodeVersion": {
-                    "type": "string"
-                },
-                "StacklightMode": {
-                    "type": "null"
-                }
-            },
-            "required": [
-                "<OrderedObject>",
-                "NodeVersion",
-                "StacklightMode"
-            ],
-            "title": "Stacklight"
-        },
-        "StacklightOrderedObject": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "Light 0": {
-                    "$ref": "#/definitions/Light"
-                },
-                "Light 1": {
-                    "$ref": "#/definitions/Light"
-                },
-                "Light 2": {
-                    "$ref": "#/definitions/Light"
-                },
-                "Light 3": {
-                    "$ref": "#/definitions/Light"
-                }
-            },
-            "required": [
-                "Light 0",
-                "Light 1",
-                "Light 2",
-                "Light 3"
-            ],
-            "title": "StacklightOrderedObject"
-        },
-        "Light": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "$TypeDefinition": {
-                    "type": "string"
-                },
-                "<ControlChannel>": {
-                    "$ref": "#/definitions/GroupIdentifier"
-                },
-                "IsPartOfBase": {
-                    "type": "boolean"
-                },
-                "NumberInList": {
-                    "type": "integer"
-                },
-                "SignalColor": {
-                    "type": "null"
-                },
-                "SignalMode": {
-                    "type": "null"
-                },
-                "SignalOn": {
-                    "type": "boolean"
-                }
-            },
-            "required": [
-                "$TypeDefinition",
-                "<ControlChannel>",
-                "IsPartOfBase",
-                "NumberInList",
-                "SignalColor",
-                "SignalMode",
-                "SignalOn"
-            ],
-            "title": "Light"
-        },
-        "Notification": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "Messages": {
-                    "$ref": "#/definitions/GroupIdentifier"
-                },
-                "Prognoses": {
-                    "$ref": "#/definitions/Prognoses"
-                }
-            },
-            "required": [
-                "Messages",
-                "Prognoses"
-            ],
-            "title": "Notification"
-        },
-        "Prognoses": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "<Prognosis>": {
-                    "$ref": "#/definitions/Prognosis"
-                },
-                "NodeVersion": {
-                    "type": "string",
-                    "format": "date-time"
-                }
-            },
-            "required": [
-                "<Prognosis>",
-                "NodeVersion"
-            ],
-            "title": "Prognoses"
-        },
-        "Prognosis": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "Maintenance": {
-                    "$ref": "#/definitions/Maintenance"
-                },
-                "Manual": {
-                    "$ref": "#/definitions/Maintenance"
-                },
-                "PartLoad": {
-                    "$ref": "#/definitions/Load"
-                },
-                "PartUnLoad": {
-                    "$ref": "#/definitions/Load"
-                },
-                "ProcessChangeover": {
-                    "$ref": "#/definitions/Maintenance"
-                },
-                "ProductionJobEnd": {
-                    "$ref": "#/definitions/ProductionJobEnd"
-                },
-                "ToolChange": {
-                    "$ref": "#/definitions/Maintenance"
-                },
-                "ToolLoad": {
-                    "$ref": "#/definitions/Load"
-                },
-                "ToolUnLoad": {
-                    "$ref": "#/definitions/Load"
-                },
-                "UtilityChange": {
-                    "$ref": "#/definitions/UtilityChange"
-                }
-            },
-            "required": [
-                "Maintenance",
-                "Manual",
-                "PartLoad",
-                "PartUnLoad",
-                "ProcessChangeover",
-                "ProductionJobEnd",
-                "ToolChange",
-                "ToolLoad",
-                "ToolUnLoad",
-                "UtilityChange"
-            ],
-            "title": "Prognosis"
-        },
+        "Light 3": {
+          "$TypeDefinition": "nsu=http://opcfoundation.org/UA/IA/;i=1006",
+          "<ControlChannel>": {},
+          "IsPartOfBase": false,
+          "NumberInList": 3,
+          "SignalColor": 7,
+          "SignalMode": 0,
+          "SignalOn": true
+        }
+      },
+      "NodeVersion": "",
+      "StacklightMode": 0
+    }
+  },
+  "Notification": {
+    "Messages": {},
+    "Prognoses": {
+      "<Prognosis>": {
         "Maintenance": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "$TypeDefinition": {
-                    "type": "string"
-                },
-                "Activity": {
-                    "$ref": "#/definitions/ComponentName"
-                },
-                "PredictedTime": {
-                    "type": "string",
-                    "format": "date-time"
-                },
-                "Location": {
-                    "$ref": "#/definitions/ComponentName"
-                }
-            },
-            "required": [
-                "$TypeDefinition",
-                "PredictedTime"
-            ],
-            "title": "Maintenance"
+          "$TypeDefinition": "nsu=http://opcfoundation.org/UA/MachineTool/;i=9",
+          "Activity": {
+            "locale": "en",
+            "text": "Replace actuator."
+          },
+          "PredictedTime": "1970-01-01T00:00:00Z"
         },
-        "Load": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "$TypeDefinition": {
-                    "type": "string"
-                },
-                "Location": {
-                    "$ref": "#/definitions/ComponentName"
-                },
-                "PartName": {
-                    "type": "string"
-                },
-                "PredictedTime": {
-                    "type": "string",
-                    "format": "date-time"
-                }
-            },
-            "required": [
-                "$TypeDefinition",
-                "Location",
-                "PredictedTime"
-            ],
-            "title": "Load"
+        "Manual": {
+          "$TypeDefinition": "nsu=http://opcfoundation.org/UA/MachineTool/;i=10",
+          "Activity": {
+            "locale": "en",
+            "text": "Open Window"
+          },
+          "PredictedTime": "1970-01-01T00:00:00Z"
+        },
+        "PartLoad": {
+          "$TypeDefinition": "nsu=http://opcfoundation.org/UA/MachineTool/;i=1",
+          "Location": {
+            "locale": "en",
+            "text": "Workspace Left"
+          },
+          "PartName": "Circle",
+          "PredictedTime": "1970-01-01T00:00:00Z"
+        },
+        "PartUnLoad": {
+          "$TypeDefinition": "nsu=http://opcfoundation.org/UA/MachineTool/;i=5",
+          "Location": {
+            "locale": "en",
+            "text": "Workspace Right"
+          },
+          "PartName": "Smiley",
+          "PredictedTime": "1970-01-01T00:00:00Z"
+        },
+        "ProcessChangeover": {
+          "$TypeDefinition": "nsu=http://opcfoundation.org/UA/MachineTool/;i=8",
+          "Activity": {
+            "locale": "en",
+            "text": "Flip Part"
+          },
+          "Location": {
+            "locale": "en",
+            "text": "Shaft Mid"
+          },
+          "PredictedTime": "1970-01-01T00:00:00Z"
         },
         "ProductionJobEnd": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "$TypeDefinition": {
-                    "type": "string"
-                },
-                "PredictedTime": {
-                    "type": "string",
-                    "format": "date-time"
-                },
-                "SourceIdentifier": {
-                    "type": "string"
-                }
-            },
-            "required": [
-                "$TypeDefinition",
-                "PredictedTime",
-                "SourceIdentifier"
-            ],
-            "title": "ProductionJobEnd"
+          "$TypeDefinition": "nsu=http://opcfoundation.org/UA/MachineTool/;i=37",
+          "PredictedTime": "1970-01-01T00:00:00Z",
+          "SourceIdentifier": "100x Smiley Job"
+        },
+        "ToolChange": {
+          "$TypeDefinition": "nsu=http://opcfoundation.org/UA/MachineTool/;i=45",
+          "Location": {
+            "locale": "en",
+            "text": "Magazine 1"
+          },
+          "PredictedTime": "1970-01-01T00:00:00Z"
+        },
+        "ToolLoad": {
+          "$TypeDefinition": "nsu=http://opcfoundation.org/UA/MachineTool/;i=4",
+          "Location": {
+            "locale": "en",
+            "text": "Magazine 2"
+          },
+          "PredictedTime": "1970-01-01T00:00:00Z"
+        },
+        "ToolUnLoad": {
+          "$TypeDefinition": "nsu=http://opcfoundation.org/UA/MachineTool/;i=18",
+          "Location": {
+            "locale": "en",
+            "text": "Magazine 3"
+          },
+          "PredictedTime": "1970-01-01T00:00:00Z"
         },
         "UtilityChange": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "$TypeDefinition": {
-                    "type": "string"
-                },
-                "PredictedTime": {
-                    "type": "string",
-                    "format": "date-time"
-                },
-                "UtilityName": {
-                    "type": "string"
-                }
-            },
-            "required": [
-                "$TypeDefinition",
-                "PredictedTime",
-                "UtilityName"
-            ],
-            "title": "UtilityChange"
-        },
-        "Production": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "ActiveProgram": {
-                    "$ref": "#/definitions/ActiveProgram"
-                },
-                "ProductionPlan": {
-                    "$ref": "#/definitions/ProductionPlan"
-                }
-            },
-            "required": [
-                "ActiveProgram",
-                "ProductionPlan"
-            ],
-            "title": "Production"
-        },
-        "ActiveProgram": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "JobIdentifier": {
-                    "type": "string"
-                },
-                "JobNodeId": {
-                    "type": "string"
-                },
-                "Name": {
-                    "type": "string"
-                },
-                "NumberInList": {
-                    "type": "integer"
-                },
-                "State": {
-                    "$ref": "#/definitions/State"
-                }
-            },
-            "required": [
-                "JobIdentifier",
-                "JobNodeId",
-                "Name",
-                "NumberInList",
-                "State"
-            ],
-            "title": "ActiveProgram"
-        },
-        "State": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "CurrentState": {
-                    "$ref": "#/definitions/CurrentState"
-                }
-            },
-            "required": [
-                "CurrentState"
-            ],
-            "title": "State"
-        },
-        "CurrentState": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "properties": {
-                    "$ref": "#/definitions/CurrentStateProperties"
-                },
-                "value": {
-                    "$ref": "#/definitions/ComponentName"
-                }
-            },
-            "required": [
-                "properties",
-                "value"
-            ],
-            "title": "CurrentState"
-        },
-        "CurrentStateProperties": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "Id": {
-                    "type": "string"
-                },
-                "Number": {
-                    "type": "integer"
-                }
-            },
-            "required": [
-                "Id",
-                "Number"
-            ],
-            "title": "CurrentStateProperties"
-        },
-        "ProductionPlan": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "<OrderedObject>": {
-                    "$ref": "#/definitions/ProductionPlanOrderedObject"
-                },
-                "NodeVersion": {
-                    "type": "string",
-                    "format": "date-time"
-                }
-            },
-            "required": [
-                "<OrderedObject>",
-                "NodeVersion"
-            ],
-            "title": "ProductionPlan"
-        },
-        "ProductionPlanOrderedObject": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "MyJob 1": {
-                    "$ref": "#/definitions/MyJob1"
-                }
-            },
-            "required": [
-                "MyJob 1"
-            ],
-            "title": "ProductionPlanOrderedObject"
-        },
-        "MyJob1": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "$TypeDefinition": {
-                    "type": "string"
-                },
-                "Identifier": {
-                    "type": "string"
-                },
-                "NumberInList": {
-                    "type": "integer"
-                },
-                "PartSets": {
-                    "$ref": "#/definitions/PartSets"
-                },
-                "ProductionPrograms": {
-                    "$ref": "#/definitions/ProductionPrograms"
-                },
-                "RunsCompleted": {
-                    "type": "integer"
-                },
-                "RunsPlanned": {
-                    "$ref": "#/definitions/RunsPlanned"
-                },
-                "State": {
-                    "$ref": "#/definitions/State"
-                }
-            },
-            "required": [
-                "$TypeDefinition",
-                "Identifier",
-                "NumberInList",
-                "PartSets",
-                "ProductionPrograms",
-                "RunsCompleted",
-                "RunsPlanned",
-                "State"
-            ],
-            "title": "MyJob1"
-        },
-        "PartSets": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "<PartSet>": {
-                    "$ref": "#/definitions/PartSet"
-                }
-            },
-            "required": [
-                "<PartSet>"
-            ],
-            "title": "PartSets"
-        },
-        "PartSet": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "Set1": {
-                    "$ref": "#/definitions/Set1"
-                }
-            },
-            "required": [
-                "Set1"
-            ],
-            "title": "PartSet"
-        },
-        "Set1": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "$TypeDefinition": {
-                    "type": "string"
-                },
-                "ContainsMixedParts": {
-                    "type": "boolean"
-                },
-                "PartsCompletedPerRun": {
-                    "type": "integer"
-                },
-                "PartsPerRun": {
-                    "$ref": "#/definitions/PartsPerRun"
-                },
-                "PartsPlannedPerRun": {
-                    "type": "integer"
-                }
-            },
-            "required": [
-                "$TypeDefinition",
-                "ContainsMixedParts",
-                "PartsCompletedPerRun",
-                "PartsPerRun",
-                "PartsPlannedPerRun"
-            ],
-            "title": "Set1"
-        },
-        "PartsPerRun": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "<Part>": {
-                    "$ref": "#/definitions/Part"
-                }
-            },
-            "required": [
-                "<Part>"
-            ],
-            "title": "PartsPerRun"
-        },
-        "Part": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "Part 1": {
-                    "$ref": "#/definitions/Part1_Class"
-                },
-                "Part 2": {
-                    "$ref": "#/definitions/Part1_Class"
-                },
-                "Part 3": {
-                    "$ref": "#/definitions/Part1_Class"
-                },
-                "Part 4": {
-                    "$ref": "#/definitions/Part1_Class"
-                },
-                "Part 5": {
-                    "$ref": "#/definitions/Part1_Class"
-                }
-            },
-            "required": [
-                "Part 1",
-                "Part 2",
-                "Part 3",
-                "Part 4",
-                "Part 5"
-            ],
-            "title": "Part"
-        },
-        "Part1_Class": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "$TypeDefinition": {
-                    "type": "string"
-                },
-                "Name": {
-                    "type": "string"
-                },
-                "PartQuality": {
-                    "type": "integer"
-                },
-                "ProcessIrregularity": {
-                    "type": "integer"
-                }
-            },
-            "required": [
-                "$TypeDefinition",
-                "Name",
-                "PartQuality",
-                "ProcessIrregularity"
-            ],
-            "title": "Part1_Class"
-        },
-        "ProductionPrograms": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "<OrderedObject>": {
-                    "$ref": "#/definitions/GroupIdentifier"
-                }
-            },
-            "required": [
-                "<OrderedObject>"
-            ],
-            "title": "ProductionPrograms"
-        },
-        "RunsPlanned": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "properties": {
-                    "$ref": "#/definitions/RunsPlannedProperties"
-                },
-                "value": {
-                    "type": "integer"
-                }
-            },
-            "required": [
-                "properties",
-                "value"
-            ],
-            "title": "RunsPlanned"
-        },
-        "RunsPlannedProperties": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "IsValid": {
-                    "type": "boolean"
-                }
-            },
-            "required": [
-                "IsValid"
-            ],
-            "title": "RunsPlannedProperties"
-        },
-        "Locale": {
-            "type": "string",
-            "enum": [
-                "",
-                "en"
-            ],
-            "title": "Locale"
+          "$TypeDefinition": "nsu=http://opcfoundation.org/UA/MachineTool/;i=6",
+          "PredictedTime": "1970-01-01T00:00:00Z",
+          "UtilityName": "H²"
         }
+      },
+      "NodeVersion": "2025-06-16T07:38:16Z"
     }
+  },
+  "Production": {
+    "ActiveProgram": {
+      "JobIdentifier": "MyJob 1",
+      "JobNodeId": "ns=13;i=58595",
+      "Name": "Full Program",
+      "NumberInList": 0,
+      "State": {
+        "CurrentState": {
+          "properties": {
+            "Id": "ns=5;i=141",
+            "Number": 4
+          },
+          "value": {
+            "locale": "en",
+            "text": "Aborted"
+          }
+        }
+      }
+    },
+    "ProductionPlan": {
+      "<OrderedObject>": {
+        "MyJob 1": {
+          "$TypeDefinition": "nsu=http://opcfoundation.org/UA/MachineTool/;i=29",
+          "Identifier": "MyJob 1",
+          "NumberInList": 0,
+          "PartSets": {
+            "<PartSet>": {
+              "Set1": {
+                "$TypeDefinition": "nsu=http://opcfoundation.org/UA/MachineTool/;i=34",
+                "ContainsMixedParts": false,
+                "PartsCompletedPerRun": 3,
+                "PartsPerRun": {
+                  "<Part>": {
+                    "Part 1": {
+                      "$TypeDefinition": "nsu=http://opcfoundation.org/UA/MachineTool/;i=56",
+                      "Name": "Part 1",
+                      "PartQuality": 1,
+                      "ProcessIrregularity": 1
+                    },
+                    "Part 2": {
+                      "$TypeDefinition": "nsu=http://opcfoundation.org/UA/MachineTool/;i=56",
+                      "Name": "Part 2",
+                      "PartQuality": 2,
+                      "ProcessIrregularity": 2
+                    },
+                    "Part 3": {
+                      "$TypeDefinition": "nsu=http://opcfoundation.org/UA/MachineTool/;i=56",
+                      "Name": "Part 3",
+                      "PartQuality": 3,
+                      "ProcessIrregularity": 3
+                    },
+                    "Part 4": {
+                      "$TypeDefinition": "nsu=http://opcfoundation.org/UA/MachineTool/;i=56",
+                      "Name": "Part 4",
+                      "PartQuality": 4,
+                      "ProcessIrregularity": 0
+                    },
+                    "Part 5": {
+                      "$TypeDefinition": "nsu=http://opcfoundation.org/UA/MachineTool/;i=56",
+                      "Name": "Part 5",
+                      "PartQuality": 0,
+                      "ProcessIrregularity": 1
+                    }
+                  }
+                },
+                "PartsPlannedPerRun": 5
+              }
+            }
+          },
+          "ProductionPrograms": {
+            "<OrderedObject>": {}
+          },
+          "RunsCompleted": 0,
+          "RunsPlanned": {
+            "properties": {
+              "IsValid": true
+            },
+            "value": 1
+          },
+          "State": {
+            "CurrentState": {
+              "properties": {
+                "Id": "i=0",
+                "Number": 0
+              },
+              "value": {
+                "locale": "",
+                "text": ""
+              }
+            }
+          }
+        }
+      },
+      "NodeVersion": "2025-06-16T07:38:16Z"
+    }
+  }
 }
