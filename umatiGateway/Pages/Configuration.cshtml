@@ -119,6 +119,24 @@
                     </div>
                 }
             }
+                <label for="IgnoredPlaceholderTags" class="settings-label">Ignored Placeholder Tags</label>
+                <table id="IgnoredPlaceholderTags" class="nodetable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (var i = 0; i < Model.Configuration.MqttProviderConfig.IgnoredPlaceholderTags.Count; i++)
+                        {
+                                <tr>
+                                    <td>@(i + 1)</td>
+                                    <td><input name="PublishedNodes[@i].type" value="@Model.Configuration.MqttProviderConfig.IgnoredPlaceholderTags[i].Name" readonly style="width: auto; border: none; outline: none;background-color: transparent;"></td>
+                                </tr>
+                        }
+                    </tbody>
+                </table>
             <label for="PublishedNodes" class="settings-label">Published Nodes</label>
             <table id="PublishedNodes" class="nodetable">
                 <thead>

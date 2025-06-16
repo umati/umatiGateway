@@ -52,6 +52,8 @@ namespace umatiGateway.Core.Configuration
         public const string TYPE_ID_CONDITION = "TypeIdCondition";
         public const string RELATION_CONDITION = "RelationCondition";
         public const string INCLUDE_SUB_TYPES = "includeSubTypes";
+        public const string IGNORED_PLACEHOLDER_TAGS = "IgnoredPlaceholderTags";
+        public const string IGNORED_PLACEHOLDER_TAG = "IgnoredPlaceholderTag";
 
         
         public UmatiConfigurationManager() { }
@@ -150,6 +152,25 @@ namespace umatiGateway.Core.Configuration
                                 Logger.Warn($"No {CUSTOM_ENCODINGS} node defined in {MQTT_PROVIDER} node.");
                             }
                             configuration.MqttProviderConfig.CustomEncodings = customEncodings;
+
+                            XmlNode? IgnoredPlaceholderTagsNode = ReadNode(mqttProviderNode, IGNORED_PLACEHOLDER_TAGS);
+                            if (IgnoredPlaceholderTagsNode != null)
+                            {
+                                XmlNodeList? IgnoredPlaceholderTagNodes = IgnoredPlaceholderTagsNode.SelectNodes(IGNORED_PLACEHOLDER_TAG);
+                                if (IgnoredPlaceholderTagNodes != null)
+                                {
+                                    foreach (XmlNode IgnoredPlaceholderTagNode in IgnoredPlaceholderTagNodes)
+                                    {
+                                        IgnoredPlaceholderTag ignoredPlaceholderTag = new IgnoredPlaceholderTag();
+                                        ignoredPlaceholderTag.Name = ReadAttribute(IgnoredPlaceholderTagNode, NAME);
+                                        configuration.MqttProviderConfig.IgnoredPlaceholderTags.Add(ignoredPlaceholderTag);
+                                    }
+                                }
+                                else
+                                {
+                                    Logger.Warn($"No {IGNORED_PLACEHOLDER_TAG} nodes defined in {IGNORED_PLACEHOLDER_TAGS} node.");
+                                }
+                            }
                         }
                         else
                         {
@@ -173,6 +194,7 @@ namespace umatiGateway.Core.Configuration
                                 Logger.Warn($"No {PUBLISHED_NODES} node defined in {PUB_SUB_PROVIDER} node.");
                             }
                         }
+                        
                     }
                     else
                     {
@@ -265,6 +287,15 @@ namespace umatiGateway.Core.Configuration
                 customEncodingNode.Attributes.Append(active);
                 customEncodingsNode.AppendChild(customEncodingNode);
             }
+            XmlElement IgnoredPlaceholderTagsNode = xmlDocument.CreateElement(IGNORED_PLACEHOLDER_TAGS);
+            foreach(IgnoredPlaceholderTag ignoredPlaceholderTag in configuration.MqttProviderConfig.IgnoredPlaceholderTags)
+            {
+                XmlElement IgnoredPlaceholderTagNode = xmlDocument.CreateElement(IGNORED_PLACEHOLDER_TAG);
+                XmlAttribute IgnoredPlaceholderTagName = xmlDocument.CreateAttribute(NAME);
+                IgnoredPlaceholderTagName.Value = ignoredPlaceholderTag.Name;
+                IgnoredPlaceholderTagNode.Attributes.Append(IgnoredPlaceholderTagName);
+                IgnoredPlaceholderTagsNode.AppendChild(IgnoredPlaceholderTagNode);
+            }
             mqttConnectionNode.Attributes.Append(mqttServerEndpoint);
             mqttConnectionNode.Attributes.Append(mqttUser);
             mqttConnectionNode.Attributes.Append(mqttPassword);
@@ -274,6 +305,7 @@ namespace umatiGateway.Core.Configuration
             mqttConnectionNode.Attributes.Append(publishInterval);
             mqttConnectionNode.AppendChild(CreatePublishedNodesNode(xmlDocument, configuration.MqttProviderConfig.PublishedNodes));
             mqttConnectionNode.AppendChild(customEncodingsNode);
+            mqttConnectionNode.AppendChild(IgnoredPlaceholderTagsNode);
             XmlElement pubSubNode = xmlDocument.CreateElement(PUB_SUB_PROVIDER);
             XmlAttribute pubSubServerEndpoint = xmlDocument.CreateAttribute(SERVERENDPOINT);
             pubSubServerEndpoint.Value = configuration.PubSubProviderConfig.ServerEndpoint;

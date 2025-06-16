@@ -113,7 +113,7 @@ namespace umatiGateway.Core.Configuration
         public string Prefix { get; set; } = "";
         public bool IncludeStructuredComponents { get; set; } = false;
         public uint PublishInterval { get; set; } = 5000;
-
+        public List<IgnoredPlaceholderTag> IgnoredPlaceholderTags { get; set; } = new List<IgnoredPlaceholderTag>();
         public List<CustomEncoding> CustomEncodings { get; set; } = new List<CustomEncoding>();
         public List<PublishedNode> PublishedNodes { get; set; } = new List<PublishedNode>();
         public override string ToString()
@@ -163,5 +163,8 @@ namespace umatiGateway.Core.Configuration
             return $"StartConfiguration(WebUI={StartWebUI}, OPC={StartOPCConnection}, MQTT={StartMQTTProvider}, PubSub={StartPubSubProvider})";
         }
     }
-    
+    public class IgnoredPlaceholderTag
+    {
+        public string Name { get; set; } = "";
+    }
 }

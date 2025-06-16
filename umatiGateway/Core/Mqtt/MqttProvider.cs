@@ -728,7 +728,8 @@ namespace umatiGateway.Core.Mqtt
                 {
                     NodeId? placeHolderTypeDefinition = client.BrowseTypeDefinition(placeholder);
                     string phBrowseName = placeholderNode.BrowseName.Name;
-                    if (!jObject.ContainsKey(phBrowseName) && !filteredPlaceholderTags.Contains(phBrowseName))
+                    List<string> ignoredPlaceholderTagNames = client.ActiveConfiguration.MqttProviderConfig.IgnoredPlaceholderTags.Select(t => t.Name).ToList();
+                    if (!jObject.ContainsKey(phBrowseName) && !ignoredPlaceholderTagNames.Contains(phBrowseName))
                     {
                         JObject placeholderType = new JObject();
                         jObject.Add(phBrowseName, placeholderType);
