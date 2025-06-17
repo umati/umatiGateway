@@ -11,7 +11,7 @@
 <p>Configure your Umati PubSub.</p>
 
 <form method="post">
-    <div style="float:left; width:49%">
+    <div style="float:left; width:20%">
         <fieldset class="settings-fieldset">
             <legend class="settings-legend">PubSub Provider</legend>
             <label for="MqttUser" class="settings-label">User</label>
@@ -30,11 +30,19 @@
             </div>
         </fieldset>
     </div>
-    <div style="float:right; width:49%">
+    <div style="float:right; width:79%">
         <fieldset class="settings-fieldset">
             <legend class="settings-legend">Published Nodes</legend>
             <table class="nodetable">
                 <thead>
+                    <colgroup>
+                        <col style="width: 3ch;">
+                        <col style="width: 10ch;">
+                        <col style="width: 10%;">
+                        <col style="width: 10%;">
+                        <col style="width: 10%;">
+                        <col style="width: 10ch;">
+                    </colgroup>
                     <tr>
                         <th>#</th>
                         <th>Type</th>
@@ -47,13 +55,22 @@
                 <tbody>
                     @for (var i = 0; i < Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.PublishedNodes.Count; i++)
                     {
-                        <tr>
-                            <td>@(i + 1)</td>
-                            <td>@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.PublishedNodes[i].Type</td>
-                            <td>@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.PublishedNodes[i].NamespaceUrl</td>
-                            <td>@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.PublishedNodes[i].NodeId</td>
-                            <td>@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.PublishedNodes[i].BaseType</td>
-                        </tr>
+                        if (@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.PublishedNodes[i].GetType().Name == "PublishedNode")
+                        {
+                            <tr>
+                                <td>@(i + 1)</td>
+                                <td>@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.PublishedNodes[i].Type</td>
+                                <td>@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.PublishedNodes[i].NamespaceUrl</td>
+                                <td>@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.PublishedNodes[i].NodeId</td>
+                                <td>@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.PublishedNodes[i].BaseType</td>
+                                <td>
+                                    <Button asp-page-handler="RemoveNodeMqttConfig" asp-route-index=@i
+                                            class="settings-button">
+                                        <img src="~/css/delete.png" />
+                                    </Button>
+                                </td>
+                            </tr>
+                        }
                     }
                 </tbody>
             </table>
@@ -62,6 +79,14 @@
             <legend class="settings-legend">Published Child Nodes</legend>
             <table class="nodetable">
                 <thead>
+                    <colgroup>
+                        <col style="width: 3ch;">
+                        <col style="width: 10ch;">
+                        <col style="width: 10%;">
+                        <col style="width: 10%;">
+                        <col style="width: 10%;">
+                        <col style="width: 10ch;">
+                    </colgroup>
                     <tr>
                         <th>#</th>
                         <th>Type</th>
@@ -89,24 +114,33 @@
             <legend class="settings-legend">Resolved Nodes</legend>
             <table class="nodetable">
                 <thead>
+                    <colgroup>
+                        <col style="width: 3ch;">
+                        <col style="width: 10ch;">
+                        <col style="width: 10%;">
+                        <col style="width: 10%;">
+                        <col style="width: 10%;">
+                        <col style="width: 15ch;">
+                    </colgroup>
                     <tr>
                         <th>#</th>
                         <th>Type</th>
                         <th>NamespaceUrl</th>
                         <th>Identifier</th>
                         <th>BaseType</th>
-                        <th>Actions</th>
+                        <th>NodeId</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @for (var i = 0; i < Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.PublishedNodes.Count; i++)
+                    @for (var i = 0; i < Model.UmatiGatewayApp.PubSubProvider.MachineNodes.Count(); i++)
                     {
                         <tr>
                             <td>@(i + 1)</td>
-                            <td>@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.PublishedNodes[i].Type</td>
-                            <td>@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.PublishedNodes[i].NamespaceUrl</td>
-                            <td>@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.PublishedNodes[i].NodeId</td>
-                            <td>@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.PublishedNodes[i].BaseType</td>
+                            <td>@Model.UmatiGatewayApp.PubSubProvider.MachineNodes[i].NodeIdType</td>
+                            <td>@Model.UmatiGatewayApp.PubSubProvider.MachineNodes[i].NamespaceUrl</td>
+                            <td>@Model.UmatiGatewayApp.PubSubProvider.MachineNodes[i].NodeIdString</td>
+                            <td>@Model.UmatiGatewayApp.PubSubProvider.MachineNodes[i].BaseType</td>
+                            <td>@Model.UmatiGatewayApp.PubSubProvider.MachineNodes[i].ResolvedNodeId</td>
                         </tr>
                     }
                 </tbody>

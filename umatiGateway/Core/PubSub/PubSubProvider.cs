@@ -44,6 +44,7 @@ namespace umatiGateway.Core.PubSub
         WriterGroupDataType WriterGroup = new WriterGroupDataType();
         private readonly System.Timers.Timer pubTestTimer = new System.Timers.Timer(5000);
         private ReferenceDescriptionResolver referenceDescriptionResolver;
+        public List<MachineNode> MachineNodes { get; set; } = new List<MachineNode>();
 
 
 
@@ -154,8 +155,8 @@ namespace umatiGateway.Core.PubSub
         {
             PublishedNodeFilter publishedNodeFilter = new PublishedNodeFilter(client);
             List<PublishedNode> publishedNodes = client.ActiveConfiguration.PubSubProviderConfig.PublishedNodes;
-            List<MachineNode> machineNodes = publishedNodeFilter.FilterMachineNodes(publishedNodes);
-            foreach (MachineNode machineNode in machineNodes)
+            this.MachineNodes = publishedNodeFilter.FilterMachineNodes(publishedNodes);
+            foreach (MachineNode machineNode in MachineNodes)
             {
                 CreateSubscription(machineNode);
             }
