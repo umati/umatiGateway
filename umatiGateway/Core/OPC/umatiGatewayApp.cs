@@ -118,11 +118,6 @@ namespace umatiGateway.Core.OPC
             }
         }
 
-
-        public void DisconnectMqtt()
-        {
-            MqttProvider.Disconnect();
-        }
         /// <summary>
         /// Creates a session with the UA server
         /// </summary>
@@ -255,24 +250,16 @@ namespace umatiGateway.Core.OPC
             }
         }
 
-        /// <summary>
-        /// Disconnects the session.
-        /// </summary>
         public void Disconnect()
         {
             try
             {
-                //NodeId nodeId = new NodeId((uint)5, (ushort)8);
-                //this.decodeComplexType(nodeId);
                 if (m_session != null)
                 {
                     m_output.WriteLine("Disconnecting...");
-
                     m_session.Close();
                     m_session.Dispose();
                     m_session = null;
-
-                    // Log Session Disconnected event
                     m_output.WriteLine("Session Disconnected.");
                 }
                 else
@@ -282,7 +269,6 @@ namespace umatiGateway.Core.OPC
             }
             catch (Exception ex)
             {
-                // Log Error
                 m_output.WriteLine($"Disconnect Error : {ex.Message}");
             }
         }
@@ -733,7 +719,7 @@ namespace umatiGateway.Core.OPC
                     BrowseTree.Initialized = true;
                     if (node.NodeClass == NodeClass.Variable)
                     {
-                        nodeData.DataValue = decodeComplexType(node.NodeId);
+                        //nodeData.DataValue = decodeComplexType(node.NodeId);
                     }
                 }
             }
@@ -793,10 +779,10 @@ namespace umatiGateway.Core.OPC
                             TreeNode treeNode = new TreeNode(nodeData);
                             TreeNode.children.AddLast(treeNode);
                             BrowseTree.uids.Add(treeNode.uid, treeNode);
-                            if (node.NodeClass == NodeClass.Variable)
+                            /*if (node.NodeClass == NodeClass.Variable)
                             {
                                 nodeData.DataValue = decodeComplexType(node.NodeId);
-                            }
+                            }*/
                         }
                     }
                 }
