@@ -19,7 +19,8 @@ namespace umatiGateway.Core.OPC
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         public PubSubProvider PubSubProvider { get; set; }
-        public MqttProvider MqttProvider;
+        public MqttProvider MqttProvider { get; set; }
+        public IOpcUaClient OpcUaClient { get; set; }
         public Session? Session => m_session;
         public TypeDictionaries TypeDictionaries;
         public string opcServerUrl = "";
@@ -55,10 +56,10 @@ namespace umatiGateway.Core.OPC
             m_output = writer;
             m_configuration = configuration;
             m_configuration.CertificateValidator.CertificateValidation += CertificateValidation;
+            OpcUaClient = new OpcUaClient(this, configuration);
             TypeDictionaries = new TypeDictionaries(this);
             MqttProvider = new MqttProvider(this);
             PubSubProvider = new PubSubProvider(this);
-
         }
         private void ConfigureLogging()
         {
@@ -109,12 +110,17 @@ namespace umatiGateway.Core.OPC
             if(startConfiguration.StartOPCConnection)
             {
                 Logger.Info("Create OPC Connection");
-                _ = ConnectAsync(opcServerUrl).Result;
+                this.OpcUaClient.Connect();
             }
             if(startConfiguration.StartMQTTProvider)
             {
                 Logger.Info("Create Mqtt Connection");
                 MqttProvider.Connect();
+            }
+            if (startConfiguration.StartPubSubProvider)
+            {
+                Logger.Info("Create PubSub Connection");
+                PubSubProvider.Connect();
             }
         }
 

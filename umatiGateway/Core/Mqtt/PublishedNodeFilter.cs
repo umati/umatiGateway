@@ -9,10 +9,12 @@ namespace umatiGateway.Core.Mqtt
     public class PublishedNodeFilter
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-        UmatiGatewayApp client;
-        public PublishedNodeFilter(UmatiGatewayApp client)
+        private UmatiGatewayApp app;
+        private IOpcUaClient client;
+        public PublishedNodeFilter(UmatiGatewayApp app)
         {
-            this.client = client;
+            this.app = app;
+            this.client = app.OpcUaClient;
         }
         public List<MachineNode> FilterMachineNodes(List<PublishedNode> publishedNodes)
         {

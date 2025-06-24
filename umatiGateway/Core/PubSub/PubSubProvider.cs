@@ -28,15 +28,14 @@ namespace umatiGateway.Core.PubSub
         // Pre subscription list
         private List<NodeId> subscriptionIds = new List<NodeId>();
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-        private bool keepAliveTimerStarted = false;
         private System.Timers.Timer keepAliveTimer = new System.Timers.Timer();
-        private UmatiGatewayApp client;
+        private UmatiGatewayApp app;
+        private IOpcUaClient client;
         private Dictionary<NodeId, HierarchicalNode> rootNodes = new Dictionary<NodeId, HierarchicalNode>();
         private PubSubConfigurationDataType PubSubConfigurationDataType = new PubSubConfigurationDataType();
         private PubSubConnectionDataType PubSubConnectionDataType = new PubSubConnectionDataType();
         private UaPubSubApplication pubSubApp;
         private UaPubSubDataStore pubSubDataStore = new UaPubSubDataStore();
-        private uint writerid = 1;
         private PublishedDataSetDataTypeCollection publishedDataSets = new();
         private DataSetWriterDataTypeCollection dataSetWriters = new();
         private WriterGroupDataTypeCollection writerGroups = new();
@@ -46,11 +45,10 @@ namespace umatiGateway.Core.PubSub
         private ReferenceDescriptionResolver referenceDescriptionResolver;
         public List<MachineNode> MachineNodes { get; set; } = new List<MachineNode>();
 
-
-
-        public PubSubProvider(UmatiGatewayApp client)
+        public PubSubProvider(UmatiGatewayApp app)
         {
-            this.client = client;
+            this.app = app;
+            this.client = app.OpcUaClient;
 
             // Init Config
             PubSubConfigurationDataType = new PubSubConfigurationDataType
@@ -116,45 +114,11 @@ namespace umatiGateway.Core.PubSub
             //AsyncHelper.RunSync(() => this.mqttClient.DisconnectAsync());
             Logger.Info("Disconnected");
         }
-        public void Reconnect()
-        {
-            Connect();
-        }
-        private void KeepAliveEvent(object? source, System.Timers.ElapsedEventArgs e)
-        {
-            try
-            {
-                Logger.Debug("Keep Alive");
-                DataValue? dataValue = client.ReadValue(VariableIds.Server_ServerStatus_State);
-                if (dataValue != null)
-                {
-                    ServerState serverState = (ServerState)(int)dataValue.Value;
-                    Logger.Debug(serverState.ToString());
-                }
-            }
-            catch (ServiceResultException opcException)
-            {
-                Logger.Info("Message:" + opcException.Message);
-                if (opcException.Message == "BadNotConnected")
-                {
-                    Logger.Info("Reconnecting OPC");
-                    _ = client.ConnectAsync(client.opcServerUrl).Result;
-                }
-            }
-            catch (MQTTnet.Exceptions.MqttClientNotConnectedException mqttException)
-            {
-                Logger.Info(mqttException.ToString());
-            }
-            catch (Exception ex)
-            {
-                Logger.Info(ex.ToString());
-            }
-        }
 
         private void CreateSubscriptions()
         {
-            PublishedNodeFilter publishedNodeFilter = new PublishedNodeFilter(client);
-            List<PublishedNode> publishedNodes = client.ActiveConfiguration.PubSubProviderConfig.PublishedNodes;
+            PublishedNodeFilter publishedNodeFilter = new PublishedNodeFilter(app);
+            List<PublishedNode> publishedNodes = app.ActiveConfiguration.PubSubProviderConfig.PublishedNodes;
             this.MachineNodes = publishedNodeFilter.FilterMachineNodes(publishedNodes);
             foreach (MachineNode machineNode in MachineNodes)
             {
@@ -202,14 +166,14 @@ namespace umatiGateway.Core.PubSub
        
         public string CreateTopic(HierarchicalNode hierarchicalProperty) 
         {
-            UmatiConfiguration config = client.ActiveConfiguration;
-            string topic = $"umati/v3/json/data/{config.MqttProviderConfig.ClientId}/{GetBrowsePath(hierarchicalProperty)}";
+            UmatiConfiguration config = app.ActiveConfiguration;
+            string topic = $"{config.PubSubProviderConfig.Prefix}/json/data/{config.PubSubProviderConfig.ClientId}/{GetBrowsePath(hierarchicalProperty)}";
             return topic;
         }
         public string CreateMetaTopic(HierarchicalNode hierarchicalProperty)
         {
-            UmatiConfiguration config = client.ActiveConfiguration;
-            string topic = $"umati/v3/json/metadata/{config.MqttProviderConfig.ClientId}/{GetBrowsePath(hierarchicalProperty)}";
+            UmatiConfiguration config = app.ActiveConfiguration;
+            string topic = $"{config.PubSubProviderConfig.Prefix}/json/metadata/{config.PubSubProviderConfig.ClientId}/{GetBrowsePath(hierarchicalProperty)}";
             return topic;
         }
         public string GetBrowsePath(HierarchicalNode hierarchicalNode, bool includeNamespaceIndex = false, string delimeter = "/")

@@ -9,9 +9,9 @@ namespace umatiGateway.Core.PubSub
 {
     public class ReferenceDescriptionResolver
     {
-        UmatiGatewayApp client;
+        IOpcUaClient client;
         List<NodeId> referenceTypeIds = new List<NodeId>();
-        public ReferenceDescriptionResolver(UmatiGatewayApp client)
+        public ReferenceDescriptionResolver(IOpcUaClient client)
         {
             this.client = client;
         }
@@ -41,7 +41,7 @@ namespace umatiGateway.Core.PubSub
                 nodeToBrowseBackward.IncludeSubtypes = false;
                 nodesToBrowse.Add(nodeToBrowseBackward);
             }
-            Session? session = client.Session;
+            Session? session = client.GetSession();
             if (session != null)
             {
                 session.Browse(null, null, 10000, nodesToBrowse, out BrowseResultCollection browseResultCollection, out DiagnosticInfoCollection diagnosticInfos);

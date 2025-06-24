@@ -57,7 +57,8 @@ namespace umatiGateway.Core.Mqtt
         public CustomEncodingManager customEncodingManager = new CustomEncodingManager();
         public bool useGMSResultEncoding = false;
         public List<PublishedNode> publishedNodes = new List<PublishedNode>();
-        private UmatiGatewayApp client;
+        private UmatiGatewayApp app;
+        private IOpcUaClient client;
         private Dictionary<NodeId, string> MqttValues = new Dictionary<NodeId, string>();
         private bool connected = false;
         private System.Timers.Timer aTimer = new System.Timers.Timer();
@@ -87,9 +88,10 @@ namespace umatiGateway.Core.Mqtt
         private const string CustomCaCertificatePath = "custom_ca.crt";
 
 
-        public MqttProvider(UmatiGatewayApp client)
+        public MqttProvider(UmatiGatewayApp app)
         {
-            this.client = client;
+            this.app = app;
+            this.client = app.OpcUaClient;
             mqttClient = mqttFactory.CreateMqttClient();
         }
 
@@ -103,15 +105,15 @@ namespace umatiGateway.Core.Mqtt
         }
         private void ResolveConfiguration()
         {
-            List<PublishedNode> publishedNodes = this.client.ActiveConfiguration.MqttProviderConfig.PublishedNodes;
-            PublishedNodeFilter publishedNodeFilter = new PublishedNodeFilter(this.client);
+            List<PublishedNode> publishedNodes = this.app.ActiveConfiguration.MqttProviderConfig.PublishedNodes;
+            PublishedNodeFilter publishedNodeFilter = new PublishedNodeFilter(this.app);
             this.MachineNodes.AddRange(publishedNodeFilter.FilterMachineNodes(publishedNodes));
             Console.Out.WriteLine();
         }
 
         public void Connect()
         {
-            MqttProviderConfig config = this.client.ActiveConfiguration.MqttProviderConfig;
+            MqttProviderConfig config = this.app.ActiveConfiguration.MqttProviderConfig;
             Logger.Info("MQTT Connect with TCP");
             if (!TimerSetup)
             {
@@ -133,7 +135,7 @@ namespace umatiGateway.Core.Mqtt
         }
         public void Reconnect()
         {
-            MqttProviderConfig config = this.client.ActiveConfiguration.MqttProviderConfig;
+            MqttProviderConfig config = this.app.ActiveConfiguration.MqttProviderConfig;
             if (!connected)
             {
                 Connect(config.ServerEndpoint, connectionType, "4321", config.UserName, config.Password);
@@ -141,7 +143,7 @@ namespace umatiGateway.Core.Mqtt
         }
         public void Connect(string connectionString, string connectionType, string port, string user, string pwd)
         {
-            MqttProviderConfig config = this.client.ActiveConfiguration.MqttProviderConfig;
+            MqttProviderConfig config = this.app.ActiveConfiguration.MqttProviderConfig;
             try
             {
                 this.connectionType = connectionType;
@@ -183,7 +185,7 @@ namespace umatiGateway.Core.Mqtt
         private void Connect_Client_Using_WebSockets()
         {
             Logger.Trace("MQTT Connect with Websockets");
-            MqttProviderConfig config = this.client.ActiveConfiguration.MqttProviderConfig;
+            MqttProviderConfig config = this.app.ActiveConfiguration.MqttProviderConfig;
             try
             {
                 if (mqttClient == null)
@@ -313,7 +315,7 @@ namespace umatiGateway.Core.Mqtt
         private void Connect_Client_Using_Tcp()
         {
             Logger.Trace("MQTT Connect with TCP");
-            MqttProviderConfig config = this.client.ActiveConfiguration.MqttProviderConfig;
+            MqttProviderConfig config = this.app.ActiveConfiguration.MqttProviderConfig;
             if (mqttClient != null)
             {
                 MqttClientOptions mqttClientOptions;
@@ -354,7 +356,7 @@ namespace umatiGateway.Core.Mqtt
         {
             lock (_lockObject)
             {
-                MqttProviderConfig config = this.client.ActiveConfiguration.MqttProviderConfig;
+                MqttProviderConfig config = this.app.ActiveConfiguration.MqttProviderConfig;
                 try
                 {
                     JObject sortedJsonObj = SortJsonKeysRecursively(jObject);
@@ -382,7 +384,7 @@ namespace umatiGateway.Core.Mqtt
         {
             lock (_lockObject)
             {
-                MqttProviderConfig config = this.client.ActiveConfiguration.MqttProviderConfig;
+                MqttProviderConfig config = this.app.ActiveConfiguration.MqttProviderConfig;
                 try
                 {
                     string MyTopic = config.Prefix + "/" + config.ClientId + "/" + "list/" + type;
@@ -408,7 +410,7 @@ namespace umatiGateway.Core.Mqtt
         {
             lock (_lockObject)
             {
-                MqttProviderConfig config = this.client.ActiveConfiguration.MqttProviderConfig;
+                MqttProviderConfig config = this.app.ActiveConfiguration.MqttProviderConfig;
                 try
                 {
                     foreach (MachineNode machineNode in MachineNodes)
@@ -440,7 +442,7 @@ namespace umatiGateway.Core.Mqtt
         {
             lock (_lockObject)
             {
-                MqttProviderConfig config = this.client.ActiveConfiguration.MqttProviderConfig;
+                MqttProviderConfig config = this.app.ActiveConfiguration.MqttProviderConfig;
                 try
                 {
                     string MyTopic = config.Prefix + "/" + config.ClientId + "/" + "bad_list/errors";
@@ -478,7 +480,7 @@ namespace umatiGateway.Core.Mqtt
         {
             lock (_lockObject)
             {
-                MqttProviderConfig config = this.client.ActiveConfiguration.MqttProviderConfig;
+                MqttProviderConfig config = this.app.ActiveConfiguration.MqttProviderConfig;
                 try
                 {
                     string MyTopic = config.Prefix + "/" + config.ClientId + "/" + "bad_list/errors";
@@ -526,7 +528,7 @@ namespace umatiGateway.Core.Mqtt
         {
             lock (_lockObject)
             {
-                MqttProviderConfig config = this.client.ActiveConfiguration.MqttProviderConfig;
+                MqttProviderConfig config = this.app.ActiveConfiguration.MqttProviderConfig;
                 try
                 {
                     string MyTopic = config.Prefix + "/" + config.ClientId + "/" + "clientOnline";
@@ -710,7 +712,7 @@ namespace umatiGateway.Core.Mqtt
             Logger.Trace("Valid Placeholder Childs are:");
             foreach (PlaceholderNode possiblePlaceHolderNode in possiblePlaceholdernodes)
             {
-                possiblePlaceHolderNode.printPlaceholderNode(client);
+                possiblePlaceHolderNode.printPlaceholderNode(this.app);
             }
             Logger.Trace("--------------------------------------------------------------------------");
         }
@@ -728,7 +730,7 @@ namespace umatiGateway.Core.Mqtt
                 {
                     NodeId? placeHolderTypeDefinition = client.BrowseTypeDefinition(placeholder);
                     string phBrowseName = placeholderNode.BrowseName.Name;
-                    List<string> ignoredPlaceholderTagNames = client.ActiveConfiguration.MqttProviderConfig.IgnoredPlaceholderTags.Select(t => t.Name).ToList();
+                    List<string> ignoredPlaceholderTagNames = app.ActiveConfiguration.MqttProviderConfig.IgnoredPlaceholderTags.Select(t => t.Name).ToList();
                     if (!jObject.ContainsKey(phBrowseName) && !ignoredPlaceholderTagNames.Contains(phBrowseName))
                     {
                         JObject placeholderType = new JObject();
@@ -745,7 +747,7 @@ namespace umatiGateway.Core.Mqtt
             }
             //this.printPlaceholderNodes(optionalMandatoryPlaceholders, nodeId, parent, placeholderNodes);
             List<NodeId> hierarchicalChilds = new List<NodeId>();
-            if (client.ActiveConfiguration.MqttProviderConfig.IncludeStructuredComponents)
+            if (app.ActiveConfiguration.MqttProviderConfig.IncludeStructuredComponents)
             {
                 hierarchicalChilds = client.BrowseLocalNodeIds(nodeId, BrowseDirection.Forward, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true);
             }
@@ -836,7 +838,7 @@ namespace umatiGateway.Core.Mqtt
                                 if (shortenVariables)
                                 {
                                     List<NodeId> nodeIds = new List<NodeId>();
-                                    if (client.ActiveConfiguration.MqttProviderConfig.IncludeStructuredComponents)
+                                    if (app.ActiveConfiguration.MqttProviderConfig.IncludeStructuredComponents)
                                     {
                                         nodeIds = client.BrowseLocalNodeIds(child, BrowseDirection.Forward, (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true);
                                     }
@@ -1081,14 +1083,14 @@ namespace umatiGateway.Core.Mqtt
         {
             try
             {
-                MqttProviderConfig config = this.client.ActiveConfiguration.MqttProviderConfig;
+                MqttProviderConfig config = this.app.ActiveConfiguration.MqttProviderConfig;
                 JArray identificationArray = new JArray();
                 foreach (MachineNode machineNode in MachineNodes)
                 {
                     if (machineNode != null && machineNode.ResolvedNodeId != null)
                     {
                         {
-                            List<NodeId> identificationNodes = client.BrowseLocalNodeIds(machineNode.ResolvedNodeId, BrowseDirection.Forward, (int)NodeClass.Object, ReferenceTypeIds.HierarchicalReferences, true, ObjectTypeIds.FolderType);
+                            List<NodeId> identificationNodes = client.BrowseLocalNodeIds(machineNode.ResolvedNodeId, BrowseDirection.Forward, (int)NodeClass.Object, ReferenceTypeIds.HierarchicalReferences, true);
                             foreach (NodeId child in identificationNodes)
                             {
                                 Node? childNode = client.ReadNode(child);
@@ -1338,7 +1340,7 @@ namespace umatiGateway.Core.Mqtt
                 dataType = etoId;
                 Logger.Trace($"DataType NodeId: {dataType} Took otherId as NodeId");
             }
-            Dictionary<NodeId, Node> dataTypes = client.TypeDictionaries.GetDataTypes();
+            Dictionary<NodeId, Node> dataTypes = app.TypeDictionaries.GetDataTypes();
             NodeId search = dataType;
             bool success = dataTypes.TryGetValue(search, out Node? value);
             if (!success)
@@ -1352,7 +1354,7 @@ namespace umatiGateway.Core.Mqtt
             {
                 if (value != null)
                 {
-                    Dictionary<GeneratedDataTypeDefinition, GeneratedDataClass> gclasses = client.TypeDictionaries.generatedDataTypes;
+                    Dictionary<GeneratedDataTypeDefinition, GeneratedDataClass> gclasses = app.TypeDictionaries.generatedDataTypes;
                     DataTypeNode dtn = (DataTypeNode)value;
                     GeneratedDataTypeDefinition generatedDataTypeDefinition = new GeneratedDataTypeDefinition(client.GetNamespaceTable().GetString(dtn.NodeId.NamespaceIndex), dtn.BrowseName.Name);
                     gclasses.TryGetValue(generatedDataTypeDefinition, out GeneratedDataClass? gdc);
@@ -1368,7 +1370,7 @@ namespace umatiGateway.Core.Mqtt
         }
         public GeneratedDataClass? GetGeneratedDataClass(string namespaceurl, string browsename)
         {
-            Dictionary<GeneratedDataTypeDefinition, GeneratedDataClass> gclasses = client.TypeDictionaries.generatedDataTypes;
+            Dictionary<GeneratedDataTypeDefinition, GeneratedDataClass> gclasses = app.TypeDictionaries.generatedDataTypes;
             GeneratedDataTypeDefinition generatedDataTypeDefinition = new GeneratedDataTypeDefinition(namespaceurl, browsename);
             gclasses.TryGetValue(generatedDataTypeDefinition, out GeneratedDataClass? gdc);
             return gdc;
@@ -1920,12 +1922,12 @@ namespace umatiGateway.Core.Mqtt
                     TypeBrowseName = "";
                     InstanceNSU = "";
                     subscriptions.Clear();
-                    client.subscription = null;
+                    client.ClearSubscriptions();
                     Logger.Info("Message:" + ex2.Message);
                     if (ex2.Message == "BadNotConnected")
                     {
                         Logger.Info("Reconnecting OPC");
-                        _ = client.ConnectAsync(client.opcServerUrl).Result;
+                        client.Connect();
                     }
                 }
                 catch (MQTTnet.Exceptions.MqttClientNotConnectedException ex)
