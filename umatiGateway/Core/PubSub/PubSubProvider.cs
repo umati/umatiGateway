@@ -82,7 +82,7 @@ namespace umatiGateway.Core.PubSub
                 TransportProfileUri = Profiles.PubSubMqttJsonTransport,
                 Address = new ExtensionObject(new NetworkAddressUrlDataType
                 {
-                    Url = "mqtt://localhost:1883"
+                    Url = this.app.ActiveConfiguration.PubSubProviderConfig.ServerEndpoint
                 }),
                 WriterGroups = new WriterGroupDataTypeCollection { writerGroup }
             };
@@ -488,7 +488,7 @@ namespace umatiGateway.Core.PubSub
                 TransportProfileUri = Profiles.PubSubMqttJsonTransport,
                 Address = new ExtensionObject(new NetworkAddressUrlDataType
                 {
-                    Url = "mqtt://localhost:1883"
+                    Url = this.app.ActiveConfiguration.PubSubProviderConfig.ServerEndpoint
                 }),
                 ConnectionProperties = new KeyValuePairCollection
             {
