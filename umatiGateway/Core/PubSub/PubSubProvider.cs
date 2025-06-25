@@ -1,18 +1,10 @@
-﻿using Microsoft.AspNetCore.Hosting.Server;
-using MQTTnet;
-using Newtonsoft.Json.Linq;
+﻿// SPDX-License-Identifier: Apache-2.0
+// Copyright (c) 2025 FVA GmbH - interop4x. All rights reserved.
 using NLog;
-using NLog.LayoutRenderers;
 using Opc.Ua;
 using Opc.Ua.Client;
-using Org.BouncyCastle.Asn1.Ocsp;
-using System;
-using System.Linq.Expressions;
-using System.Reflection.Metadata;
-using System.Runtime.CompilerServices;
 using umatiGateway.Core.Configuration;
 using Opc.Ua.PubSub;
-using UmatiGateway;
 using umatiGateway.Core.OPC;
 using umatiGateway.Core.Mqtt;
 
@@ -20,27 +12,24 @@ namespace umatiGateway.Core.PubSub
 {
     public class PubSubProvider
     {
-        string topic = "opcua/test";
-        string metaTopic = "opcua/meta";
-
-        private int counter = 0;
-        //
-        // Pre subscription list
-        private List<NodeId> subscriptionIds = new List<NodeId>();
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+        private string topic = "";
+        private string metaTopic = "";
+        private int counter = 0;
+        private List<NodeId> subscriptionIds = new List<NodeId>();
         private System.Timers.Timer keepAliveTimer = new System.Timers.Timer();
         private UmatiGatewayApp app;
         private IOpcUaClient client;
         private Dictionary<NodeId, HierarchicalNode> rootNodes = new Dictionary<NodeId, HierarchicalNode>();
         private PubSubConfigurationDataType PubSubConfigurationDataType = new PubSubConfigurationDataType();
         private PubSubConnectionDataType PubSubConnectionDataType = new PubSubConnectionDataType();
-        private UaPubSubApplication pubSubApp;
+        private UaPubSubApplication? pubSubApp = null;
         private UaPubSubDataStore pubSubDataStore = new UaPubSubDataStore();
         private PublishedDataSetDataTypeCollection publishedDataSets = new();
         private DataSetWriterDataTypeCollection dataSetWriters = new();
         private WriterGroupDataTypeCollection writerGroups = new();
         private List<VirtualId> virtualIds = new List<VirtualId>();
-        WriterGroupDataType WriterGroup = new WriterGroupDataType();
+        private WriterGroupDataType WriterGroup = new WriterGroupDataType();
         private readonly System.Timers.Timer pubTestTimer = new System.Timers.Timer(5000);
         private ReferenceDescriptionResolver referenceDescriptionResolver;
         public List<MachineNode> MachineNodes { get; set; } = new List<MachineNode>();
@@ -49,6 +38,7 @@ namespace umatiGateway.Core.PubSub
         {
             this.app = app;
             this.client = app.OpcUaClient;
+            this.referenceDescriptionResolver = new ReferenceDescriptionResolver(client);
 
             // Init Config
             PubSubConfigurationDataType = new PubSubConfigurationDataType

@@ -704,5 +704,9 @@ namespace umatiGateway.Core.OPC
         {
             this.subscription = null;
         }
+        public void AddUmatiGatewayAppListener(UmatiGatewayAppListener umatiGatewayAppListener)
+        {
+            this.UmatiGatewayAppListeners.Add(umatiGatewayAppListener);
+        }
     }
 }

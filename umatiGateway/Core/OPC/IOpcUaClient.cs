@@ -176,5 +176,7 @@ namespace umatiGateway.Core.OPC
         /// <returns>A List of the Type with its subtypes.</returns>
         /// <exception cref="OpcUaException">Exception in Opc Ua Context.</exception>
         public List<NodeId> BrowseAllHierarchicalSubType(NodeId nodeId, List<NodeId> subTypeList);
+        public Session CheckSession();
+        public void AddUmatiGatewayAppListener(UmatiGatewayAppListener umatiGatewayAppListener);
     }
 }

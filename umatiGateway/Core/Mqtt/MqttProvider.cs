@@ -2090,7 +2090,7 @@ namespace umatiGateway.Core.Mqtt
             public void printPlaceholderNode(UmatiGatewayApp client)
             {
                 Logger.Trace($"PlaceHolderNodeId: {placeholderNodeId} = ");
-                Node? placeholderNodeIdNode = client.ReadNode(placeholderNodeId);
+                Node? placeholderNodeIdNode = client.OpcUaClient.ReadNode(placeholderNodeId);
                 if (placeholderNodeIdNode != null)
                 {
                     Logger.Trace($"{placeholderNodeIdNode.BrowseName}");
@@ -2100,7 +2100,7 @@ namespace umatiGateway.Core.Mqtt
                     Logger.Trace($"Unknown");
                 }
                 Logger.Trace($"TypeDefinitionNodeId: {typeDefinitionNodeId} = ");
-                Node? TypeDefinitionNodeIdNode = client.ReadNode(typeDefinitionNodeId);
+                Node? TypeDefinitionNodeIdNode = client.OpcUaClient.ReadNode(typeDefinitionNodeId);
                 if (TypeDefinitionNodeIdNode != null)
                 {
                     Logger.Trace($"{TypeDefinitionNodeIdNode.BrowseName}");
@@ -2114,7 +2114,7 @@ namespace umatiGateway.Core.Mqtt
                 foreach (NodeId nodeId in subTypeNodeIds)
                 {
                     Logger.Trace($"SubTypeNodeId: {nodeId} = ");
-                    Node? subTypeNode = client.ReadNode(nodeId);
+                    Node? subTypeNode = client.OpcUaClient.ReadNode(nodeId);
                     if (subTypeNode != null)
                     {
                         Logger.Trace($"{subTypeNode.BrowseName}");

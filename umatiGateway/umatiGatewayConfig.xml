@@ -1,13 +1,34 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<umatiGatewayConfig version="2.0" logLevel="Info">
-	<StartConfiguration startWebUI="False" startOPCConnection="True" startMqttProvider="False" startPubSubProvider="True"/>
+<umatiGatewayConfig version="2.0" logLevel="Debug">
+	<StartConfiguration startWebUI="False" startOPCConnection="True" startMqttProvider="True" startPubSubProvider="True"/>
 	<WebUI url="https://127.0.0.1:7079"></WebUI>
-	<!-- <OPCConnection serverendpoint="opc.tcp://opcua.umati.app:4840" authentication="None" user ="" password="" ReadExtraLibs="False"/> -->
 	<OPCConnection serverendpoint="opc.tcp://localhost:4840" authentication="None" user ="" password="" ReadExtraLibs="False"/>
-	<MqttProvider serverendpoint="mqtt://localhost:1883" user="" password="" clientId="fva/matthias2" prefix="umati/v2" includeStructuredComponents="False" publishInterval="5000">
+	<MqttProvider serverendpoint="mqtt://localhost:1883" user="" password="" clientId="company/client" prefix="umati/v2" includeStructuredComponents="False" publishInterval="5000">
 		<PublishedNodes>
-			<!-- <PublishedNode type="Numeric" namespaceurl="http://vdma.org/OPCRoboticsTestServer/" nodeId="5018" baseType="" /> -->
+			<!-- <PublishedNode type="Numeric" namespaceurl="http://basyskom.com/woodworking_demo/" nodeId="5002" baseType="" /> -->
+			<!-- <PublishedNode type="Numeric" namespaceurl="http://samplemanufacturer.org/umati_opc40084-11_sample_instance/" nodeId="5003" baseType="" /> -->
+			<!-- <PublishedNode type="Numeric" namespaceurl="http://samplemanufacturer.org/umati_opc40084-9_sample_instance/" nodeId="5003" baseType="" /> -->
+			<!-- <PublishedNode type="Numeric" namespaceurl="http://samplemanufacturer.com/umati_opc40084-3_sample_instance/" nodeId="5002" baseType="" /> -->
+			<!-- <PublishedNode type="Numeric" namespaceurl="http://basyskom.com/woodworking_demo/" nodeId="5008" baseType="" /> -->
+			<!-- <PublishedNode type="Numeric" namespaceurl="http://samplemanufacturer.com/umati_plasticsrubber_generic_sample_instance/" nodeId="5044" baseType="" /> -->
+			<!-- <PublishedNode type="Numeric" namespaceurl="http://samplemanufacturer.org/umati_opc40082-2_sample_instance/" nodeId="5003" baseType="" /> -->
+			<!-- <PublishedNode type="Numeric" namespaceurl="http://samplemanufacturer.com/umati_OPC40077_sample_instance/" nodeId="5002" baseType="" /> -->
+			<!-- <PublishedNode type="Numeric" namespaceurl="http://samplemanufacturer.org/umati_opc40082-3_sample_instance/" nodeId="5003" baseType="" /> -->
 			<!-- <PublishedNode type="Numeric" namespaceurl="http://vdma.org/UA/LaserSystem-Example/" nodeId="5003" baseType="" /> -->
+			<!-- <PublishedNode type="Numeric" namespaceurl="http://umati.org/UA/1.5/brownfield/" nodeId="5004" baseType="" /> -->
+			<!-- <PublishedNode type="Numeric" namespaceurl="http://schulergroup.com/UA/example/" nodeId="5003" baseType="" /> -->
+			<!-- <PublishedNode type="Numeric" namespaceurl="http://vdma.org/OPCRoboticsTestServer/" nodeId="5003" baseType="" /> -->
+			<!-- <PublishedNode type="String" namespaceurl="http://MyControledMachine-Namespace/UA" nodeId="MyControledMachine" baseType="" /> -->
+			<!-- <PublishedNode type="String" namespaceurl="http://mynewmachinenamespace/UA" nodeId="MyMachine" baseType="" /> -->
+			<!-- <PublishedNode type="String" namespaceurl="https://www.grinding.ch/UA/instances/umati/" nodeId="MyMachine" baseType="" /> -->
+			<!-- <PublishedNode type="Numeric" namespaceurl="http://vdma.org/OPCRoboticsTestServer/" nodeId="5018" baseType="" /> -->
+			<!-- <PublishedNode type="Numeric" namespaceurl="http://vdma.org/OPCRoboticsTestServer/" nodeId="5002" baseType="" /> -->
+			<!-- <PublishedNode type="Numeric" namespaceurl="http://samplemanufacturer.org/opc40079forumati_sample_instance/" nodeId="5004" baseType="" /> -->
+			<!-- <PublishedNode type="Numeric" namespaceurl="http://yourorganisation.org/MachineTool-Example/" nodeId="5002" baseType="" /> -->
+			<!-- <PublishedNode type="Numeric" namespaceurl="http://vdw.de/UA/MachineTool/Energy-Example/" nodeId="5055" baseType="" /> -->
+			<!-- <PublishedNode type="Numeric" namespaceurl="http://yourorganisation.org/MachineTool-Example/" nodeId="5015" baseType="" /> -->
+				 <PublishedNode type="Numeric" namespaceurl="http://example.com/ShowcaseMachineTool/" nodeId="58192" baseType="" />
+			<!-- <PublishedNode type="Numeric" namespaceurl="http://samplemanufacturer.org/umati_opc40082-1_sample_instance/" nodeId="5003" baseType="" /> -->
 			<!-- <PublishedChildNodes type="Numeric" namespaceurl="http://opcfoundation.org/UA/Machinery/" nodeId="1001">
 				<Filter type="Whitelist">
 					<Conditions type="And">
@@ -15,7 +36,6 @@
 						<RelationCondition type="Numeric" namespaceurl="http://opcfoundation.org/UA/" nodeId="35" includeSubTypes="false"/>
 					</Conditions>
 				</Filter>
-			
 			</PublishedChildNodes> -->
 		</PublishedNodes>
 		<CustomEncodings>
@@ -28,7 +48,34 @@
 	</MqttProvider>
 	<PubSubProvider serverendpoint="mqtt://localhost:1883" user="" password="" clientId="company/client" prefix="umati/v3">
 		<PublishedNodes>
-			<PublishedNode type="Numeric" namespaceurl="http://example.com/ShowcaseMachineTool/" nodeId="58192" baseType="" />
+			<!-- <PublishedNode type="Numeric" namespaceurl="http://basyskom.com/woodworking_demo/" nodeId="5002" baseType="" /> -->
+			<!-- <PublishedNode type="Numeric" namespaceurl="http://samplemanufacturer.org/umati_opc40084-11_sample_instance/" nodeId="5003" baseType="" /> -->
+			<!-- <PublishedNode type="Numeric" namespaceurl="http://samplemanufacturer.org/umati_opc40084-9_sample_instance/" nodeId="5003" baseType="" /> -->
+			<!-- <PublishedNode type="Numeric" namespaceurl="http://samplemanufacturer.com/umati_opc40084-3_sample_instance/" nodeId="5002" baseType="" /> -->
+			<!-- <PublishedNode type="Numeric" namespaceurl="http://basyskom.com/woodworking_demo/" nodeId="5008" baseType="" /> -->
+			<!-- <PublishedNode type="Numeric" namespaceurl="http://samplemanufacturer.com/umati_plasticsrubber_generic_sample_instance/" nodeId="5044" baseType="" /> -->
+			<!-- <PublishedNode type="Numeric" namespaceurl="http://samplemanufacturer.org/umati_opc40082-2_sample_instance/" nodeId="5003" baseType="" /> -->
+			<!-- <PublishedNode type="Numeric" namespaceurl="http://samplemanufacturer.com/umati_OPC40077_sample_instance/" nodeId="5002" baseType="" /> -->
+			<!-- <PublishedNode type="Numeric" namespaceurl="http://samplemanufacturer.org/umati_opc40082-3_sample_instance/" nodeId="5003" baseType="" /> -->
+			<!-- <PublishedNode type="Numeric" namespaceurl="http://vdma.org/UA/LaserSystem-Example/" nodeId="5003" baseType="" /> -->
+			<!-- <PublishedNode type="Numeric" namespaceurl="http://umati.org/UA/1.5/brownfield/" nodeId="5004" baseType="" /> -->
+			<!-- <PublishedNode type="Numeric" namespaceurl="http://schulergroup.com/UA/example/" nodeId="5003" baseType="" /> -->
+			<!-- <PublishedNode type="Numeric" namespaceurl="http://vdma.org/OPCRoboticsTestServer/" nodeId="5003" baseType="" /> -->
+			<!-- <PublishedNode type="String" namespaceurl="http://MyControledMachine-Namespace/UA" nodeId="MyControledMachine" baseType="" /> -->
+			<!-- <PublishedNode type="String" namespaceurl="http://mynewmachinenamespace/UA" nodeId="MyMachine" baseType="" /> -->
+			<!-- Check this machine again double nodeIds -->		
+			<!-- <PublishedNode type="String" namespaceurl="https://www.grinding.ch/UA/instances/umati/" nodeId="MyMachine" baseType="" /> -->
+			<!-- -->
+			<!-- <PublishedNode type="Numeric" namespaceurl="http://vdma.org/OPCRoboticsTestServer/" nodeId="5018" baseType="" /> -->
+			<!-- <PublishedNode type="Numeric" namespaceurl="http://vdma.org/OPCRoboticsTestServer/" nodeId="5002" baseType="" /> -->
+			<!-- <PublishedNode type="Numeric" namespaceurl="http://samplemanufacturer.org/opc40079forumati_sample_instance/" nodeId="5004" baseType="" /> -->
+			<!-- <PublishedNode type="Numeric" namespaceurl="http://yourorganisation.org/MachineTool-Example/" nodeId="5002" baseType="" /> -->
+			<!-- A lot of bad values -->
+			<!-- <PublishedNode type="Numeric" namespaceurl="http://vdw.de/UA/MachineTool/Energy-Example/" nodeId="5055" baseType="" /> -->
+			<!-- -->
+			<!-- <PublishedNode type="Numeric" namespaceurl="http://yourorganisation.org/MachineTool-Example/" nodeId="5015" baseType="" /> -->
+				 <PublishedNode type="Numeric" namespaceurl="http://example.com/ShowcaseMachineTool/" nodeId="58192" baseType="" />
+			<!-- <PublishedNode type="Numeric" namespaceurl="http://samplemanufacturer.org/umati_opc40082-1_sample_instance/" nodeId="5003" baseType="" /> -->
 			<!-- <PublishedChildNodes type="Numeric" namespaceurl="http://opcfoundation.org/UA/Machinery/" nodeId="1001">
 				<Filter type="Whitelist">
 					<Conditions type="And">
