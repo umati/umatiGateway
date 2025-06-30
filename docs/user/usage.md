@@ -31,15 +31,17 @@ services:
       - ./LocalConfigumatiApp.xml:/app/Configuration/Files/LocalConfigumatiApp.xml
       - ./umatiGatewayConfig.xml:/app/Configuration/umatiGatewayConfig.xml
 ```
+
 ## Configuration
 
 ### Configuration via config files
+
 The umatiGateway app has two configuration files per default.
 The first file called umatiGatewayConfig.xml is located in the *Configuration/* folder in the root directory of the umatiGateway app. It stores the basic application configuration.
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
-<umatiGatewayConfig version="1.0" autostart="False" file="./Configuration/Files/LocalConfigLocalSampleServer.xml"
+<umatiGatewayConfig version="1.0" autostart="False" file="./Configuration/Files/LocalConfigumatiApp.xml"
  logLevel="Debug" ReadExtraLibs="False" singleThreadPolling="False" pollTime="10000" />
 ```
 
@@ -53,7 +55,6 @@ The first file called umatiGatewayConfig.xml is located in the *Configuration/* 
 | `ReadExtraLibs`          | Flag to enable loading of extra libraries.                                                           | `False`                                                   |
 | `singleThreadPolling`    | Whether to use single-threaded polling for connected devices. (**currently not used**)               | `False`                                                   |
 | `pollTime`               | Minimum Publishing intervall for the Mqtt Topic. The Data Topic is also published on data change.    | `10000` (10 seconds)                                      |
-
 
 The second file is called LocalConfigumatiApp.xml and it is stored in the *Configuration/Files* folder in the root directory of the umatiGateway app. It stores the configuration for the connections to the OPC Server and to the Mqtt server as well as the nodes that are published.
 
@@ -100,34 +101,33 @@ The second file is called LocalConfigumatiApp.xml and it is stored in the *Confi
 | `name`                          | Name of the custom encoding.                                                                    | `GMSResultDataTypeEncoding`            |
 | `active`                        | Whether this custom encoding is active (`True`/`False`). **True for legacy only**               | `False`                                |
 
-
-
 ### Configuration via Web UI
 
 The Web UI is accessible after starting the umatiGateway via `http://localhost:8080` . The address can be configured via an application.json file in the applications root directory. An example is statet in the FAQs.
 The Web UI consists of 4 different tabs:
+
 1. The *OPC Connection Tab* which deals with the OPC Connection
 2. The *OPC Subscription Tab* where you can define the nodes you want to subscribe to.
-3. The *Mqtt Configuration Tab* which deals with the Mqtt Connection.
+3. The *MQTT Configuration Tab* which deals with the MQTT Connection.
 4. The *Configuration Tab* that holds the curretn configuration an allows to download the configuration files.
 
 #### OPC Connection Tab
 
 In the OPC Connection Tab you can configure the OPC Connection parameters and connect or disconnet to/from an OPC Server.
 
-![OPCConnection](/docs/user/images/OpcConnection.png)
+![OPC Connection](/docs/user/images/OpcConnection.png)
 
 #### OPC Subscription Tab
 
-In the OPC Subscription Tab you can browse the Nodes in the OPC Server when you are connected and add the selected node to the nodes that should be published via Mqtt (typically your machine). All child Nodes of the node will be published as well.
+In the OPC Subscription Tab you can browse the Nodes in the OPC Server when you are connected and add the selected node to the nodes that should be published via MQTT (typically your machine). All child Nodes of the node will be published as well.
 
-![OPCSubscriptions](/docs/user/images/OPCSubscriptions.png)
+![OPC Subscriptions](/docs/user/images/OPCSubscriptions.png)
 
-#### Mqtt Connection Tab
+#### MQTT Connection Tab
 
-In the Mqtt Connection Tab you can configure the Mqtt Connection. If you push the connect button the Mqtt connection will be established and the Nodes in the Publsihed Nodes table will be published.
+In the MQTT Connection Tab you can configure the Mqtt Connection. If you push the connect button the MQTT connection will be established and the Nodes in the Publsihed Nodes table will be published.
 
-![MqttConnection](/docs/user/images/MqttConnection.png)
+![MQTT Connection](/docs/user/images/MqttConnection.png)
 
 #### Configuration Tab
 
@@ -161,6 +161,7 @@ The port for the Web UI can be changed by editing the `application.json` file in
   }
 }
 ```
+
 #### Changing port by configuring dotnet environment variables
 
 You can change the port by using the ASPNETCore Environment Variable
@@ -204,8 +205,8 @@ You can configure the Web UI to use a https connection by editing the `applicati
 }
 ```
 
-
 ### How to handle with TLS Inspection / MQTT Connection Problems?
+
 Problem:
 In some corporate networks, TLS inspection replaces the broker's certificate with one signed by a company CA. This causes TLS errors.
 
@@ -213,12 +214,14 @@ Common error:
 ```The remote certificate is invalid according to the validation procedure.```
 
 #### Solution 1: Install Company Root CA (Recommended)
+
 Get the root certificate from your IT department.
 Install it into the Trusted Root Certification Authorities store on your system.
 
 This allows all applications to trust inspected TLS connections.
 
 #### Solution 2: Use Custom CA in App Directory
-Place the root certificate file (e.g. custom_ca.crt) next to the .exe.
+
+Place the root certificate file (e.g., custom_ca.crt) next to the .exe.
 
 The app will use it to validate TLS connections.

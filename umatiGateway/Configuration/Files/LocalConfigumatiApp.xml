@@ -3,9 +3,9 @@
 	<!-- For authentication with username and password use the line below.-->
 	<!-- <OPCConnection serverendpoint="opc.tcp://opcua.umati.app:4843" authentication="None" user ="admin" password="pw1"/> -->
 	<OPCConnection serverendpoint="opc.tcp://opcua.umati.app:4840" authentication="None" user ="" password=""/>
-	<MqttConnection serverendpoint="mqtt://localhost:1883" user="" password="" clientId="fva/matthias2" prefix="umati/v2"/>
+	<MqttConnection serverendpoint="mqtt://localhost:1883" user="" password="" clientId="company/machine" prefix="umati/v2"/>
 	<PublishedNodes>
-		<!-- <PublishedNode type="Numeric" namespaceurl="http://example/instance/" nodeId="5003"/> -->
+		<PublishedNode type="Numeric" namespaceurl="http://example.com/ShowcaseMachineTool/" nodeId="66382"/>
 	</PublishedNodes>
 	<CustomEncodings>
 		<CustomEncoding name="GMSResultDataTypeEncoding" active="False" />
