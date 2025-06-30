@@ -2,7 +2,7 @@
 
 ## Running the software
 
-### Running the umatiGateway as docker container with defailt configuration
+### Running the umatiGateway as docker container with default configuration
 
 Start the container directly with the default configuration:
 
@@ -12,13 +12,15 @@ docker run -it ghcr.io/umati/umatigateway:develop
 
 You can use the default configuration to reach the configuration section via the Web GUI and adapt and download your configuration.
 
-#### Running the umatiGateway as docker container with mounted Configuration Files
+#### Running the umatiGateway as container with mounted Configuration Files
+
+Command line:
 
 ```sh
 docker run -it -v ./LocalConfigumatiApp.xml:/app/Configuration/Files/LocalConfigumatiApp.xml -v ./umatiGatewayConfig.xml:/app/Configuration/umatiGatewayConfig.xml ghcr.io/umati/umatigateway:develop
 ```
 
-or via Compose with this config:
+or via `docker/podman compose` with this `compose.yaml`:
 
 ```yaml
 services:
@@ -30,6 +32,31 @@ services:
     volumes:
       - ./LocalConfigumatiApp.xml:/app/Configuration/Files/LocalConfigumatiApp.xml
       - ./umatiGatewayConfig.xml:/app/Configuration/umatiGatewayConfig.xml
+```
+
+#### Running a local MQTT broker for testing
+
+To start a local MQTT broker WITHOUT AUTHENTICATION use either
+
+```yaml
+docker run -it -p 1883:1883 eclipse-mosquitto:2.0.15 mosquitto -c /mosquitto-no-auth.conf
+```
+
+or extend the `compose.yaml` with this block
+
+```yaml
+  broker:
+    image: eclipse-mosquitto:2.0
+    container_name: mosquitto
+    ports:
+      - "1883:1883"
+    # make a comment if using volume mounts
+    command: "/usr/sbin/mosquitto -c /mosquitto-no-auth.conf"
+    # uncomment to use volume mounts and persist configuration and storage
+    #volumes:
+    #  - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
+    #  - ./mosquitto:/mosquitto/data
+    #  - ./mosquitto/log:/mosquitto/log
 ```
 
 ## Configuration
@@ -166,23 +193,25 @@ The port for the Web UI can be changed by editing the `application.json` file in
 
 You can change the port by using the ASPNETCore Environment Variable
 
-<pre>
-On Windows:
-Windows(temporary): set ASPNETCORE_URLS=http://localhost:8080
-Windows(permanent): setx ASPNETCORE_URLS http://localhost:8080
+```shell
+# Windows(temporary): 
+set ASPNETCORE_URLS=http://localhost:8080
 
-On Linux:
-Linux:export ASPNETCORE_URLS=http://localhost:8080
+# Windows(permanent):
+setx ASPNETCORE_URLS http://localhost:8080
 
-On Docker(All Interfaces):
+# Linux:
+export ASPNETCORE_URLS=http://localhost:8080
+
+# Docker (All Interfaces):
 docker run -e ASPNETCORE_URLS=http://0.0.0.0:8080 -p 8080:8080
-</pre>
+```
 
 ### How to change the Web UI to use https?
 
 You can configure the Web UI to use a https connection by editing the `application.json` file in the root directory of the application in the follwoing way:
 
-``` json
+```json
 {
   "Logging": {
     "LogLevel": {
@@ -208,9 +237,11 @@ You can configure the Web UI to use a https connection by editing the `applicati
 ### How to handle with TLS Inspection / MQTT Connection Problems?
 
 Problem:
+
 In some corporate networks, TLS inspection replaces the broker's certificate with one signed by a company CA. This causes TLS errors.
 
 Common error:
+
 ```The remote certificate is invalid according to the validation procedure.```
 
 #### Solution 1: Install Company Root CA (Recommended)
@@ -222,6 +253,6 @@ This allows all applications to trust inspected TLS connections.
 
 #### Solution 2: Use Custom CA in App Directory
 
-Place the root certificate file (e.g., custom_ca.crt) next to the .exe.
+Place the root certificate file (e.g., `custom_ca.crt`) next to the `.exe`.
 
 The app will use it to validate TLS connections.
