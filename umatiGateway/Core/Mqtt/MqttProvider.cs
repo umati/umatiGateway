@@ -749,11 +749,15 @@ namespace umatiGateway.Core.Mqtt
             List<NodeId> hierarchicalChilds = new List<NodeId>();
             if (app.ActiveConfiguration.MqttProviderConfig.IncludeStructuredComponents)
             {
-                hierarchicalChilds = client.BrowseLocalNodeIds(nodeId, BrowseDirection.Forward, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true);
+                hierarchicalChilds = client.BrowseNodeIds(new BrowseDescriptionCollection { BrowseUtils.GetHierarchicalChildren(nodeId, (int)NodeClass.Object | (int)NodeClass.Variable) });
+                //hierarchicalChilds = client.BrowseLocalNodeIds(nodeId, BrowseDirection.Forward, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true);
             }
             else
             {
-                hierarchicalChilds = client.BrowseLocalNodeIdsExcludeReference(nodeId, BrowseDirection.Forward, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true, ReferenceTypeIds.HasStructuredComponent);
+                hierarchicalChilds = client.BrowseNodeIds(
+                    new BrowseDescriptionCollection { BrowseUtils.GetHierarchicalChildren(nodeId, (int)NodeClass.Object | (int)NodeClass.Variable) },
+                    new BrowseDescriptionCollection { BrowseUtils.ForwardBrowseDescription(nodeId, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HasStructuredComponent, true)});
+                //hierarchicalChilds = client.BrowseLocalNodeIdsExcludeReference(nodeId, BrowseDirection.Forward, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true, ReferenceTypeIds.HasStructuredComponent);
             }
             foreach (NodeId child in hierarchicalChilds)
             {
@@ -840,11 +844,15 @@ namespace umatiGateway.Core.Mqtt
                                     List<NodeId> nodeIds = new List<NodeId>();
                                     if (app.ActiveConfiguration.MqttProviderConfig.IncludeStructuredComponents)
                                     {
-                                        nodeIds = client.BrowseLocalNodeIds(child, BrowseDirection.Forward, (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true);
+                                        nodeIds = client.BrowseNodeIds(new BrowseDescriptionCollection { BrowseUtils.GetHierarchicalChildren(child, (int)NodeClass.Variable)});
+                                        //nodeIds = client.BrowseLocalNodeIds(child, BrowseDirection.Forward, (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true);
                                     }
                                     else
                                     {
-                                        nodeIds = client.BrowseLocalNodeIdsExcludeReference(child, BrowseDirection.Forward, (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true, ReferenceTypeIds.HasStructuredComponent);
+                                        nodeIds = client.BrowseNodeIds(
+                                            new BrowseDescriptionCollection { BrowseUtils.GetHierarchicalChildren(child, (int)NodeClass.Variable) },
+                                            new BrowseDescriptionCollection { BrowseUtils.ForwardBrowseDescription(child,(int)NodeClass.Variable,ReferenceTypeIds.HasStructuredComponent,true)});
+                                        //nodeIds = client.BrowseLocalNodeIdsExcludeReference(child, BrowseDirection.Forward, (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true, ReferenceTypeIds.HasStructuredComponent);
                                     }
                                     if (nodeIds.Count == 0)
                                     {
@@ -1009,7 +1017,8 @@ namespace umatiGateway.Core.Mqtt
         private void SuperTypeList(NodeId typeNodeId, List<NodeId> superTypes)
         {
             superTypes.Add(typeNodeId);
-            List<NodeId> superTypesOfType = this.client.BrowseLocalNodeIds(typeNodeId, BrowseDirection.Inverse, (int)NodeClass.VariableType | (int)NodeClass.ObjectType, ReferenceTypeIds.HasSubtype, true);
+            List<NodeId> superTypesOfType = this.client.BrowseNodeIds(new BrowseDescriptionCollection{BrowseUtils.InverseBrowseDescription(typeNodeId, (int)NodeClass.VariableType | (int)NodeClass.ObjectType, ReferenceTypeIds.HasSubtype, true)});
+            //List<NodeId> superTypesOfType = this.client.BrowseLocalNodeIds(typeNodeId, BrowseDirection.Inverse, (int)NodeClass.VariableType | (int)NodeClass.ObjectType, ReferenceTypeIds.HasSubtype, true);
             foreach (NodeId superType in superTypesOfType)
             {
                 SuperTypeList(superType, superTypes);
@@ -1090,7 +1099,8 @@ namespace umatiGateway.Core.Mqtt
                     if (machineNode != null && machineNode.ResolvedNodeId != null)
                     {
                         {
-                            List<NodeId> identificationNodes = client.BrowseLocalNodeIds(machineNode.ResolvedNodeId, BrowseDirection.Forward, (int)NodeClass.Object, ReferenceTypeIds.HierarchicalReferences, true);
+                            List<NodeId> identificationNodes = client.BrowseNodeIds(new BrowseDescriptionCollection { BrowseUtils.GetHierarchicalChildren(machineNode.ResolvedNodeId, (int)NodeClass.Object)});
+                            //List<NodeId> identificationNodes = client.BrowseLocalNodeIds(machineNode.ResolvedNodeId, BrowseDirection.Forward, (int)NodeClass.Object, ReferenceTypeIds.HierarchicalReferences, true);
                             foreach (NodeId child in identificationNodes)
                             {
                                 Node? childNode = client.ReadNode(child);

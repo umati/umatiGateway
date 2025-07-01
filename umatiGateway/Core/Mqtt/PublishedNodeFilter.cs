@@ -27,7 +27,8 @@ namespace umatiGateway.Core.Mqtt
                         NodeId? resolvedNodeId = this.ResolveNodeId(publishedChildNodes.Type, publishedChildNodes.NodeId, publishedChildNodes.NamespaceUrl, publishedChildNodes.BaseType);
                         if (resolvedNodeId != null)
                         {
-                            List<NodeId> childNodes = client.BrowseLocalNodeIds(resolvedNodeId, BrowseDirection.Forward, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true);
+                            List<NodeId> childNodes = client.BrowseNodeIds(new BrowseDescriptionCollection { BrowseUtils.GetHierarchicalChildren(resolvedNodeId, (int)NodeClass.Object | (int)NodeClass.Variable)});
+                            //List<NodeId> childNodes = client.BrowseLocalNodeIds(resolvedNodeId, BrowseDirection.Forward, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true);
                             List<NodeId> filteredNodes = this.MatchFilters(resolvedNodeId, childNodes, publishedChildNodes.Filter);
                             foreach (NodeId child in filteredNodes)
                             {

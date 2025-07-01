@@ -178,5 +178,7 @@ namespace umatiGateway.Core.OPC
         public List<NodeId> BrowseAllHierarchicalSubType(NodeId nodeId, List<NodeId> subTypeList);
         public Session CheckSession();
         public void AddUmatiGatewayAppListener(UmatiGatewayAppListener umatiGatewayAppListener);
+        public List<NodeId> BrowseNodeIds(BrowseDescriptionCollection included, BrowseDescriptionCollection? excluded = null);
+        public NodeId? BrowseFirstNodeId(BrowseDescriptionCollection included, BrowseDescriptionCollection? excluded = null);
     }
 }

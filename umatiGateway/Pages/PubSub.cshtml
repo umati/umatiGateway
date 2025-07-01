@@ -99,13 +99,16 @@
                 <tbody>
                     @for (var i = 0; i < Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.PublishedNodes.Count; i++)
                     {
-                        <tr>
-                            <td>@(i + 1)</td>
-                            <td>@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.PublishedNodes[i].Type</td>
-                            <td>@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.PublishedNodes[i].NamespaceUrl</td>
-                            <td>@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.PublishedNodes[i].NodeId</td>
-                            <td>@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.PublishedNodes[i].BaseType</td>
-                        </tr>
+                        if (@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.PublishedNodes[i].GetType().Name == "PublishedChildNodes")
+                        {
+                            <tr>
+                                <td>@(i + 1)</td>
+                                <td>@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.PublishedNodes[i].Type</td>
+                                <td>@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.PublishedNodes[i].NamespaceUrl</td>
+                                <td>@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.PublishedNodes[i].NodeId</td>
+                                <td>@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.PublishedNodes[i].BaseType</td>
+                            </tr>
+                        }
                     }
                 </tbody>
             </table>

@@ -44,10 +44,7 @@ namespace umatiGateway.Core.OPC
             };
             var config = await application.LoadApplicationConfiguration("./Core/OPC/Gateway.Config.xml", silent: false);
             await application.CheckApplicationInstanceCertificates(silent: false);
-            UmatiGatewayApp client = new UmatiGatewayApp(config, Console.Out, ClientBase.ValidateResponse)
-            {
-                AutoAccept = true
-            };
+            UmatiGatewayApp client = new UmatiGatewayApp(config, Console.Out, ClientBase.ValidateResponse);
             return client;
         }
     }

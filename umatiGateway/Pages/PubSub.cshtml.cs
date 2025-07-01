@@ -34,7 +34,7 @@ namespace UmatiGateway.Pages
         public IActionResult OnPostRemovePubsSubNode(int index)
         {
             PublishedNode publishedNode = this.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.PublishedNodes[index];
-            this.UmatiGatewayApp.RemoveNodePubSubConfig(publishedNode);
+            this.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.PublishedNodes.Remove(publishedNode);
             return RedirectToPage();
         }
     }

@@ -22,7 +22,6 @@ namespace umatiGateway.Core.OPC
         public MqttProvider MqttProvider { get; set; }
         public BrowseTreeController BrowseTreeController { get; set; }
         public TypeDictionaries TypeDictionaries { get; set; }
-        public bool AutoAccept { get; set; } = true;
         public UmatiConfiguration ActiveConfiguration { get; set; } = new UmatiConfiguration();
         public UmatiGatewayApp(ApplicationConfiguration configuration, TextWriter writer, Action<IList, IList> validateResponse)
         {
@@ -31,7 +30,6 @@ namespace umatiGateway.Core.OPC
             Logger.Info("Reconfiger Logger");
             Logger.Info("Reading Configuration");
             ConfigureLogging();
-            configuration.CertificateValidator.CertificateValidation += CertificateValidation;
             OpcUaClient = new OpcUaClient(this, configuration);
             TypeDictionaries = new TypeDictionaries(this);
             BrowseTreeController = new BrowseTreeController(this.OpcUaClient);
@@ -92,78 +90,6 @@ namespace umatiGateway.Core.OPC
                 Logger.Info("Create PubSub Connection");
                 PubSubProvider.Connect();
             }
-        }
-        private void CertificateValidation(CertificateValidator sender, CertificateValidationEventArgs e)
-        {
-            bool certificateAccepted = false;
-
-            // ****
-            // Implement a custom logic to decide if the certificate should be
-            // accepted or not and set certificateAccepted flag accordingly.
-            // The certificate can be retrieved from the e.Certificate field
-            // ***
-
-            ServiceResult error = e.Error;
-            Logger.Error($"Error on Certificate Validation: {e.Error}");
-            if (error.StatusCode == Opc.Ua.StatusCodes.BadCertificateUntrusted && AutoAccept)
-            {
-                certificateAccepted = true;
-            }
-
-            if (certificateAccepted)
-            {
-                Logger.Info($"Untrusted Certificate accepted. Subject = {e.Certificate.Subject}");
-                e.Accept = true;
-            }
-            else
-            {
-                Logger.Error($"Untrusted Certificate rejected. Subject = {e.Certificate.Subject}");
-
-            }
-        }
-        public void AddNodeUmatiMqttConfig(NodeId nodeId)
-        {
-            string? namespaceUrl = this.OpcUaClient.GetNamespaceTable().GetString(nodeId.NamespaceIndex);
-            string? identifier = nodeId.Identifier.ToString();
-            if (namespaceUrl != null && identifier != null)
-            {
-                PublishedNode publishedNode = new PublishedNode();
-                publishedNode.NamespaceUrl = namespaceUrl;
-                publishedNode.Type = nodeId.IdType.ToString();
-                publishedNode.NodeId = identifier;
-                publishedNode.BaseType = "";
-                this.ActiveConfiguration.MqttProviderConfig.PublishedNodes.Add(publishedNode);
-            }
-            else
-            {
-                Logger.Error($"Unable to create PublishedNode from NodeId: {nodeId}");
-            }
-        }
-        public void RemoveNodeMqttConfig(PublishedNode publishedNode)
-        {
-            this.ActiveConfiguration.MqttProviderConfig.PublishedNodes.Remove(publishedNode);
-        }
-        public void AddNodeOpcPubSubConfig(NodeId nodeId)
-        {
-            string? namespaceUrl = this.OpcUaClient.GetNamespaceTable().GetString(nodeId.NamespaceIndex);
-            string? identifier = nodeId.Identifier.ToString();
-            if (namespaceUrl != null && identifier != null)
-            {
-                PublishedNode publishedNode = new PublishedNode();
-                publishedNode.NamespaceUrl = namespaceUrl;
-                publishedNode.Type = nodeId.IdType.ToString();
-                publishedNode.NodeId = identifier;
-                publishedNode.BaseType = "";
-                this.ActiveConfiguration.PubSubProviderConfig.PublishedNodes.Add(publishedNode);
-            }
-            else
-            {
-                Logger.Error($"Unable to create PublishedNode from NodeId: {nodeId}");
-            }
-        }
-        public void RemoveNodePubSubConfig(PublishedNode publishedNode)
-        {
-            this.ActiveConfiguration.PubSubProviderConfig.PublishedNodes.Remove(publishedNode);
         }
     }
 }

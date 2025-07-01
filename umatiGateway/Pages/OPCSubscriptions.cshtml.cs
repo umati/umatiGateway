@@ -2,6 +2,8 @@
 // Copyright (c) 2025 FVA GmbH - interop4x. All rights reserved.
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Opc.Ua;
+using umatiGateway.Core.Configuration;
 using umatiGateway.Core.OPC;
 
 namespace UmatiGateway.Pages
@@ -26,7 +28,18 @@ namespace UmatiGateway.Pages
             TreeNode? selectedTreeNode = this.GetForUid(uuid);
             if (selectedTreeNode != null)
             {
-                app.AddNodeUmatiMqttConfig(selectedTreeNode.NodeData.node.NodeId);
+                NodeId nodeId = selectedTreeNode.NodeData.node.NodeId;
+                string? namespaceUrl = this.app.OpcUaClient.GetNamespaceTable().GetString(nodeId.NamespaceIndex);
+                string? identifier = nodeId.Identifier.ToString();
+                if (namespaceUrl != null && identifier != null)
+                {
+                    PublishedNode publishedNode = new PublishedNode();
+                    publishedNode.NamespaceUrl = namespaceUrl;
+                    publishedNode.Type = nodeId.IdType.ToString();
+                    publishedNode.NodeId = identifier;
+                    publishedNode.BaseType = "";
+                    this.app.ActiveConfiguration.MqttProviderConfig.PublishedNodes.Add(publishedNode);
+                }
             }
             return new PageResult();
         }
@@ -37,7 +50,18 @@ namespace UmatiGateway.Pages
             TreeNode? selectedTreeNode = this.GetForUid(uuid);
             if (selectedTreeNode != null)
             {
-                app.AddNodeOpcPubSubConfig(selectedTreeNode.NodeData.node.NodeId);
+                NodeId nodeId = selectedTreeNode.NodeData.node.NodeId;
+                string? namespaceUrl = this.app.OpcUaClient.GetNamespaceTable().GetString(nodeId.NamespaceIndex);
+                string? identifier = nodeId.Identifier.ToString();
+                if (namespaceUrl != null && identifier != null)
+                {
+                    PublishedNode publishedNode = new PublishedNode();
+                    publishedNode.NamespaceUrl = namespaceUrl;
+                    publishedNode.Type = nodeId.IdType.ToString();
+                    publishedNode.NodeId = identifier;
+                    publishedNode.BaseType = "";
+                    this.app.ActiveConfiguration.PubSubProviderConfig.PublishedNodes.Add(publishedNode);
+                }
             }
             return new PageResult();
         }

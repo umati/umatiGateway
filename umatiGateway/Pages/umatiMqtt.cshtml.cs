@@ -28,7 +28,7 @@ namespace UmatiGateway.Pages
         public IActionResult OnPostRemoveNodeMqttConfig(int index)
         {
             PublishedNode publishedNode = this.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.PublishedNodes[index];
-            this.UmatiGatewayApp.RemoveNodeMqttConfig(publishedNode);
+            this.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.PublishedNodes.Remove(publishedNode);
             return RedirectToPage();
         }
     }

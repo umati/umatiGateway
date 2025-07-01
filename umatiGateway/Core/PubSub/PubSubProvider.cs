@@ -562,7 +562,14 @@ namespace umatiGateway.Core.PubSub
                             HierarchicalNode? childNode = ReadNodeIdAsHierarchicalNode(hierarchicalNode, childNodeId);
                             if (childNode != null)
                             {
-                                hierarchicalNode.hierarchicalChilds.Add(childNodeId, childNode);
+                                if (!hierarchicalNode.hierarchicalChilds.Keys.Contains(childNodeId))
+                                {
+                                    hierarchicalNode.hierarchicalChilds.Add(childNodeId, childNode);
+                                }
+                                else
+                                {
+                                    Logger.Warn($"Double child NodeId {childNodeId} in HierarchicalNode {hierarchicalNode.NodeId}");
+                                }
                             }
                             else
                             {
@@ -574,7 +581,14 @@ namespace umatiGateway.Core.PubSub
                             HierarchicalNode? childNode = ReadNodeIdAsHierarchicalNode(hierarchicalNode, childNodeId);
                             if (childNode != null)
                             {
-                                hierarchicalNode.hierarchicalChilds.Add(childNodeId, childNode);
+                                if (!hierarchicalNode.hierarchicalChilds.Keys.Contains(childNodeId))
+                                {
+                                    hierarchicalNode.hierarchicalChilds.Add(childNodeId, childNode);
+                                }
+                                else
+                                {
+                                    Logger.Warn($"Double child NodeId {childNodeId} in HierarchicalNode {hierarchicalNode.NodeId}");
+                                }
                             }
                             else
                             {

@@ -227,6 +227,33 @@
                     }
                 </tbody>
             </table>
+            <label for="PubSubChildNodes" class="settings-label">PubSub Child Nodes</label>
+            <table id="PubSubChildNodes" class="nodetable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Type</th>
+                        <th>NamespaceUrl</th>
+                        <th>Identifier</th>
+                        <th>BaseType</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (var i = 0; i < Model.Configuration.PubSubProviderConfig.PublishedNodes.Count; i++)
+                    {
+                        if (@Model.Configuration.PubSubProviderConfig.PublishedNodes[i].GetType().Name == "PublishedChildNodes")
+                        {
+                            <tr>
+                                <td>@(i + 1)</td>
+                                <td><input name="PubSubNodes[@i].type" value="@Model.Configuration.PubSubProviderConfig.PublishedNodes[i].Type" readonly style="width: auto; border: none; outline: none;background-color: transparent;"></td>
+                                <td><input name="PubSubNodes[@i].namespaceUrl" value="@Model.Configuration.PubSubProviderConfig.PublishedNodes[i].NamespaceUrl" readonly style="width: auto; border: none; outline: none; background-color: transparent;"></td>
+                                <td><input name="PubSubNodes[@i].nodeId" value="@Model.Configuration.PubSubProviderConfig.PublishedNodes[i].NodeId" readonly style="width: auto; border: none; outline: none; background-color: transparent;"></td>
+                                <td><input name="PubSubNodes[@i].BaseType" value="@Model.Configuration.PubSubProviderConfig.PublishedNodes[i].BaseType" readonly style="width: auto; border: none; outline: none; background-color: transparent;"></td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
             <div class="settings-button-container">
                 <button type="submit" asp-page-handler="Download" class="settings-button"> Download Active Configuration</button>
             </div>
