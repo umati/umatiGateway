@@ -4,7 +4,7 @@
   xmlns:ua="http://opcfoundation.org/UA/2008/02/Types.xsd"
   xmlns="http://opcfoundation.org/UA/SDK/Configuration.xsd"
 >
-  <ApplicationName>umati Gateway</ApplicationName>
+  <ApplicationName>umatiGateway</ApplicationName>
   <ApplicationUri>urn:org:umati:umatigateway:application</ApplicationUri>
   <ProductUri>urn:org:umati:umatigateway</ProductUri>
   <ApplicationType>Client_1</ApplicationType>
