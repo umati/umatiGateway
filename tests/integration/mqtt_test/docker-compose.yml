@@ -18,5 +18,4 @@ services:
       - opcuaserver
     image: localhost:5000/umati/umatigateway:${DOCKER_METADATA_OUTPUT_VERSION}
     volumes:
-      - ./Configuration/Files/LocalConfig.xml:/app/Configuration/Files/LocalConfig.xml
-      - ./Configuration/umatiGatewayConfig.xml:/app/Configuration/umatiGatewayConfig.xml
+      - ./SimpleConfig/umatiGatewayConfig.xml:/app/umatiGatewayConfig.xml
