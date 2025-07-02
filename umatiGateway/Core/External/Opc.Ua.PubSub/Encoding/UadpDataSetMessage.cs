@@ -487,7 +487,8 @@ namespace Opc.Ua.PubSub.Encoding
             {
                 minorVersion = decoder.ReadUInt32("ConfigurationMinorVersion");
             }
-            MetaDataVersion = new ConfigurationVersionDataType() {
+            MetaDataVersion = new ConfigurationVersionDataType()
+            {
                 MinorVersion = minorVersion,
                 MajorVersion = majorVersion
             };

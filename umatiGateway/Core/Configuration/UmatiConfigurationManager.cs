@@ -55,7 +55,6 @@ namespace umatiGateway.Core.Configuration
         public const string IGNORED_PLACEHOLDER_TAGS = "IgnoredPlaceholderTags";
         public const string IGNORED_PLACEHOLDER_TAG = "IgnoredPlaceholderTag";
 
-        
         public UmatiConfigurationManager() { }
 
         public UmatiConfiguration ReadConfiguration()
@@ -83,7 +82,8 @@ namespace umatiGateway.Core.Configuration
                             configuration.StartConfiguration.StartMQTTProvider = string.Equals(startMqttProvider, "true", StringComparison.OrdinalIgnoreCase) ? true : false;
                             string startPubSubProvider = ReadAttribute(startConfigurationNode, START_PUBSUB_PROVIDER);
                             configuration.StartConfiguration.StartPubSubProvider = string.Equals(startPubSubProvider, "true", StringComparison.OrdinalIgnoreCase) ? true : false;
-                        } else
+                        }
+                        else
                         {
                             Logger.Warn($"No {STARTCONFIGURATION} node defined in {UMATI_GATEWAY_CONFIG} node.");
                         }
@@ -96,7 +96,8 @@ namespace umatiGateway.Core.Configuration
                             configuration.OPCConnection.Password = ReadAttribute(opcConnectionNode, PASSWORD);
                             string readExtraLibs = ReadAttribute(opcConnectionNode, READ_EXTRA_LIBS);
                             configuration.OPCConnection.ReadExtraLibs = string.Equals(readExtraLibs, "true", StringComparison.OrdinalIgnoreCase) ? true : false;
-                        } else
+                        }
+                        else
                         {
                             Logger.Warn($"No {OPC_CONNECTION} node defined in {UMATI_GATEWAY_CONFIG} node.");
                         }
@@ -194,7 +195,6 @@ namespace umatiGateway.Core.Configuration
                                 Logger.Warn($"No {PUBLISHED_NODES} node defined in {PUB_SUB_PROVIDER} node.");
                             }
                         }
-                        
                     }
                     else
                     {
@@ -288,7 +288,7 @@ namespace umatiGateway.Core.Configuration
                 customEncodingsNode.AppendChild(customEncodingNode);
             }
             XmlElement IgnoredPlaceholderTagsNode = xmlDocument.CreateElement(IGNORED_PLACEHOLDER_TAGS);
-            foreach(IgnoredPlaceholderTag ignoredPlaceholderTag in configuration.MqttProviderConfig.IgnoredPlaceholderTags)
+            foreach (IgnoredPlaceholderTag ignoredPlaceholderTag in configuration.MqttProviderConfig.IgnoredPlaceholderTags)
             {
                 XmlElement IgnoredPlaceholderTagNode = xmlDocument.CreateElement(IGNORED_PLACEHOLDER_TAG);
                 XmlAttribute IgnoredPlaceholderTagName = xmlDocument.CreateAttribute(NAME);

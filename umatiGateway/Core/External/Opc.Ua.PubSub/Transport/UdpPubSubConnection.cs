@@ -221,7 +221,8 @@ namespace Opc.Ua.PubSub.Transport
                         if (hasMetaDataChanged)
                         {
                             // add metadata network message
-                            networkMessages.Add(new UadpNetworkMessage(writerGroupConfiguration, dataSet.DataSetMetaData) {
+                            networkMessages.Add(new UadpNetworkMessage(writerGroupConfiguration, dataSet.DataSetMetaData)
+                            {
                                 PublisherId = PubSubConnectionConfiguration.PublisherId.Value,
                                 DataSetWriterId = dataSetWriter.DataSetWriterId
                             });
@@ -574,7 +575,8 @@ namespace Opc.Ua.PubSub.Transport
                     if (message.Length > 1)
                     {
                         // raise RawData received event
-                        RawDataReceivedEventArgs rawDataReceivedEventArgs = new RawDataReceivedEventArgs() {
+                        RawDataReceivedEventArgs rawDataReceivedEventArgs = new RawDataReceivedEventArgs()
+                        {
                             Message = message,
                             Source = source.Address.ToString(),
                             TransportProtocol = this.TransportProtocol,
@@ -593,7 +595,8 @@ namespace Opc.Ua.PubSub.Transport
                         }
 
                         // call on a new thread
-                        Task.Run(() => {
+                        Task.Run(() =>
+                        {
                             ProcessReceivedMessage(message, source);
                         });
                     }

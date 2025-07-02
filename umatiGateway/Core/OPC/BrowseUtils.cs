@@ -45,7 +45,7 @@ namespace umatiGateway.Core.OPC
         /// <param name = "nodeId">The NodeId for that the children are browsed.</param>
         /// <param name = "nodeClassMask">The Nodeclasses of the Childs</param>
         /// <returns>The BrowseDescription that gets the hierarchical Children for one Node.</returns>
-        public static BrowseDescription GetHierarchicalChildren(NodeId nodeId, uint nodeCassMask = (uint) NodeClass.Unspecified)
+        public static BrowseDescription GetHierarchicalChildren(NodeId nodeId, uint nodeCassMask = (uint)NodeClass.Unspecified)
         {
             BrowseDescription browseDescription = new BrowseDescription();
             browseDescription.NodeId = nodeId;

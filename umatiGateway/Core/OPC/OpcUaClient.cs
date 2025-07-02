@@ -30,8 +30,9 @@ namespace umatiGateway.Core.OPC
         {
             try
             {
-                _= this.ConnectAsync().Result;
-            } catch (Exception ex)
+                _ = this.ConnectAsync().Result;
+            }
+            catch (Exception ex)
             {
                 throw new OpcUaException("Unable to Connect to OPC Ua Server.", ex);
             }
@@ -158,7 +159,7 @@ namespace umatiGateway.Core.OPC
                 session.Browse(null, null, 10000, nodesToBrowse, out BrowseResultCollection results, out DiagnosticInfoCollection diagnosticInfos);
                 return results;
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 throw new OpcUaException("Unable to browse Node:", ex);
             }
@@ -429,7 +430,7 @@ namespace umatiGateway.Core.OPC
 
         string IOpcUaClient.GetSessionId()
         {
-            if(this.session != null)
+            if (this.session != null)
             {
                 return session.SessionId.ToString();
             }
@@ -470,7 +471,7 @@ namespace umatiGateway.Core.OPC
                 }
                 return filteredNodeIds;
             }
-            catch(Exception exception)
+            catch (Exception exception)
             {
                 throw new OpcUaException($"Unable to BrowseLocalNodeIds with Typedefinition for node: {rootNodeId}", exception);
             }
@@ -591,7 +592,7 @@ namespace umatiGateway.Core.OPC
                 session.Browse(null, null, 10000, browseDescriptionCollection, out BrowseResultCollection results, out DiagnosticInfoCollection diagnosticInfos);
                 return results;
             }
-            catch(Exception exception)
+            catch (Exception exception)
             {
                 throw new OpcUaException($"Unable to browse browseDescriptions: {browseDescriptionCollection}", exception);
             }
@@ -680,7 +681,8 @@ namespace umatiGateway.Core.OPC
             try
             {
                 return session.ReadValue(nodeId);
-            } catch(Exception exception)
+            }
+            catch (Exception exception)
             {
                 throw new OpcUaException($"Unable to read Datavalue for NodeId: {nodeId}", exception);
             }
@@ -699,7 +701,7 @@ namespace umatiGateway.Core.OPC
                 string[] namespaces = (string[])dv.Value;
                 return new NamespaceTable(namespaces);
             }
-            catch(Exception exception)
+            catch (Exception exception)
             {
                 throw new OpcUaException("Unable to get NamespaceTable from server.", exception);
             }

@@ -48,7 +48,7 @@ namespace umatiGateway.Core.Mqtt
     {
         private readonly object _lockObject = new object();
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-        public List<MachineNode> MachineNodes {get; set; } = new List<MachineNode>();
+        public List<MachineNode> MachineNodes { get; set; } = new List<MachineNode>();
         private MqttClientFactory mqttFactory = new MqttClientFactory();
         private IMqttClient? mqttClient = null;
         private const string CLIENT_ID = "TestClient";
@@ -756,7 +756,7 @@ namespace umatiGateway.Core.Mqtt
             {
                 hierarchicalChilds = client.BrowseNodeIds(
                     new BrowseDescriptionCollection { BrowseUtils.GetHierarchicalChildren(nodeId, (int)NodeClass.Object | (int)NodeClass.Variable) },
-                    new BrowseDescriptionCollection { BrowseUtils.ForwardBrowseDescription(nodeId, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HasStructuredComponent, true)});
+                    new BrowseDescriptionCollection { BrowseUtils.ForwardBrowseDescription(nodeId, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HasStructuredComponent, true) });
                 //hierarchicalChilds = client.BrowseLocalNodeIdsExcludeReference(nodeId, BrowseDirection.Forward, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true, ReferenceTypeIds.HasStructuredComponent);
             }
             foreach (NodeId child in hierarchicalChilds)
@@ -839,31 +839,31 @@ namespace umatiGateway.Core.Mqtt
                             JToken dataValue = getDataValueAsObject(child);
                             bool shorten = false;
                             bool useValueIndentation = true;
-                                if (shortenVariables)
+                            if (shortenVariables)
+                            {
+                                List<NodeId> nodeIds = new List<NodeId>();
+                                if (app.ActiveConfiguration.MqttProviderConfig.IncludeStructuredComponents)
                                 {
-                                    List<NodeId> nodeIds = new List<NodeId>();
-                                    if (app.ActiveConfiguration.MqttProviderConfig.IncludeStructuredComponents)
-                                    {
-                                        nodeIds = client.BrowseNodeIds(new BrowseDescriptionCollection { BrowseUtils.GetHierarchicalChildren(child, (int)NodeClass.Variable)});
-                                        //nodeIds = client.BrowseLocalNodeIds(child, BrowseDirection.Forward, (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true);
-                                    }
-                                    else
-                                    {
-                                        nodeIds = client.BrowseNodeIds(
-                                            new BrowseDescriptionCollection { BrowseUtils.GetHierarchicalChildren(child, (int)NodeClass.Variable) },
-                                            new BrowseDescriptionCollection { BrowseUtils.ForwardBrowseDescription(child,(int)NodeClass.Variable,ReferenceTypeIds.HasStructuredComponent,true)});
-                                        //nodeIds = client.BrowseLocalNodeIdsExcludeReference(child, BrowseDirection.Forward, (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true, ReferenceTypeIds.HasStructuredComponent);
-                                    }
-                                    if (nodeIds.Count == 0)
-                                    {
-                                        shorten = true;
-                                    }
-                                    if (getInstanceNsu(typeDefinition, false) == "nsu=http://opcfoundation.org/UA/GMS/;i=2004")
-                                    {
-                                        Logger.Trace("Not use ValueIndentation");
-                                        useValueIndentation = false;
-                                    }
+                                    nodeIds = client.BrowseNodeIds(new BrowseDescriptionCollection { BrowseUtils.GetHierarchicalChildren(child, (int)NodeClass.Variable) });
+                                    //nodeIds = client.BrowseLocalNodeIds(child, BrowseDirection.Forward, (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true);
                                 }
+                                else
+                                {
+                                    nodeIds = client.BrowseNodeIds(
+                                        new BrowseDescriptionCollection { BrowseUtils.GetHierarchicalChildren(child, (int)NodeClass.Variable) },
+                                        new BrowseDescriptionCollection { BrowseUtils.ForwardBrowseDescription(child, (int)NodeClass.Variable, ReferenceTypeIds.HasStructuredComponent, true) });
+                                    //nodeIds = client.BrowseLocalNodeIdsExcludeReference(child, BrowseDirection.Forward, (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true, ReferenceTypeIds.HasStructuredComponent);
+                                }
+                                if (nodeIds.Count == 0)
+                                {
+                                    shorten = true;
+                                }
+                                if (getInstanceNsu(typeDefinition, false) == "nsu=http://opcfoundation.org/UA/GMS/;i=2004")
+                                {
+                                    Logger.Trace("Not use ValueIndentation");
+                                    useValueIndentation = false;
+                                }
+                            }
                             if (shorten || !useValueIndentation)
                             {
                                 if (dataValue is JValue)
@@ -1017,7 +1017,7 @@ namespace umatiGateway.Core.Mqtt
         private void SuperTypeList(NodeId typeNodeId, List<NodeId> superTypes)
         {
             superTypes.Add(typeNodeId);
-            List<NodeId> superTypesOfType = this.client.BrowseNodeIds(new BrowseDescriptionCollection{BrowseUtils.InverseBrowseDescription(typeNodeId, (int)NodeClass.VariableType | (int)NodeClass.ObjectType, ReferenceTypeIds.HasSubtype, true)});
+            List<NodeId> superTypesOfType = this.client.BrowseNodeIds(new BrowseDescriptionCollection { BrowseUtils.InverseBrowseDescription(typeNodeId, (int)NodeClass.VariableType | (int)NodeClass.ObjectType, ReferenceTypeIds.HasSubtype, true) });
             //List<NodeId> superTypesOfType = this.client.BrowseLocalNodeIds(typeNodeId, BrowseDirection.Inverse, (int)NodeClass.VariableType | (int)NodeClass.ObjectType, ReferenceTypeIds.HasSubtype, true);
             foreach (NodeId superType in superTypesOfType)
             {
@@ -1099,7 +1099,7 @@ namespace umatiGateway.Core.Mqtt
                     if (machineNode != null && machineNode.ResolvedNodeId != null)
                     {
                         {
-                            List<NodeId> identificationNodes = client.BrowseNodeIds(new BrowseDescriptionCollection { BrowseUtils.GetHierarchicalChildren(machineNode.ResolvedNodeId, (int)NodeClass.Object)});
+                            List<NodeId> identificationNodes = client.BrowseNodeIds(new BrowseDescriptionCollection { BrowseUtils.GetHierarchicalChildren(machineNode.ResolvedNodeId, (int)NodeClass.Object) });
                             //List<NodeId> identificationNodes = client.BrowseLocalNodeIds(machineNode.ResolvedNodeId, BrowseDirection.Forward, (int)NodeClass.Object, ReferenceTypeIds.HierarchicalReferences, true);
                             foreach (NodeId child in identificationNodes)
                             {

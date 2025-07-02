@@ -295,7 +295,8 @@ namespace Opc.Ua.PubSub.Transport
 
                             if (!String.IsNullOrEmpty(queueName))
                             {
-                                var message = new MqttApplicationMessage {
+                                var message = new MqttApplicationMessage
+                                {
                                     Topic = queueName,
                                     PayloadSegment = new ArraySegment<byte>(bytes),
                                     QualityOfServiceLevel = GetMqttQualityOfServiceLevel(qos),
@@ -510,7 +511,8 @@ namespace Opc.Ua.PubSub.Transport
                     X509CertificateCollection certificates = client.Options?.ChannelOptions?.TlsOptions?.ClientCertificatesProvider?.GetCertificates();
                     if (client.IsConnected)
                     {
-                        await client.DisconnectAsync().ContinueWith((e) => {
+                        await client.DisconnectAsync().ContinueWith((e) =>
+                        {
                             DisposeCerts(certificates);
                             Utils.SilentDispose(client);
                         }).ConfigureAwait(false);
@@ -618,7 +620,8 @@ namespace Opc.Ua.PubSub.Transport
             if (dataSetReaders.Count > 0)
             {
                 // raise RawData received event
-                var rawDataReceivedEventArgs = new RawDataReceivedEventArgs() {
+                var rawDataReceivedEventArgs = new RawDataReceivedEventArgs()
+                {
                     Message = eventArgs.ApplicationMessage.Payload.ToArray(),
                     Source = topic,
                     TransportProtocol = TransportProtocol,
@@ -762,7 +765,8 @@ namespace Opc.Ua.PubSub.Transport
                         .WithKeepAlivePeriod(mqttKeepAlive)
                         .WithProtocolVersion(mqttProtocolVersion)
                         .WithClientId(clientId)
-                        .WithTlsOptions(o => {
+                        .WithTlsOptions(o =>
+                        {
                             o.UseTls(true);
                             o.WithClientCertificates(x509Certificate2s);
                             o.WithSslProtocols(mqttTlsOptions?.SslProtocolVersion ??
@@ -833,7 +837,8 @@ namespace Opc.Ua.PubSub.Transport
         {
             var certificateValidator = new CertificateValidator();
 
-            var securityConfiguration = new SecurityConfiguration {
+            var securityConfiguration = new SecurityConfiguration
+            {
                 TrustedIssuerCertificates = (CertificateTrustList)mqttTlsOptions.TrustedIssuerCertificates,
                 TrustedPeerCertificates = (CertificateTrustList)mqttTlsOptions.TrustedPeerCertificates,
                 RejectedCertificateStore = mqttTlsOptions.RejectedCertificateStore,
@@ -1010,7 +1015,8 @@ namespace Opc.Ua.PubSub.Transport
 
                             if (ExtensionObject.ToEncodeable(dataSetWriter.MessageSettings) is JsonDataSetWriterMessageDataType jsonDataSetMessageSettings)
                             {
-                                var jsonDataSetMessage = new Encoding.JsonDataSetMessage(dataSet) {
+                                var jsonDataSetMessage = new Encoding.JsonDataSetMessage(dataSet)
+                                {
                                     DataSetMessageContentMask = (JsonDataSetMessageContentMask)jsonDataSetMessageSettings.DataSetMessageContentMask
                                 };
 
@@ -1078,7 +1084,8 @@ namespace Opc.Ua.PubSub.Transport
             public override UaNetworkMessage CreateDataSetMetaDataNetworkMessage(WriterGroupDataType writerGroup, UInt16 dataSetWriterId, DataSetMetaDataType dataSetMetaData)
             {
                 // return UADP metadata network message
-                return new Encoding.JsonNetworkMessage(writerGroup, dataSetMetaData) {
+                return new Encoding.JsonNetworkMessage(writerGroup, dataSetMetaData)
+                {
                     PublisherId = m_mqttConnection.PubSubConnectionConfiguration.PublisherId.Value.ToString(),
                     DataSetWriterId = dataSetWriterId
                 };
@@ -1198,7 +1205,8 @@ namespace Opc.Ua.PubSub.Transport
             public override UaNetworkMessage CreateDataSetMetaDataNetworkMessage(WriterGroupDataType writerGroup, UInt16 dataSetWriterId, DataSetMetaDataType dataSetMetaData)
             {
                 // return UADP metadata network message
-                return new UadpNetworkMessage(writerGroup, dataSetMetaData) {
+                return new UadpNetworkMessage(writerGroup, dataSetMetaData)
+                {
                     PublisherId = m_mqttConnection.PubSubConnectionConfiguration.PublisherId.Value,
                     DataSetWriterId = dataSetWriterId
                 };

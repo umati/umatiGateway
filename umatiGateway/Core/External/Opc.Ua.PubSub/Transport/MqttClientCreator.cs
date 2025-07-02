@@ -60,7 +60,8 @@ namespace Opc.Ua.PubSub.Transport
             {
 
                 mqttClient.ApplicationMessageReceivedAsync += receiveMessageHandler;
-                mqttClient.ConnectedAsync += async e => {
+                mqttClient.ConnectedAsync += async e =>
+                {
                     Utils.Trace("{0} Connected to MQTTBroker", mqttClient?.Options?.ClientId);
 
                     try
@@ -92,7 +93,8 @@ namespace Opc.Ua.PubSub.Transport
             }
 
             // Setup reconnect handler
-            mqttClient.DisconnectedAsync += async e => {
+            mqttClient.DisconnectedAsync += async e =>
+            {
                 await Task.Delay(TimeSpan.FromSeconds(reconnectInterval)).ConfigureAwait(false);
                 try
                 {

@@ -120,7 +120,8 @@ namespace Opc.Ua.PubSub.Transport
                     if (message.Length > 1)
                     {
                         // call on a new thread
-                        Task.Run(() => {
+                        Task.Run(() =>
+                        {
                             ProcessReceivedMessageDiscovery(message, source);
                         });
                     }

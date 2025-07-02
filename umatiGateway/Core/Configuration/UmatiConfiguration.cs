@@ -52,7 +52,7 @@ namespace umatiGateway.Core.Configuration
     public class Filter
     {
         public FilterType FilterType { get; set; }
-        public List<Conditions> ConditionsList { get; set; } = new List<Conditions> ();
+        public List<Conditions> ConditionsList { get; set; } = new List<Conditions>();
     }
     public enum FilterType
     {
@@ -66,7 +66,6 @@ namespace umatiGateway.Core.Configuration
     }
     public class Condition
     {
-        
     }
     public enum ConditionType
     {
@@ -132,7 +131,7 @@ namespace umatiGateway.Core.Configuration
         public string Password { get; set; } = "";
         public string ClientId { get; set; } = "";
         public string Prefix { get; set; } = "";
-        public List <PublishedNode> PublishedNodes { get; set; } = new List<PublishedNode> { };
+        public List<PublishedNode> PublishedNodes { get; set; } = new List<PublishedNode>();
         public override string ToString()
         {
             var nodes = string.Join(", ", PublishedNodes.Select(n => n.ToString()));

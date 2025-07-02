@@ -19,7 +19,6 @@ namespace UmatiGateway.Pages
         public void OnGet()
         {
         }
-        
         public IActionResult OnPostDownload(string OpcConnectionUrl, string OpcUser, string OpcPassword,
             string MqttConnectionUrl, string MqttUser, string MqttPassword, string MqttClientId, string MqttPrefix,
             bool? AutoStart, bool? readExtraLibs, bool? includeStructuredComponents, string LogLevel, string configfilePath, List<CustomEncoding> CustomEncodings, List<PublishedNode> PublishedNodes)

@@ -27,7 +27,7 @@ namespace umatiGateway.Core.Mqtt
                         NodeId? resolvedNodeId = this.ResolveNodeId(publishedChildNodes.Type, publishedChildNodes.NodeId, publishedChildNodes.NamespaceUrl, publishedChildNodes.BaseType);
                         if (resolvedNodeId != null)
                         {
-                            List<NodeId> childNodes = client.BrowseNodeIds(new BrowseDescriptionCollection { BrowseUtils.GetHierarchicalChildren(resolvedNodeId, (int)NodeClass.Object | (int)NodeClass.Variable)});
+                            List<NodeId> childNodes = client.BrowseNodeIds(new BrowseDescriptionCollection { BrowseUtils.GetHierarchicalChildren(resolvedNodeId, (int)NodeClass.Object | (int)NodeClass.Variable) });
                             //List<NodeId> childNodes = client.BrowseLocalNodeIds(resolvedNodeId, BrowseDirection.Forward, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true);
                             List<NodeId> filteredNodes = this.MatchFilters(resolvedNodeId, childNodes, publishedChildNodes.Filter);
                             foreach (NodeId child in filteredNodes)
@@ -42,7 +42,8 @@ namespace umatiGateway.Core.Mqtt
                                     childMachineNode.NamespaceUrl = this.client.GetNamespaceTable().GetString(child.NamespaceIndex);
                                     childMachineNode.NodeIdString = child.Identifier.ToString() ?? "";
                                     filteredMachineNodes.Add(child, childMachineNode);
-                                } else
+                                }
+                                else
                                 {
                                     Logger.Info($"NodeId {child} allready added to published Maschines.");
                                 }
@@ -64,7 +65,8 @@ namespace umatiGateway.Core.Mqtt
                                 machineNode.BaseType = publishedNode.BaseType;
                                 machineNode.ResolvedNodeId = nodeId;
                                 filteredMachineNodes.Add(nodeId, machineNode);
-                            } else
+                            }
+                            else
                             {
                                 Logger.Info($"NodeId {nodeId} allready added to published Maschines.");
                             }
@@ -96,14 +98,14 @@ namespace umatiGateway.Core.Mqtt
         private List<NodeId> MatchFilters(NodeId parentNodeId, List<NodeId> childNodes, List<Filter> filters)
         {
             List<List<NodeId>> filteredIdsList = new List<List<NodeId>>();
-            foreach(Filter filter in filters)
+            foreach (Filter filter in filters)
             {
-                List<NodeId> conditionsFiltered = this.MatchFilterConditions(parentNodeId,filter.ConditionsList);
-                if(filter.FilterType == FilterType.Whitelist)
+                List<NodeId> conditionsFiltered = this.MatchFilterConditions(parentNodeId, filter.ConditionsList);
+                if (filter.FilterType == FilterType.Whitelist)
                 {
                     filteredIdsList.Add(childNodes.Intersect<NodeId>(conditionsFiltered).ToList());
                 }
-                else if(filter.FilterType == FilterType.Blacklist)
+                else if (filter.FilterType == FilterType.Blacklist)
                 {
                     filteredIdsList.Add(childNodes.Where(item => !conditionsFiltered.Contains(item)).ToList());
                 }
@@ -134,7 +136,7 @@ namespace umatiGateway.Core.Mqtt
         {
             List<NodeId> nodeIdsMatchingConditions = new List<NodeId>();
             List<List<NodeId>> singleConditionNodeIdsList = new List<List<NodeId>>();
-            foreach(Condition condition in conditions.ConditionList)
+            foreach (Condition condition in conditions.ConditionList)
             {
                 switch (condition)
                 {
@@ -182,7 +184,7 @@ namespace umatiGateway.Core.Mqtt
             NodeId? typeId = this.ResolveNodeId(typeIdCondition.Type, typeIdCondition.NodeId, typeIdCondition.NamespaceUrl, "");
             if (typeId != null)
             {
-                return this.client.BrowseLocalNodeIdsWithTypeDefinition(parentNodeId, BrowseDirection.Forward, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences,true, typeId);
+                return this.client.BrowseLocalNodeIdsWithTypeDefinition(parentNodeId, BrowseDirection.Forward, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true, typeId);
             }
             else
             {

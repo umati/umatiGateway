@@ -100,7 +100,8 @@ namespace Opc.Ua.PubSub.Transport
         /// </summary>
         private void CustomizeSocketToBroadcastThroughIf()
         {
-            Action<SocketOptionLevel, SocketOptionName, bool> setSocketOption = (SocketOptionLevel socketOptionLevel, SocketOptionName socketOptionName, bool value) => {
+            Action<SocketOptionLevel, SocketOptionName, bool> setSocketOption = (SocketOptionLevel socketOptionLevel, SocketOptionName socketOptionName, bool value) =>
+            {
                 try
                 {
                     Client.SetSocketOption(socketOptionLevel, socketOptionName, value);
@@ -108,7 +109,8 @@ namespace Opc.Ua.PubSub.Transport
                 catch (Exception ex)
                 {
                     Utils.Trace(Utils.TraceMasks.Information, "UdpClientBroadcast set SetSocketOption {1} to {2} resulted in ex {0}", ex.Message, SocketOptionName.Broadcast, value);
-                };
+                }
+                ;
             };
             setSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, true);
             setSocketOption(SocketOptionLevel.Socket, SocketOptionName.DontRoute, false);

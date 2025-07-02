@@ -57,7 +57,8 @@ namespace Opc.Ua.PubSub
         internal UaPubSubConnection(UaPubSubApplication parentUaPubSubApplication, PubSubConnectionDataType pubSubConnectionDataType)
         {
             // set the default message context that uses the GlobalContext
-            MessageContext = new ServiceMessageContext {
+            MessageContext = new ServiceMessageContext
+            {
                 NamespaceUris = ServiceMessageContext.GlobalContext.NamespaceUris,
                 ServerUris = ServiceMessageContext.GlobalContext.ServerUris
             };
@@ -324,7 +325,8 @@ namespace Opc.Ua.PubSub
                     if (raiseChangedEvent)
                     {
                         // raise event
-                        ConfigurationUpdatingEventArgs metaDataUpdatedEventArgs = new ConfigurationUpdatingEventArgs() {
+                        ConfigurationUpdatingEventArgs metaDataUpdatedEventArgs = new ConfigurationUpdatingEventArgs()
+                        {
                             ChangedProperty = ConfigurationProperty.DataSetMetaData,
                             Parent = reader,
                             NewValue = networkMessage.DataSetMetaData,
@@ -348,7 +350,8 @@ namespace Opc.Ua.PubSub
                     }
                 }
 
-                SubscribedDataEventArgs subscribedDataEventArgs = new SubscribedDataEventArgs() {
+                SubscribedDataEventArgs subscribedDataEventArgs = new SubscribedDataEventArgs()
+                {
                     NetworkMessage = networkMessage,
                     Source = source
                 };
@@ -363,7 +366,8 @@ namespace Opc.Ua.PubSub
             }
             else if (networkMessage.DataSetMessages != null && networkMessage.DataSetMessages.Count > 0)
             {
-                SubscribedDataEventArgs subscribedDataEventArgs = new SubscribedDataEventArgs() {
+                SubscribedDataEventArgs subscribedDataEventArgs = new SubscribedDataEventArgs()
+                {
                     NetworkMessage = networkMessage,
                     Source = source
                 };
@@ -385,7 +389,8 @@ namespace Opc.Ua.PubSub
                     if (uadpNetworkMessage.UADPDiscoveryType == UADPNetworkMessageDiscoveryType.DataSetWriterConfiguration &&
                         uadpNetworkMessage.UADPNetworkMessageType == UADPNetworkMessageType.DiscoveryResponse)
                     {
-                        DataSetWriterConfigurationEventArgs eventArgs = new DataSetWriterConfigurationEventArgs() {
+                        DataSetWriterConfigurationEventArgs eventArgs = new DataSetWriterConfigurationEventArgs()
+                        {
                             DataSetWriterIds = uadpNetworkMessage.DataSetWriterIds,
                             Source = source,
                             DataSetWriterConfiguration = uadpNetworkMessage.DataSetWriterConfiguration,
@@ -404,7 +409,8 @@ namespace Opc.Ua.PubSub
                     else if (uadpNetworkMessage.UADPDiscoveryType == UADPNetworkMessageDiscoveryType.PublisherEndpoint &&
                         uadpNetworkMessage.UADPNetworkMessageType == UADPNetworkMessageType.DiscoveryResponse)
                     {
-                        PublisherEndpointsEventArgs publisherEndpointsEventArgs = new PublisherEndpointsEventArgs() {
+                        PublisherEndpointsEventArgs publisherEndpointsEventArgs = new PublisherEndpointsEventArgs()
+                        {
                             PublisherEndpoints = uadpNetworkMessage.PublisherEndpoints,
                             Source = source,
                             PublisherId = uadpNetworkMessage.PublisherId,

@@ -169,7 +169,7 @@ namespace Opc.Ua.PubSub
                 long nowTick = HiResClock.Ticks;
                 double nextPublishTick = 0;
 
-                lock(m_lock)
+                lock (m_lock)
                 {
                     nextPublishTick = m_nextPublishTick;
                 }
@@ -191,7 +191,7 @@ namespace Opc.Ua.PubSub
                 {
                     SpinWait.SpinUntil(() => HiResClock.Ticks >= nextPublishTick);
                 }
-                    
+
                 lock (m_lock)
                 {
                     var nextCycle = (long)m_interval * HiResClock.TicksPerMillisecond;
@@ -200,7 +200,8 @@ namespace Opc.Ua.PubSub
                     if (IntervalAction != null && CanExecuteFunc != null && CanExecuteFunc())
                     {
                         // call on a new thread
-                        Task.Run(() => {
+                        Task.Run(() =>
+                        {
                             IntervalAction();
                         });
                     }

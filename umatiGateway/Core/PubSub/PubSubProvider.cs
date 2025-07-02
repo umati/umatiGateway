@@ -93,7 +93,8 @@ namespace umatiGateway.Core.PubSub
 
         private void AddVirtualNodeIdsToStore()
         {
-            foreach (VirtualId virtualId in virtualIds) {
+            foreach (VirtualId virtualId in virtualIds)
+            {
                 pubSubDataStore.WritePublishedDataItem(virtualId.nodeId, Attributes.Value, virtualId.dv);
                 Logger.Info($"Added Value to PubSUb DataStore: {virtualId.nodeId} \t {virtualId.dv}");
             }
@@ -153,8 +154,7 @@ namespace umatiGateway.Core.PubSub
             }
             createDataSetAndWritersNew(hierarchicalNode);
         }
-       
-        public string CreateTopic(HierarchicalNode hierarchicalProperty) 
+        public string CreateTopic(HierarchicalNode hierarchicalProperty)
         {
             UmatiConfiguration config = app.ActiveConfiguration;
             string topic = $"{config.PubSubProviderConfig.Prefix}/json/data/{config.PubSubProviderConfig.ClientId}/{GetBrowsePath(hierarchicalProperty)}";
@@ -172,7 +172,8 @@ namespace umatiGateway.Core.PubSub
             if (includeNamespaceIndex)
             {
                 browsePath = hierarchicalNode.BrowseName.ToString();
-            } else
+            }
+            else
             {
                 browsePath = hierarchicalNode.BrowseName.Name.ToString();
             }
@@ -200,15 +201,17 @@ namespace umatiGateway.Core.PubSub
             string dataSetName = $"DataSet_{publishedDataSets.Count + uniqueint}";
             PublishedVariableDataTypeCollection publishedVariableDataTypeCollection = new PublishedVariableDataTypeCollection();
             FieldMetaDataCollection fields = new FieldMetaDataCollection();
-            if(hierarchicalNode.hierarchicalChilds.Count > 0)
+            if (hierarchicalNode.hierarchicalChilds.Count > 0)
             {
-                foreach (KeyValuePair <NodeId, HierarchicalNode> hierarchicalChild in hierarchicalNode.hierarchicalChilds)
+                foreach (KeyValuePair<NodeId, HierarchicalNode> hierarchicalChild in hierarchicalNode.hierarchicalChilds)
                 {
                     if (NodeClass.Variable == hierarchicalChild.Value.NodeClass)
                     {
-                        publishedVariableDataTypeCollection.Add( new PublishedVariableDataType
+                        publishedVariableDataTypeCollection.Add(
+                        new PublishedVariableDataType
                         {
-                            PublishedVariable = hierarchicalChild.Value.NodeId, AttributeId = Attributes.Value
+                            PublishedVariable = hierarchicalChild.Value.NodeId,
+                            AttributeId = Attributes.Value
                         });
                         fields.Add(hierarchicalChild.Value.fieldMetaData);
                     }
@@ -216,7 +219,7 @@ namespace umatiGateway.Core.PubSub
             }
             //Add a Virtaul Id
             DataValue dataValue = new DataValue(GetBrowsePath(hierarchicalNode, true, "."));
-            VirtualId virtualId = new VirtualId(new NodeId("virtualId_"+uniqueint, 1), dataValue);
+            VirtualId virtualId = new VirtualId(new NodeId("virtualId_" + uniqueint, 1), dataValue);
             virtualIds.Add(virtualId);
             KeyValuePairCollection keyValuePairs = GetRealationsAsKeyValuePair(hierarchicalNode);
             FieldMetaData virtualIdMetaData = new FieldMetaData
@@ -230,7 +233,7 @@ namespace umatiGateway.Core.PubSub
                 Properties = keyValuePairs
 
             };
-            fields.Add (virtualIdMetaData);
+            fields.Add(virtualIdMetaData);
             publishedVariableDataTypeCollection.Add(new PublishedVariableDataType
             {
                 PublishedVariable = virtualId.nodeId,
@@ -362,7 +365,7 @@ namespace umatiGateway.Core.PubSub
                     }
                 }
             }
-            if(publishedVariableDataTypeCollection.Count == 0)
+            if (publishedVariableDataTypeCollection.Count == 0)
             {
                 return;
             }
@@ -459,7 +462,7 @@ namespace umatiGateway.Core.PubSub
             {
                 case NodeClass.Variable: createDataSetAndWritersForVariable(hierarchicalNode); break;
                 case NodeClass.Object: createDataSetAndWritersForObject(hierarchicalNode); break;
-                case NodeClass.Method: 
+                case NodeClass.Method:
                 case NodeClass.ObjectType:
                 case NodeClass.VariableType:
                 case NodeClass.DataType:
@@ -501,13 +504,12 @@ namespace umatiGateway.Core.PubSub
 
         private void updateDataValue(MonitoredItem monitoredItem, MonitoredItemNotificationEventArgs monitoredItemsArgs)
         {
-            
             if (monitoredItemsArgs.NotificationValue is MonitoredItemNotification valueNotification)
             {
                 DataValue dv = valueNotification.Value;
                 pubSubDataStore.WritePublishedDataItem(monitoredItem.ResolvedNodeId, Attributes.Value, dv);
                 Logger.Info($"Added Value to PubSUb DataStore: {monitoredItem.ResolvedNodeId} \t {dv}");
-            } 
+            }
             else
             {
                 Logger.Error("Other notification");
@@ -533,11 +535,10 @@ namespace umatiGateway.Core.PubSub
             }
             return nodeId;
         }
-        private HierarchicalNode? ReadNodeIdAsHierarchicalNode(HierarchicalNode? parent,NodeId nodeId)
+        private HierarchicalNode? ReadNodeIdAsHierarchicalNode(HierarchicalNode? parent, NodeId nodeId)
         {
             HierarchicalNode? hierarchicalNode = null;
             Node? node = client.ReadNode(nodeId);
-            
             if (node != null)
             {
                 hierarchicalNode = new HierarchicalNode(nodeId, node.TypeId, node.BrowseName);
@@ -546,17 +547,17 @@ namespace umatiGateway.Core.PubSub
                 hierarchicalNode.TypeDefinitionNodeId = node.TypeDefinitionId;
                 hierarchicalNode.NodeClass = node.NodeClass;
                 hierarchicalNode.Parent = parent;
-                if(hierarchicalNode.TypeDefinitionNodeId == null)
+                if (hierarchicalNode.TypeDefinitionNodeId == null)
                 {
                     hierarchicalNode.TypeDefinitionNodeId = client.BrowseTypeDefinition(nodeId);
                 }
                 List<NodeId> childNodeIds = client.BrowseLocalNodeIds(nodeId, BrowseDirection.Forward, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true);
-                foreach(NodeId childNodeId in childNodeIds)
+                foreach (NodeId childNodeId in childNodeIds)
                 {
                     NodeId? childTypeDefinition = client.BrowseTypeDefinition(childNodeId);
-                    if(childTypeDefinition != null)
+                    if (childTypeDefinition != null)
                     {
-                        if(childTypeDefinition == VariableTypeIds.PropertyType)
+                        if (childTypeDefinition == VariableTypeIds.PropertyType)
                         {
 
                             HierarchicalNode? childNode = ReadNodeIdAsHierarchicalNode(hierarchicalNode, childNodeId);
@@ -595,7 +596,8 @@ namespace umatiGateway.Core.PubSub
                                 Logger.Error($"Unable to read HierarchicalNode");
                             }
                         }
-                    } else
+                    }
+                    else
                     {
                         Logger.Error($"No TypeDefinition for ChildNodeId {childNodeId}");
                     }
@@ -612,8 +614,9 @@ namespace umatiGateway.Core.PubSub
                         DataSetFieldId = new Uuid(Guid.NewGuid())
                     };
                     hierarchicalNode.fieldMetaData = meta;
+                }
             }
-            } else
+            else
             {
                 Logger.Error($"Unable to read Node for NodeId {nodeId}");
             }
@@ -635,9 +638,8 @@ namespace umatiGateway.Core.PubSub
         public NodeClass? NodeClass { get; set; } = null;
 
         public Dictionary<NodeId, HierarchicalNode> hierarchicalChilds = new Dictionary<NodeId, HierarchicalNode>();
-        public HierarchicalNode( NodeId nodeId, ExpandedNodeId typeId, QualifiedName browseName)
+        public HierarchicalNode(NodeId nodeId, ExpandedNodeId typeId, QualifiedName browseName)
         {
-
             NodeId = nodeId;
             TypeId = typeId;
             BrowseName = browseName;

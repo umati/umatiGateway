@@ -20,11 +20,11 @@ namespace umatiGateway.Core.PubSub
         {
             KeyValuePairCollection keyValuePairs = new KeyValuePairCollection();
             int counter = 0;
-            Dictionary <NodeId, ReferenceDescriptionCollection> forwardReferences = new Dictionary<NodeId, ReferenceDescriptionCollection>();
+            Dictionary<NodeId, ReferenceDescriptionCollection> forwardReferences = new Dictionary<NodeId, ReferenceDescriptionCollection>();
             Dictionary<NodeId, ReferenceDescriptionCollection> backwardReferences = new Dictionary<NodeId, ReferenceDescriptionCollection>();
             List<NodeId> refTypeIds = GetReferenceTypeIdsToSearch();
             BrowseDescriptionCollection nodesToBrowse = new BrowseDescriptionCollection();
-            foreach(NodeId refTypeId in refTypeIds)
+            foreach (NodeId refTypeId in refTypeIds)
             {
                 BrowseDescription nodeToBrowse = new BrowseDescription();
                 nodeToBrowse.NodeId = hierarchicalNode.NodeId;
@@ -45,8 +45,7 @@ namespace umatiGateway.Core.PubSub
             if (session != null)
             {
                 session.Browse(null, null, 10000, nodesToBrowse, out BrowseResultCollection browseResultCollection, out DiagnosticInfoCollection diagnosticInfos);
-
-                for(int i = 0; i < browseResultCollection.Count; i++)
+                for (int i = 0; i < browseResultCollection.Count; i++)
                 {
                     BrowseResult browseResult = browseResultCollection[i];
                     ReferenceDescriptionCollection referenceDescriptionCollection = browseResult.References;
@@ -58,7 +57,7 @@ namespace umatiGateway.Core.PubSub
                         referenceDescription.ReferenceTypeId = nodesToBrowse[i].ReferenceTypeId;
                         referenceDescription.IsForward = nodesToBrowse[i].BrowseDirection == BrowseDirection.Forward ? true : false;
                         Node? node = client.ReadNode(ExpandedNodeId.ToNodeId(referenceDescription.NodeId, client.GetNamespaceTable()));
-                        if(node != null)
+                        if (node != null)
                         {
                             referenceDescription.BrowseName = node.BrowseName;
                             referenceDescription.DisplayName = node.DisplayName;
@@ -74,7 +73,7 @@ namespace umatiGateway.Core.PubSub
         }
         private List<NodeId> GetReferenceTypeIdsToSearch()
         {
-            if(referenceTypeIds.Count == 0)
+            if (referenceTypeIds.Count == 0)
             {
                 GetReferenceSubTypes(ReferenceTypeIds.References, referenceTypeIds);
             }

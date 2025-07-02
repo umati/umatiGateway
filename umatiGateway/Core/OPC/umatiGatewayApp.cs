@@ -75,12 +75,12 @@ namespace umatiGateway.Core.OPC
             var version = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
             Logger.Info("umatiGateway Version: {Version}", version);
             StartConfiguration startConfiguration = ActiveConfiguration.StartConfiguration;
-            if(startConfiguration.StartOPCConnection)
+            if (startConfiguration.StartOPCConnection)
             {
                 Logger.Info("Create OPC Connection");
                 this.OpcUaClient.Connect();
             }
-            if(startConfiguration.StartMQTTProvider)
+            if (startConfiguration.StartMQTTProvider)
             {
                 Logger.Info("Create Mqtt Connection");
                 MqttProvider.Connect();

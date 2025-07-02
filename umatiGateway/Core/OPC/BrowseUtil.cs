@@ -18,13 +18,13 @@ namespace umatiGateway.Core.OPC
             Session session = this.client.CheckSession();
             BrowseDescriptionCollection nodesToBrowse = new BrowseDescriptionCollection();
             nodesToBrowse.AddRange(included);
-            if(excluded != null)
+            if (excluded != null)
             {
                 excludedCount = excluded.Count;
                 nodesToBrowse.AddRange(excluded);
             }
             ResponseHeader responseHeader = session.Browse(null, null, 10000, nodesToBrowse, out BrowseResultCollection browseResults, out DiagnosticInfoCollection diagnosticInfos);
-            for(int i = 0; i < browseResults.Count; i++)
+            for (int i = 0; i < browseResults.Count; i++)
             {
                 BrowseResult browseResult = browseResults[i];
                 ReferenceDescriptionCollection references = browseResult.References;
@@ -37,7 +37,7 @@ namespace umatiGateway.Core.OPC
                     }
                     else
                     {
-                        if(resultNodeIds.Contains(nodeId))
+                        if (resultNodeIds.Contains(nodeId))
                         {
                             resultNodeIds.Remove(nodeId);
                         }
@@ -46,7 +46,7 @@ namespace umatiGateway.Core.OPC
             }
             return resultNodeIds;
         }
-        public NodeId? BrowseFirstNodeId(BrowseDescriptionCollection browseDescriptionCollection, BrowseDescriptionCollection? excluded = null )
+        public NodeId? BrowseFirstNodeId(BrowseDescriptionCollection browseDescriptionCollection, BrowseDescriptionCollection? excluded = null)
         {
             List<NodeId> nodeIds = this.BrowseNodeIds(browseDescriptionCollection, excluded);
             return nodeIds.FirstOrDefault();

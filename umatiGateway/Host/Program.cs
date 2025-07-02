@@ -13,13 +13,13 @@ if (umatiGateway.ActiveConfiguration.StartConfiguration.StartWebUI == true)
 {
     var builder = WebApplication.CreateBuilder(args);
     string url = umatiGateway.ActiveConfiguration.WebUI.URL;
-    if(url != "")
+    if (url != "")
     {
         if (Uri.TryCreate(url, UriKind.Absolute, out var uriResult)
             && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps)
             && uriResult != null)
         {
-                builder.WebHost.UseUrls(uriResult.ToString());
+            builder.WebHost.UseUrls(uriResult.ToString());
         }
         else
         {

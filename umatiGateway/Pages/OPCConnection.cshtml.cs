@@ -42,7 +42,7 @@ namespace UmatiGateway.Pages
             app.ActiveConfiguration.OPCConnection.ServerEndpoint = ConnectionUrl;
             app.ActiveConfiguration.OPCConnection.UserName = OpcUser ?? "";
             app.ActiveConfiguration.OPCConnection.Password = OpcPassword ?? "";
-            IOpcUaClient client = app.OpcUaClient; 
+            IOpcUaClient client = app.OpcUaClient;
             if (ConnectionUrl != null)
             {
                 client.Connect();
