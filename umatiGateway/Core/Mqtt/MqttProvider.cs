@@ -152,7 +152,7 @@ namespace umatiGateway.Core.Mqtt
                 Logger.Info($"Connection Type   : {this.connectionType}");
                 Logger.Info($"Connection Port   : 4321");
                 Logger.Info($"Username          : {(string.IsNullOrEmpty(config.UserName) ? "<empty>" : config.UserName)}");
-                Logger.Info($"Password Length   : {(string.IsNullOrEmpty(config.Password) ? 0 : config.Password)}");
+                Logger.Info($"Password Length   : {(string.IsNullOrEmpty(config.Password) ? 0 : config.Password.Length)}");
 
                 if (this.connectionType == TCP)
                 {
