@@ -42,9 +42,9 @@ class TestMqttSampleServer(unittest.TestCase):
         assert ret == 0
 
     def test_client_online_status(self):
-       """Tests if the client online status message is as expected."""
-       received_msg = self.receive_message("umati/v2/umati/mqtt_test/clientOnline")
-       self.assertEqual(received_msg, b"1")
+        """Tests if the client online status message is as expected."""
+        received_msg = self.receive_message("umati/v2/umati/mqtt_test/clientOnline")
+        self.assertEqual(received_msg, b"1")
 
     def test_basemachinetool(self) -> None:
         """
