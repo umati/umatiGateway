@@ -171,9 +171,6 @@ jobs:
           pip install -r requirements.txt
           ./waitForContainer.sh
           python -m unittest discover test_mqtt_sampleserver
-          
-          echo "🧾 Gateway logs:"
-          docker compose logs gateway
 
   release:
     permissions:
