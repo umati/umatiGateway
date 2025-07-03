@@ -10,4 +10,5 @@ while [[ "$(docker logs mqtt_test-gateway-1 | grep -c "INFO Publish Bad List Mas
 	sleep 5
 	NEXT_WAITTIME=$((NEXT_WAITTIME + 5))
 done
+echo "Container Ready next wait Time ${NEXT_WAITTIME} wait time Limit ${WAITTIME_LIMIT_SEC}"
 sleep 5
