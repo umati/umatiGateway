@@ -3,7 +3,7 @@
 	<StartConfiguration startWebUI="False" startOPCConnection="True" startMqttProvider="True" startPubSubProvider="False"/>
 	<WebUI url="https://127.0.0.1:7079"></WebUI>
 	<OPCConnection serverendpoint="opc.tcp://opcuaserver:4840" authentication="None" user ="" password="" ReadExtraLibs="False"/>
-	<MqttProvider serverendpoint="mqtt://mqtt_broker:1883" user="umati/mqtt_test" password="umati/mqtt_test" clientId="umati/mqtt_test" prefix="umati/v2" includeStructuredComponents="False" publishInterval="5000">
+	<MqttProvider serverendpoint="mqtt://mqtt_broker:1883" user="umati/mqtt_test" password="umati/mqtt_test" clientId="umati/mqtt_test" prefix="umati/v2" includeStructuredComponents="False" publishInterval="1000">
 		<PublishedNodes>
 			 <PublishedNode type="Numeric" namespaceurl="http://example.com/FullMachineTool/" nodeId="66382" baseType=""/>
 			 <PublishedNode type="Numeric" namespaceurl="http://example.com/BasicMachineTool/" nodeId="66382" baseType=""/>

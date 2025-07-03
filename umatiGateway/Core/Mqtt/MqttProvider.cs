@@ -93,6 +93,7 @@ namespace umatiGateway.Core.Mqtt
             this.app = app;
             this.client = app.OpcUaClient;
             mqttClient = mqttFactory.CreateMqttClient();
+            this.PollTimer = app.ActiveConfiguration.MqttProviderConfig.PublishInterval;
         }
 
         // Connection/Disconnection
