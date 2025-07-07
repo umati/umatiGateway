@@ -1,70 +1,69 @@
 {
-    "Name": "nsu=http://example.com/FullMachineTool/;i=66382",
-    "Namespaces": [
-      "http://opcfoundation.org/UA/DI/",
-      "http://opcfoundation.org/UA/Machinery/",
-      "http://opcfoundation.org/UA/MachineTool/",
-      "http://example.com/FullMachineTool/"
-    ],
-    "Fields": [
-      {
-        "Name": "virtual_id",
-        "BuiltInType": 12,
-        "DataType": { "id": 12 },
-        "ValueRank": -1,
-        "Properties": [
-          {
-            "key": "Reference_1",
-            "value": {
-              "referenceTypeId": "nsu=http://opcfoundation.org/UA/;i=40",
-              "isForward": true,
-              "nodeId": "nsu=http://opcfoundation.org/UA/MachineTool/;i=50",
-              "browseName1": "13:ToolType",
-              "displayName": {
-                "locale": "en",
-                "text": "ToolType"
-              },
-              "nodeClass1": "ObjectType",
-              "typeDefinition1": ""
-            }
+  "Name": "nsu=http://example.com/FullMachineTool/;i=66382",
+  "Namespaces": [
+    "http://opcfoundation.org/UA/DI/",
+    "http://opcfoundation.org/UA/Machinery/",
+    "http://opcfoundation.org/UA/MachineTool/",
+    "http://example.com/FullMachineTool/"
+  ],
+  "Fields": [
+    {
+      "Name": "virtual_id",
+      "BuiltInType": 12,
+      "DataType": { "id": 12 },
+      "ValueRank": -1,
+      "Properties": [
+        {
+          "key": "Reference_1",
+          "value": {
+            "referenceTypeId": "nsu=http://opcfoundation.org/UA/;i=40",
+            "isForward": true,
+            "nodeId": "nsu=http://opcfoundation.org/UA/MachineTool/;i=50",
+            "browseName1": "13:ToolType",
+            "displayName": {
+              "locale": "en",
+              "text": "ToolType"
+            },
+            "nodeClass1": "ObjectType",
+            "typeDefinition1": ""
           }
-        ]
-      },
-      {
-        "Name": "ControlIdentifier1",
-        "BuiltInType": 6,
-        "DataType": { "id": 6 },
-        "ValueRank": -1,
-        "Properties": []
-      },
-      {
-        "Name": "ControlIdentifierInterpretation",
-        "BuiltInType": 6,
-        "DataType": { "id": 6 },
-        "ValueRank": -1,
-        "Properties": []
-      },
-      {
-        "Name": "Locked",
-        "BuiltInType": 1,
-        "DataType": { "id": 1 },
-        "ValueRank": -1,
-        "Properties": []
-      },
-      {
-        "Name": "ReasonForLocking",
-        "BuiltInType": 6,
-        "DataType": { "id": 6 },
-        "ValueRank": -1,
-        "Properties": []
-      },
-      {
-        "Name": "Name",
-        "BuiltInType": 21,
-        "DataType": { "id": 21 },
-        "ValueRank": -1,
-        "Properties": []
-      }
-    ]
-  }
-  
+        }
+      ]
+    },
+    {
+      "Name": "ControlIdentifier1",
+      "BuiltInType": 6,
+      "DataType": { "id": 6 },
+      "ValueRank": -1,
+      "Properties": []
+    },
+    {
+      "Name": "ControlIdentifierInterpretation",
+      "BuiltInType": 6,
+      "DataType": { "id": 6 },
+      "ValueRank": -1,
+      "Properties": []
+    },
+    {
+      "Name": "Locked",
+      "BuiltInType": 1,
+      "DataType": { "id": 1 },
+      "ValueRank": -1,
+      "Properties": []
+    },
+    {
+      "Name": "ReasonForLocking",
+      "BuiltInType": 6,
+      "DataType": { "id": 6 },
+      "ValueRank": -1,
+      "Properties": []
+    },
+    {
+      "Name": "Name",
+      "BuiltInType": 21,
+      "DataType": { "id": 21 },
+      "ValueRank": -1,
+      "Properties": []
+    }
+  ]
+}

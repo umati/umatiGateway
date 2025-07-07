@@ -1,49 +1,48 @@
 {
-    "Name": "nsu=http://example.com/FullMachineTool/;i=66382",
-    "Namespaces": [
-      "http://opcfoundation.org/UA/DI/",
-      "http://opcfoundation.org/UA/Machinery/",
-      "http://opcfoundation.org/UA/MachineTool/",
-      "http://example.com/FullMachineTool/"
-    ],
-    "Fields": [
-      {
-        "Name": "virtual_id",
-        "BuiltInType": 12,
-        "DataType": { "id": 12 },
-        "ValueRank": -1,
-        "Properties": [
-          {
-            "key": "Reference_1",
-            "value": {
-              "referenceTypeId": "nsu=http://opcfoundation.org/UA/;i=40",
-              "isForward": true,
-              "nodeId": "nsu=http://opcfoundation.org/UA/MachineTool/;i=43",
-              "browseName1": "5:SoftwareIdentificationType",
-              "displayName": {
-                "locale": "en",
-                "text": "SoftwareIdentificationType"
-              },
-              "nodeClass1": "ObjectType",
-              "typeDefinition1": ""
-            }
+  "Name": "nsu=http://example.com/FullMachineTool/;i=66382",
+  "Namespaces": [
+    "http://opcfoundation.org/UA/DI/",
+    "http://opcfoundation.org/UA/Machinery/",
+    "http://opcfoundation.org/UA/MachineTool/",
+    "http://example.com/FullMachineTool/"
+  ],
+  "Fields": [
+    {
+      "Name": "virtual_id",
+      "BuiltInType": 12,
+      "DataType": { "id": 12 },
+      "ValueRank": -1,
+      "Properties": [
+        {
+          "key": "Reference_1",
+          "value": {
+            "referenceTypeId": "nsu=http://opcfoundation.org/UA/;i=40",
+            "isForward": true,
+            "nodeId": "nsu=http://opcfoundation.org/UA/MachineTool/;i=43",
+            "browseName1": "5:SoftwareIdentificationType",
+            "displayName": {
+              "locale": "en",
+              "text": "SoftwareIdentificationType"
+            },
+            "nodeClass1": "ObjectType",
+            "typeDefinition1": ""
           }
-        ]
-      },
-      {
-        "Name": "Identifier",
-        "BuiltInType": 12,
-        "DataType": { "id": 12 },
-        "ValueRank": -1,
-        "Properties": []
-      },
-      {
-        "Name": "SoftwareRevision",
-        "BuiltInType": 12,
-        "DataType": { "id": 12 },
-        "ValueRank": -1,
-        "Properties": []
-      }
-    ]
-  }
-  
+        }
+      ]
+    },
+    {
+      "Name": "Identifier",
+      "BuiltInType": 12,
+      "DataType": { "id": 12 },
+      "ValueRank": -1,
+      "Properties": []
+    },
+    {
+      "Name": "SoftwareRevision",
+      "BuiltInType": 12,
+      "DataType": { "id": 12 },
+      "ValueRank": -1,
+      "Properties": []
+    }
+  ]
+}
