@@ -3,8 +3,13 @@ import os
 import re
 
 
-""" Renames directories"""
 def rename_directories(root_dir):
+    """
+    Renames subdirectories in the given root directory.
+
+    Args:
+        root_dir (str): Path to the root directory.
+    """
     # topdown=False ist wichtig für sicheres Umbenennen
     for dirpath, dirnames, _ in os.walk(root_dir, topdown=False):
         for dirname in dirnames:
