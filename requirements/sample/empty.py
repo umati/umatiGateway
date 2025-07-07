@@ -1,9 +1,9 @@
-### TBD Module Description###
+""" TBD Module Description"""
 import os
 import re
 
 
-### Renames directories###
+""" Renames directories"""
 def rename_directories(root_dir):
     # topdown=False ist wichtig für sicheres Umbenennen
     for dirpath, dirnames, _ in os.walk(root_dir, topdown=False):
@@ -22,6 +22,6 @@ def rename_directories(root_dir):
 
 
 if __name__ == "__main__":
-    # Hier den Pfad zum ZielVerzeichnis eintragen
-    ZielVerzeichnis = "."
-    rename_directories(ZielVerzeichnis)
+    # Hier den Pfad zum Zielverzeichnis eintragen
+    ZIEL_VERZEICHNIS = "."
+    rename_directories(ZIEL_VERZEICHNIS)
