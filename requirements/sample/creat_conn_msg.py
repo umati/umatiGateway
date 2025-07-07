@@ -1,14 +1,15 @@
+"""This module This module handles the creation of connection messages."""
 import os
 import json
 
 # Konfiguration
-base_dir = "umati/v3/"
-publisher_id = "example_publisher_1"
-writer_group_name = "MachineDataWriterGroup"
+BaseDir = "umati/v3/"
+PublisherId = "example_publisher_1"
+WriterGroupName = "MachineDataWriterGroup"
 
 # Suchpfad zu den DataSet Topics
-data_base_path = os.path.join(base_dir, "data", publisher_id)
-metadata_base_path = os.path.join(base_dir, "metadata", publisher_id)
+data_base_path = os.path.join(BaseDir, "data", PublisherId)
+metadata_base_path = os.path.join(BaseDir, "metadata", PublisherId)
 
 # Alle Topics (relativ zum PublisherId), in denen eine passende JSON-Datei liegt
 dataset_writers = []
@@ -27,24 +28,24 @@ for root, dirs, files in os.walk(data_base_path):
         # Erzeuge DataSetWriter-Eintrag
         writer = {
             "Name": relative_topic.replace("/", "_"),
-            "QueueName": f"umati/v3/json/data/{publisher_id}/{relative_topic}",
-            "MetaDataQueueName": f"umati/v3/json/metadata/{publisher_id}/{relative_topic}"
+            "QueueName": f"umati/v3/json/data/{PublisherId}/{relative_topic}",
+            "MetaDataQueueName": f"umati/v3/json/metadata/{PublisherId}/{relative_topic}"
         }
         dataset_writers.append(writer)
 
 # Finales JSON-Objekt
 connection_payload = {
-    "PublisherId": publisher_id,
+    "PublisherId": PublisherId,
     "WriterGroups": [
         {
-            "Name": writer_group_name,
+            "Name": WriterGroupName,
             "DataSetWriters": dataset_writers
         }
     ]
 }
 
 # Speichern in Datei
-output_path = os.path.join("opcua", "json", "connection", publisher_id)
+output_path = os.path.join("opcua", "json", "connection", PublisherId)
 os.makedirs(output_path, exist_ok=True)
 
 with open(os.path.join(output_path, "connection.json"), "w") as f:
