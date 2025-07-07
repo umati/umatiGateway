@@ -3,7 +3,6 @@
 import json
 import os
 
-
 # Konfiguration
 BASE_DIR = "umati/v3/"
 PUBLISHER_ID = "example_publisher_1"
