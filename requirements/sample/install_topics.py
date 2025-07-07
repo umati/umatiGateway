@@ -58,7 +58,7 @@ for topic in topics:
     file_path = os.path.join(full_path, "payload.json")
     with open(file_path, "w") as f:
         f.write("")
-        
+
 # Status Topic
 status_dir = os.path.join(base_path, "opcua/json/status", publisher_id)
 os.makedirs(status_dir, exist_ok=True)

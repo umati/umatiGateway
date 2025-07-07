@@ -1,6 +1,7 @@
 import os
 import re
 
+
 def rename_directories(root_dir):
     for dirpath, dirnames, _ in os.walk(root_dir, topdown=False):  # topdown=False ist wichtig für sicheres Umbenennen
         for dirname in dirnames:
@@ -15,6 +16,7 @@ def rename_directories(root_dir):
                     os.rename(old_path, new_path)
                 else:
                     print(f"Konflikt: {new_path} existiert bereits – Überspringe {old_path}")
+
 
 if __name__ == "__main__":
     # Hier den Pfad zum Zielverzeichnis eintragen
