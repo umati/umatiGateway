@@ -1,7 +1,8 @@
 """This module This module handles the creation of connection messages."""
 
-import os
 import json
+import os
+
 
 # Konfiguration
 BASE_DIR = "umati/v3/"
