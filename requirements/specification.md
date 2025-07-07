@@ -3,7 +3,7 @@
 This document defines the Interface of the umati Dashboard based on OPC UA PubSub.
 It describes how a OPC UA server _AddressSpace_ must be mapped to OPC UA PubSub, so that the information can map to the umati Dashboard templates and displayed.
 
-## Changelog 
+## Changelog
 
 ### Version 0.2
 - Change Mapping between WriterGroup and PathToNode
@@ -124,7 +124,7 @@ The mapping is based on the structure but deviates from it if necessary e.g., fo
 The `<UNS>` the be create as following sturucture `Enterprise:Site:Area:Line:Cell`.
 
 - The PathToTheNode is the Path from the _0:Objects_ node to the _Node_ that is connected to the _DataSet_.
-- Each _Node_ is a topic. The Topic name is build from the `name` field of the _BrowseName_. 
+- Each _Node_ is a topic. The Topic name is build from the `name` field of the _BrowseName_.
 - All character except `[A-Za-z0-9]` need to encode by [URL-Encoding](https://de.wikipedia.org/wiki/URL-Encoding) using an underscore instead of a '%'.
 - Generally, only hierarchical references are used. If a node occurs in two places, the message should be sent to both topics.
 - The use of _Organizes_ references can lead to loops in the path. In this case, only the shortest path should be transmitted.
