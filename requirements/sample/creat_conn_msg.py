@@ -1,4 +1,5 @@
 """This module This module handles the creation of connection messages."""
+
 import os
 import json
 
@@ -29,26 +30,21 @@ for root, dirs, files in os.walk(data_base_path):
         writer = {
             "Name": relative_topic.replace("/", "_"),
             "QueueName": f"umati/v3/json/data/{PUBLISHER_ID}/{relative_topic}",
-            "MetaDataQueueName": f"umati/v3/json/metadata/{PUBLISHER_ID}/{relative_topic}"
+            "MetaDataQueueName": f"umati/v3/json/metadata/{PUBLISHER_ID}/{relative_topic}",
         }
         dataset_writers.append(writer)
 
 # Finales JSON-Objekt
 connection_payload = {
     "PUBLISHER_ID": PUBLISHER_ID,
-    "WriterGroups": [
-        {
-            "Name": WRITER_GROUP_NAME,
-            "DataSetWriters": dataset_writers
-        }
-    ]
+    "WriterGroups": [{"Name": WRITER_GROUP_NAME, "DataSetWriters": dataset_writers}],
 }
 
 # Speichern in Datei
 output_path = os.path.join("opcua", "json", "connection", PUBLISHER_ID)
 os.makedirs(output_path, exist_ok=True)
 
-with open(os.path.join(output_path, "connection.json"), "w" , encoding="utf-8") as f:
+with open(os.path.join(output_path, "connection.json"), "w", encoding="utf-8") as f:
     json.dump(connection_payload, f, indent=2)
 
 print(f"connection.json erfolgreich erstellt unter:\n{output_path}")
