@@ -36,7 +36,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="MQTTnet" Version="4.3.7.1207" />
+    <PackageReference Include="MQTTnet" Version="5.0.1.1416" />
     <PackageReference Include="System.Net.NetworkInformation" Version="4.3.0" />
   </ItemGroup>
 
