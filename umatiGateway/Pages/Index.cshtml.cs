@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Localization;
 using System.Reflection;
 using System.Resources;
-using UmatiGateway.OPC;
+using umatiGateway.Core.OPC;
 
 namespace UmatiGateway.Pages
 {

@@ -1,11 +1,10 @@
 ﻿// SPDX-License-Identifier: Apache-2.0
 // Copyright (c) 2025 FVA GmbH - interop4x. All rights reserved.
-using Microsoft.AspNetCore.Http;
+
 using Microsoft.AspNetCore.Mvc;
 using NLog;
 using System.Collections.Concurrent;
-using System.Threading.Tasks;
-using UmatiGateway.OPC;
+using umatiGateway.Core.OPC;
 
 namespace UmatiGateway
 {
@@ -18,7 +17,7 @@ namespace UmatiGateway
         public SSEController(ClientFactory ClientFactory)
         {
             UmatiGatewayApp app = this.getClient(ClientFactory);
-            app.AddUmatiGatewayAppListener(this);
+            app.OpcUaClient.AddUmatiGatewayAppListener(this);
         }
         private UmatiGatewayApp getClient(ClientFactory clientFactory)
         {

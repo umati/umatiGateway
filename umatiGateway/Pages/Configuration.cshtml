@@ -13,86 +13,132 @@
         <fieldset class="settings-fieldset-two-column">
         <div class="column">
             <legend class ="settings-legend">Active Configuration</legend>
-            <div class="divider">OPC Configuration</div>
-            <label for="OpcConnection" class="settings-label">OPC Server Endpoint</label>
-            <input id="OpcConnection" class="settings-input" type="text" name="OpcConnectionUrl" value="@Model.configuration.opcServerEndpoint">
-            <label for="OpcUser" class="settings-label">User</label>
-            <input id="OpcUser" class="settings-input" type="text" name="OpcUser" value="@Model.configuration.opcUser">
-            <label for="OpcPassword" class="settings-label">Password</label>
-            <input id="OpcPassword" class="settings-input" type="text" name="OpcPassword" value="@Model.configuration.opcPassword">
-            <div class="divider">Mqtt Configuration</div>
-            <label for="MqttConnection" class="settings-label">Mqtt Server Endpoint</label>
-            <input id="MqttConnection" class="settings-input" type="text" name="MqttConnectionUrl" value="@Model.configuration.mqttServerEndpopint">
-            <label for="MqttUser" class="settings-label">User</label>
-            <input type="text" class="settings-input" id="MqttUser" name="MqttUser" value="@Model.configuration.mqttUser">
-            <label for="Password" class="settings-label">Password</label>
-            <input type="password" class="settings-input" id="Password" name="MqttPassword" value="@Model.configuration.mqttPassword">
-            <label for="ClientId" class="settings-label">ClientId</label>
-            <input type="text" class="settings-input" id="ClientId" name="MqttClientId" value="@Model.configuration.mqttClientId">
-            <label for="Prefix" class="settings-label">Prefix</label>
-            <input type="text"class="settings-input" id="Prefix" name="MqttPrefix" value="@Model.configuration.mqttPrefix">
-        </div>
-        <div class="column">
-            <legend class="settings-legend">&nbsp</legend>
-            <div class ="divider">Application Settings</div>
-            <label for="Autostart" class="settings-label">AutoStart</label>
-            <div class="settings-on-off-label">
-                <span class="off">Off</span>
-                <label class="settings-switch">
-                    <input id="Autostart" type="checkbox" name="AutoStart" value="true" @(Model.configuration.autostart ? "checked" : "")>
-                    <span class="settings-slider"></span>
-                </label>
-                <span class="on">On</span>
-            </div>
-            <label for="ReadExtraLibs" class="settings-label">Read Extra Libs</label>
-            <div class="settings-on-off-label">
-                <span class="off">Off</span>
-                <label class="settings-switch">
-                    <input id="ReadExtraLibs" size="60" type="checkbox" name="ReadExtraLibs" value="true" @(Model.configuration.readExtraLibs ? "checked" : "")>
-                    <span class="settings-slider"></span>
-                </label>
-                <span class="on">On</span>
-            </div>
-            <label for="IncludeStructuredComponents" class="settings-label">Include Structured Components</label>
-            <div class="settings-on-off-label">
-                <span class="off">Off</span>
-                <label class="settings-switch">
-                    <input id="IncludeStructuredComponents" size="60" type="checkbox" name="IncludeStructuredcComponents" value="true" @(Model.configuration.includeStructuredComponents ? "checked" : "")>
-                    <span class="settings-slider"></span>
-                </label>
-                <span class="on">On</span>
-            </div>
+            <div class="divider">Application Settings</div>
+            <label for="ConfigVersion" class="settings-label">Config Version</label>
+            <input id="ConfigVersion" class="settings-input" type="text" name="Configversion" value="@Model.Configuration.Version">
             <label for="LogLevel" class="settings-label">Log Level</label>
             @removeTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.SelectTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers
             @removeTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.OptionTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers
             <select class="settings-input" id="LogLevel" name="LogLevel">
-                    <option value="Trace" @(Model.configuration.loglevel == "Trace" ? "selected" : "")>Trace</option>
-                    <option value="Debug" @(Model.configuration.loglevel == "Debug" ? "selected" : "")>Debug</option>
-                    <option value="Info" @(Model.configuration.loglevel == "Info" ? "selected" : "")>Info</option>
-                    <option value="Warn" @(Model.configuration.loglevel == "Warn" ? "selected" : "")>Warn</option>
-                    <option value="Error" @(Model.configuration.loglevel == "Error" ? "selected" : "")>Error</option>
+                <option value="Trace" @(Model.Configuration.LogLevel == "Trace" ? "selected" : "")>Trace</option>
+                <option value="Debug" @(Model.Configuration.LogLevel == "Debug" ? "selected" : "")>Debug</option>
+                <option value="Info" @(Model.Configuration.LogLevel == "Info" ? "selected" : "")>Info</option>
+                <option value="Warn" @(Model.Configuration.LogLevel == "Warn" ? "selected" : "")>Warn</option>
+                <option value="Error" @(Model.Configuration.LogLevel == "Error" ? "selected" : "")>Error</option>
             </select>
-
-            <div class="divider">Custom Encodings</div>
+            <div class="divider">Start Configuration</div>
+            <label for="StartWebUI" class="settings-label">Start WebUI</label>
+            <div class="settings-on-off-label">
+                <span class="off">Off</span>
+                <label class="settings-switch">
+                    <input id="StartWebUI" size="60" type="checkbox" name="StartWebUI" value="true" @(Model.Configuration.StartConfiguration.StartWebUI ? "checked" : "")>
+                    <span class="settings-slider"></span>
+                </label>
+                <span class="on">On</span>
+            </div>
+            <label for="StartOPCConnection " class="settings-label">Start OPC Connection</label>
+            <div class="settings-on-off-label">
+                <span class="off">Off</span>
+                <label class="settings-switch">
+                    <input id="StartOPCConnection" size="60" type="checkbox" name="StartOPCConnection" value="true" @(Model.Configuration.StartConfiguration.StartOPCConnection ? "checked" : "")>
+                    <span class="settings-slider"></span>
+                </label>
+                <span class="on">On</span>
+            </div>
+            <label for="StartMqttProvider" class="settings-label">Start MQTTProvider</label>
+            <div class="settings-on-off-label">
+                <span class="off">Off</span>
+                <label class="settings-switch">
+                    <input id="StartMqttProvider" size="60" type="checkbox" name="StartMqttProvider" value="true" @(Model.Configuration.StartConfiguration.StartMQTTProvider ? "checked" : "")>
+                    <span class="settings-slider"></span>
+                </label>
+                <span class="on">On</span>
+            </div>
+            <label for="StartPubSubProvider" class="settings-label">Start PubSubProvider</label>
+            <div class="settings-on-off-label">
+                <span class="off">Off</span>
+                <label class="settings-switch">
+                    <input id="StartPubSubProvider" size="60" type="checkbox" name="StartPubSubProvider" value="true" @(Model.Configuration.StartConfiguration.StartPubSubProvider ? "checked" : "")>
+                    <span class="settings-slider"></span>
+                </label>
+                <span class="on">On</span>
+            </div>
+            <div class="divider">OPC Configuration</div>
+            <label for="OpcConnection" class="settings-label">OPC Server Endpoint</label>
+            <input id="OpcConnection" class="settings-input" type="text" name="OpcConnectionUrl" value="@Model.Configuration.OPCConnection.ServerEndpoint">
+            <label for="OpcUser" class="settings-label">User</label>
+            <input id="OpcUser" class="settings-input" type="text" name="OpcUser" value="@Model.Configuration.OPCConnection.UserName">
+            <label for="OpcPassword" class="settings-label">Password</label>
+            <input id="OpcPassword" class="settings-input" type="text" name="OpcPassword" value="@Model.Configuration.OPCConnection.Password">
+            <label for="ReadExtraLibs" class="settings-label">Read Extra Libs</label>
+            <div class="settings-on-off-label">
+                <span class="off">Off</span>
+                <label class="settings-switch">
+                    <input id="ReadExtraLibs" size="60" type="checkbox" name="ReadExtraLibs" value="true" @(Model.Configuration.OPCConnection.ReadExtraLibs ? "checked" : "")>
+                    <span class="settings-slider"></span>
+                </label>
+                <span class="on">On</span>
+            </div>   
+        </div>
+        <div class="column">
+            <legend class="settings-legend">&nbsp</legend>
+            <div class="divider">MQTT Configuration</div>
+            <label for="MQTTBrokerConnection" class="settings-label">MQTT Broker Connectiont</label>
+            <input id="MQTTBrokerConnection" class="settings-input" type="text" name="MqttConnectionUrl" value="@Model.Configuration.MqttProviderConfig.ServerEndpoint">
+            <label for="MqttUser" class="settings-label">User</label>
+            <input type="text" class="settings-input" id="MqttUser" name="MqttUser" value="@Model.Configuration.MqttProviderConfig.UserName">
+            <label for="Password" class="settings-label">Password</label>
+            <input type="password" class="settings-input" id="Password" name="MqttPassword" value="@Model.Configuration.MqttProviderConfig.Password">
+            <label for="ClientId" class="settings-label">ClientId</label>
+            <input type="text" class="settings-input" id="ClientId" name="MqttClientId" value="@Model.Configuration.MqttProviderConfig.ClientId">
+            <label for="Prefix" class="settings-label">Prefix</label>
+            <input type="text" class="settings-input" id="Prefix" name="MqttPrefix" value="@Model.Configuration.MqttProviderConfig.Prefix">
+            <label for="IncludeStructuredComponents" class="settings-label">Include Structured Components</label>
+            <div class="settings-on-off-label">
+                <span class="off">Off</span>
+                <label class="settings-switch">
+                    <input id="IncludeStructuredComponents" size="60" type="checkbox" name="IncludeStructuredcComponents" value="true" @(Model.Configuration.MqttProviderConfig.IncludeStructuredComponents ? "checked" : "")>
+                    <span class="settings-slider"></span>
+                </label>
+                <span class="on">On</span>
+            </div>
             @{
-                for (int i = 0; i < Model.CustomEncodings.Count; i++)
+                    for (int i = 0; i < Model.Configuration.MqttProviderConfig.CustomEncodings.Count; i++)
                 {
 
-                    <label for="CustomEncodings[@i].Name" class="settings-label">@Model.CustomEncodings[i].Name</label>
-                    <input type="hidden" name="CustomEncodings[@i].Name" value="@Model.CustomEncodings[i].Name" />
+                    <label for="CustomEncodings[@i].Name" class="settings-label">Use Custom @Model.Configuration.MqttProviderConfig.CustomEncodings[i].Name</label>
+                    <input type="hidden" name="CustomEncodings[@i].Name" value="@Model.Configuration.MqttProviderConfig.CustomEncodings[i].Name" />
                     <div class="settings-on-off-label">
                         <span class="off">Off</span>
                         <label class="settings-switch">
                             <!-- <input type="hidden" name="CustomEncodings[@i].Active" value="false" /> -->
-                            <input id="CustomEncodings[@i].Active" type="checkbox" name="CustomEncodings[@i].Active" value="true" @(@Model.CustomEncodings[i].Active ? "checked" : "")>
+                                <input id="CustomEncodings[@i].Active" type="checkbox" name="CustomEncodings[@i].Active" value="true" @(@Model.Configuration.MqttProviderConfig.CustomEncodings[i].Active ? "checked" : "")>
                             <span class="settings-slider"></span>
                         </label>
                         <span class="on">On</span>
                     </div>
                 }
             }
-            <div class="divider">Published Nodes</div>
-            <table class="nodetable">
+                <label for="IgnoredPlaceholderTags" class="settings-label">Ignored Placeholder Tags</label>
+                <table id="IgnoredPlaceholderTags" class="nodetable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (var i = 0; i < Model.Configuration.MqttProviderConfig.IgnoredPlaceholderTags.Count; i++)
+                        {
+                                <tr>
+                                    <td>@(i + 1)</td>
+                                    <td><input name="PublishedNodes[@i].type" value="@Model.Configuration.MqttProviderConfig.IgnoredPlaceholderTags[i].Name" readonly style="width: auto; border: none; outline: none;background-color: transparent;"></td>
+                                </tr>
+                        }
+                    </tbody>
+                </table>
+            <label for="PublishedNodes" class="settings-label">Published Nodes</label>
+            <table id="PublishedNodes" class="nodetable">
                 <thead>
                     <tr>
                         <th>#</th>
@@ -103,15 +149,108 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @for (var i = 0; i < Model.PublishedNodes.Count; i++)
+                    @for (var i = 0; i < Model.Configuration.MqttProviderConfig.PublishedNodes.Count; i++)
+                    {
+                        if (@Model.Configuration.MqttProviderConfig.PublishedNodes[i].GetType().Name == "PublishedNode")
+                        {
+                            <tr>
+                                <td>@(i + 1)</td>
+                                <td><input name="PublishedNodes[@i].type" value="@Model.Configuration.MqttProviderConfig.PublishedNodes[i].Type" readonly style="width: auto; border: none; outline: none;background-color: transparent;"></td>
+                                <td><input name="PublishedNodes[@i].namespaceUrl" value="@Model.Configuration.MqttProviderConfig.PublishedNodes[i].NamespaceUrl" readonly style="width: auto; border: none; outline: none; background-color: transparent;"></td>
+                                <td><input name="PublishedNodes[@i].nodeId" value="@Model.Configuration.MqttProviderConfig.PublishedNodes[i].NodeId" readonly style="width: auto; border: none; outline: none; background-color: transparent;"></td>
+                                <td><input name="PublishedNodes[@i].BaseType" value="@Model.Configuration.MqttProviderConfig.PublishedNodes[i].BaseType" readonly style="width: auto; border: none; outline: none; background-color: transparent;"></td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+            <label for="PublishedChildNodes" class="settings-label">Published Child Nodes</label>
+            <table id="PublishedChildNodes" class="nodetable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Type</th>
+                        <th>NamespaceUrl</th>
+                        <th>Identifier</th>
+                        <th>BaseType</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (var i = 0; i < Model.Configuration.MqttProviderConfig.PublishedNodes.Count; i++)
+                    {
+                        if (@Model.Configuration.MqttProviderConfig.PublishedNodes[i].GetType().Name == "PublishedChildNodes")
+                        {
+                                
+                                <tr>
+                                <td>@(i + 1)</td>
+                                <td><input name="PublishedNodes[@i].type" value="@Model.Configuration.MqttProviderConfig.PublishedNodes[i].Type" readonly style="width: auto; border: none; outline: none;background-color: transparent;"></td>
+                                <td><input name="PublishedNodes[@i].namespaceUrl" value="@Model.Configuration.MqttProviderConfig.PublishedNodes[i].NamespaceUrl" readonly style="width: auto; border: none; outline: none; background-color: transparent;"></td>
+                                <td><input name="PublishedNodes[@i].nodeId" value="@Model.Configuration.MqttProviderConfig.PublishedNodes[i].NodeId" readonly style="width: auto; border: none; outline: none; background-color: transparent;"></td>
+                                <td><input name="PublishedNodes[@i].BaseType" value="@Model.Configuration.MqttProviderConfig.PublishedNodes[i].BaseType" readonly style="width: auto; border: none; outline: none; background-color: transparent;"></td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+            <div class="divider">PubSub Configuration</div>
+            <label for="PubSubConnection" class="settings-label">PubSub Server Endpoint</label>
+            <input id="PubSubConnection" class="settings-input" type="text" name="PubSubConnection" value="@Model.Configuration.PubSubProviderConfig.ServerEndpoint">
+            <label for="PubSubUser" class="settings-label">User</label>
+            <input type="text" class="settings-input" id="PubSubUser" name="PubSubUser" value="@Model.Configuration.PubSubProviderConfig.UserName">
+            <label for="PubSubPassword" class="settings-label">Password</label>
+            <input type="password" class="settings-input" id="PubSubPassword" name="PubSubPassword" value="@Model.Configuration.PubSubProviderConfig.Password">
+            <label for="PubSubClientId" class="settings-label">ClientId</label>
+            <input type="text" class="settings-input" id="PubSubClientId" name="PubSubClientId" value="@Model.Configuration.PubSubProviderConfig.ClientId">
+            <label for="PubSubPrefix" class="settings-label">Prefix</label>
+            <input type="text" class="settings-input" id="PubSubPrefix" name="PubSubPrefix" value="@Model.Configuration.PubSubProviderConfig.Prefix">
+            <label for="PubSubNodes" class="settings-label">PubSub Nodes</label>
+            <table id="PubSub" class="nodetable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Type</th>
+                        <th>NamespaceUrl</th>
+                        <th>Identifier</th>
+                        <th>BaseType</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (var i = 0; i < Model.Configuration.PubSubProviderConfig.PublishedNodes.Count; i++)
                     {
                         <tr>
                             <td>@(i + 1)</td>
-                                <td><input name="PublishedNodes[@i].type" value=@Model.PublishedNodes[i].Type readonly style="width: auto; border: none; outline: none;background-color: transparent;"></td>
-                                <td><input name="PublishedNodes[@i].namespaceUrl" value=@Model.PublishedNodes[i].NamespaceUrl readonly style="width: auto; border: none; outline: none; background-color: transparent;"></td>
-                                <td><input name="PublishedNodes[@i].nodeId" value=@Model.PublishedNodes[i].NodeId readonly style="width: auto; border: none; outline: none; background-color: transparent;"></td>
-                                <td><input name="PublishedNodes[@i].BaseType" value=@Model.PublishedNodes[i].BaseType readonly style="width: auto; border: none; outline: none; background-color: transparent;"></td>
+                                <td><input name="PubSubNodes[@i].type" value="@Model.Configuration.PubSubProviderConfig.PublishedNodes[i].Type" readonly style="width: auto; border: none; outline: none;background-color: transparent;"></td>
+                                <td><input name="PubSubNodes[@i].namespaceUrl" value="@Model.Configuration.PubSubProviderConfig.PublishedNodes[i].NamespaceUrl" readonly style="width: auto; border: none; outline: none; background-color: transparent;"></td>
+                                <td><input name="PubSubNodes[@i].nodeId" value="@Model.Configuration.PubSubProviderConfig.PublishedNodes[i].NodeId" readonly style="width: auto; border: none; outline: none; background-color: transparent;"></td>
+                                <td><input name="PubSubNodes[@i].BaseType" value="@Model.Configuration.PubSubProviderConfig.PublishedNodes[i].BaseType" readonly style="width: auto; border: none; outline: none; background-color: transparent;"></td>
                         </tr>
+                    }
+                </tbody>
+            </table>
+            <label for="PubSubChildNodes" class="settings-label">PubSub Child Nodes</label>
+            <table id="PubSubChildNodes" class="nodetable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Type</th>
+                        <th>NamespaceUrl</th>
+                        <th>Identifier</th>
+                        <th>BaseType</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (var i = 0; i < Model.Configuration.PubSubProviderConfig.PublishedNodes.Count; i++)
+                    {
+                        if (@Model.Configuration.PubSubProviderConfig.PublishedNodes[i].GetType().Name == "PublishedChildNodes")
+                        {
+                            <tr>
+                                <td>@(i + 1)</td>
+                                <td><input name="PubSubNodes[@i].type" value="@Model.Configuration.PubSubProviderConfig.PublishedNodes[i].Type" readonly style="width: auto; border: none; outline: none;background-color: transparent;"></td>
+                                <td><input name="PubSubNodes[@i].namespaceUrl" value="@Model.Configuration.PubSubProviderConfig.PublishedNodes[i].NamespaceUrl" readonly style="width: auto; border: none; outline: none; background-color: transparent;"></td>
+                                <td><input name="PubSubNodes[@i].nodeId" value="@Model.Configuration.PubSubProviderConfig.PublishedNodes[i].NodeId" readonly style="width: auto; border: none; outline: none; background-color: transparent;"></td>
+                                <td><input name="PubSubNodes[@i].BaseType" value="@Model.Configuration.PubSubProviderConfig.PublishedNodes[i].BaseType" readonly style="width: auto; border: none; outline: none; background-color: transparent;"></td>
+                            </tr>
+                        }
                     }
                 </tbody>
             </table>
@@ -121,52 +260,6 @@
         </div>
         </fieldset>
     </div>
-    <!-- <div style="float:right; width:49%">
-        <fieldset class="settings-fieldset">
-            <legend class="settings-legend" id="file-name-display">Configuration File</legend>
-            <label for="OpcConnection" class="settings-label">OPC Server Endpoint</label>
-            <input id="OpcConnection" class="settings-input" type="text" name="OpcConnectionUrl" value="@Model.loadedConfiguration.opcServerEndpoint">
-            <label for="MqttConnection" class="settings-label">ConnectionUrl</label>
-            <input id="MqttConnection" class="settings-input" type="text" name="MqttConnectionUrl" value="@Model.loadedConfiguration.mqttServerEndpopint">
-            <label for="MqttUser" class="settings-label">User</label>
-            <input type="text" class="settings-input" id="MqttUser" name="MqttUser" value="@Model.loadedConfiguration.mqttUser">
-            <label for="Password" class="settings-label">Password</label>
-            <input type="password" class="settings-input" id="Password" name="MqttPassword" value="@Model.loadedConfiguration.mqttPassword">
-            <label for="ClientId" class="settings-label">ClientId</label>
-            <input type="text" class="settings-input" id="ClientId" name="MqttClientId" value="@Model.loadedConfiguration.mqttClientId">
-            <label for="Prefix" class="settings-label">Prefix</label>
-            <input type="text" class="settings-input" id="Prefix" name="MqttPrefix" value="@Model.loadedConfiguration.mqttPrefix">
-            <table class="nodetable">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Type</th>
-                        <th>NamespaceUrl</th>
-                        <th>Identifier</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @for (var i = 0; i < Model.configuration.publishedNodes.Count; i++)
-                    {
-                        <tr>
-                            <td>@(i + 1)</td>
-                            <td>@Model.configuration.publishedNodes[i].Type</td>
-                            <td>@Model.configuration.publishedNodes[i].NamespaceUrl</td>
-                            <td>@Model.configuration.publishedNodes[i].NodeId</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-            <div class="settings-button-container">
-                <label for="file-upload" class="file-input-label-as-button">Load</label>
-                <input type="file" id="file-upload" class="file-input">
-                <input type="hidden" id="file-content" name="FileContent" />
-                <button asp-page-handler="Load" style="display:none" id="LoadButton">Apply</button>
-                <button asp-page-handler="Apply" class="settings-button" style="margin-left:10px">Apply</button>
-            </div>
-        </fieldset>
-    </div>
-    -->
 </form>
 <script>
     const fileInput = document.getElementById('file-upload');

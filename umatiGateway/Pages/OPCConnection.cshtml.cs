@@ -8,7 +8,7 @@ using NLog;
 using System.Collections.Concurrent;
 using System.Reflection;
 using System.Resources;
-using UmatiGateway.OPC;
+using umatiGateway.Core.OPC;
 
 namespace UmatiGateway.Pages
 {
@@ -20,91 +20,42 @@ namespace UmatiGateway.Pages
         public string LabelOPCSessionName { get; } = "OPCSessionName:";
         public string LabelOPCSessionId { get; } = "OPCSessionId:";
         public string LabelConnectionStatus { get; } = "ConnectionStatus:";
-        public string ConnectionUrl { get; private set; } = "";
         public string OpcUser { get; private set; } = "";
         public string OpcPassword { get; private set; } = "";
-        public ClientFactory ClientFactory;
         public string SessionId { get; private set; } = "";
         public string OPCSessionName { get; private set; } = "";
         public string OPCSessionId { get; private set; } = "";
         public string ConnectionStatus { get; private set; } = "Not Connected";
+        public UmatiGatewayApp app { get; set; }
 
         private static readonly BlockingCollection<string> UpdateQueue = new BlockingCollection<string>();
         public OPCConnectionModel(ClientFactory ClientFactory)
         {
-            this.ClientFactory = ClientFactory;
-            ResourceManager rm = new ResourceManager("UmatiGateway.Pages.TestPage", Assembly.GetExecutingAssembly());
+            this.app = ClientFactory.getClient();
+            ResourceManager rm = new ResourceManager("UmatiGateway.Pages.Ressource", Assembly.GetExecutingAssembly());
             string? Label_ConnectionUrl_Translated = rm.GetString("TestPage_Label_ConnectionUrl");
             if (Label_ConnectionUrl_Translated != null) { this.LabelConnectionUrl = Label_ConnectionUrl_Translated; }
         }
 
         public IActionResult OnPostConnect(String ConnectionUrl, String OpcUser, String OpcPassword)
         {
-            this.ConnectionUrl = ConnectionUrl;
-            UmatiGatewayApp client = this.getClient();
-            client.configuration.opcServerEndpoint = this.ConnectionUrl;
-            client.configuration.opcUser = OpcUser ?? "";
-            client.configuration.opcPassword = OpcPassword ?? "";
+            app.ActiveConfiguration.OPCConnection.ServerEndpoint = ConnectionUrl;
+            app.ActiveConfiguration.OPCConnection.UserName = OpcUser ?? "";
+            app.ActiveConfiguration.OPCConnection.Password = OpcPassword ?? "";
+            IOpcUaClient client = app.OpcUaClient;
             if (ConnectionUrl != null)
             {
-                _ = client.ConnectAsync(this.ConnectionUrl).Result;
+                client.Connect();
             }
-            this.UpdateClientData();
             return new PageResult();
         }
         public IActionResult OnPostDisconnect()
         {
-            UmatiGatewayApp client = this.getClient();
+            IOpcUaClient client = app.OpcUaClient;
             client.Disconnect();
-            this.UpdateClientData();
             return new PageResult();
         }
-        public void OnGet()
-        {
-            this.UpdateClientData();
-        }
-        private UmatiGatewayApp getClient()
-        {
-            string? mySessionId = HttpContext.Session.GetString("SessionId");
-            if (mySessionId == null)
-            {
-                this.SessionId = Guid.NewGuid().ToString();
-                HttpContext.Session.SetString("SessionId", this.SessionId);
-            }
-            else
-            {
-                this.SessionId = mySessionId;
-            }
-            UmatiGatewayApp client = ClientFactory.getClient(this.SessionId);
-            return client;
-        }
-        private void UpdateClientData()
-        {
-            string? mySessionId = HttpContext.Session.GetString("SessionId");
-            if (mySessionId == null)
-            {
-                this.SessionId = string.Empty;
-                this.OPCSessionId = string.Empty;
-                this.ConnectionStatus = string.Empty;
-                this.OPCSessionName = string.Empty;
-            }
-            else
-            {
-                UmatiGatewayApp client = ClientFactory.getClient(mySessionId);
-                client.AddUmatiGatewayAppListener(this);
-                this.SessionId = mySessionId;
-                if (client.Session != null)
-                {
-                    this.OPCSessionId = client.Session.SessionId.ToString();
-                    this.ConnectionStatus = client.Session.Connected.ToString();
-                    this.OPCSessionName = client.Session.SessionName;
 
-                }
-                this.ConnectionUrl = client.getOpcConnectionUrl();
-                this.OpcUser = client.configuration.opcUser;
-                this.OpcPassword = client.configuration.opcPassword;
-            }
-        }
         public IActionResult OnGetStreamUpdates()
         {
             Response.ContentType = "text/event-stream";

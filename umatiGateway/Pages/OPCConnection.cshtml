@@ -14,24 +14,22 @@
     <div style="float:left; width:49%">
     <fieldset class="settings-fieldset">
     <legend class="settings-legend">OPC Connection</legend>
-    <label for="OPCConnection" class="settings-label">@Model.LabelConnectionUrl</label>
-    <input id="OPCConnection" class="settings-input" type="text" name="ConnectionUrl" value="@Model.ConnectionUrl">
+    <label for="OPCConnection" class="settings-label">OPC Connection</label>
+    <input id="OPCConnection" class="settings-input" type="text" name="ConnectionUrl" value="@Model.app.ActiveConfiguration.OPCConnection.ServerEndpoint">
     <label for="OPCUser" class="settings-label">OPC User</label>
-    <input id="OPCUser" class="settings-input" type="text" name="OpcUser" value="@Model.OpcUser">
+    <input id="OPCUser" class="settings-input" type="text" name="OpcUser" value="@Model.app.ActiveConfiguration.OPCConnection.UserName">
     <label for="OPCPassword" class="settings-label">OPC Password</label>
-    <input id="OPCPassword" class="settings-input" type="text" name="OpcPassword" value="@Model.OpcPassword">
+    <input id="OPCPassword" class="settings-input" type="text" name="OpcPassword" value="@Model.app.ActiveConfiguration.OPCConnection.Password">
     <div class="settings-button-container">
         <button asp-page-handler="Connect" class="settings-button">Connect</button>
         <button asp-page-handler="Disconnect" class="settings-button" style="margin-left:10px">Disconnect</button>
     </div>
-    <label for="SessionId" class="settings-label">@Model.LabelSessionId</label>
-    <input id="SessionId" type="text" class="settings-input" value="@Model.SessionId" readonly />
     <label for="OPCSessionName" class="settings-label">@Model.LabelOPCSessionName</label>
     <input id="OPCSessionIdName" type="text" class="settings-input" value="@Model.OPCSessionName" readonly />
     <label for="OPCSessionId" class="settings-label">@Model.LabelOPCSessionId</label>
-    <input id="OPCSessionId" type="text" class="settings-input" value="@Model.OPCSessionId" readonly />
+    <input id="OPCSessionId" type="text" class="settings-input" value="@Model.app.OpcUaClient.GetSessionId()" readonly />
     <label for="ConnectionStatus" class="settings-label">@Model.LabelConnectionStatus</label>
-    <input id="ConnectionStatus" type="text" class="settings-input" value="@Model.ConnectionStatus" readonly />
+    <input id="ConnectionStatus" type="text" class="settings-input" value="@Model.app.OpcUaClient.GetSessionName()" readonly />
     </fieldset>
     </div>
 </form>

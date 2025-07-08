@@ -1,101 +1,95 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright (c) 2025 FVA GmbH - interop4x. All rights reserved.
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.Localization;
 using Opc.Ua;
-using System.Reflection;
-using System.Resources;
-using UmatiGateway.OPC;
+using umatiGateway.Core.Configuration;
+using umatiGateway.Core.OPC;
 
 namespace UmatiGateway.Pages
 {
     public class OPCSubscriptionsModel : PageModel
     {
-        public ClientFactory ClientFactory;
         public Tree? BrowseTree { get; private set; }
+        public UmatiGatewayApp app { get; private set; }
         public OPCSubscriptionsModel(ClientFactory ClientFactory)
         {
-            this.ClientFactory = ClientFactory;
+            this.app = ClientFactory.getClient();
         }
         public void OnGet()
         {
-            UmatiGatewayApp? client = this.getClient();
-            if (client != null)
-            {
-                client.BrowseRootNode();
-                this.BrowseTree = client.BrowseTree;
-            }
-            else
-            {
-                //Put an Error here that the Client is not connected
-            }
-
+            app.BrowseTreeController.BrowseRootNode();
+            this.BrowseTree = app.BrowseTreeController.BrowseTree;
         }
-        public IActionResult OnPostPublishNode(string uuid)
+        public IActionResult OnPostAddNodeMqttConfig(string uuid)
         {
-            UmatiGatewayApp? client = this.getClient();
-            if (client != null)
+            this.BrowseTree = app.BrowseTreeController.BrowseTree;
+            this.BrowseTree.SelectedTreeNode = uuid;
+            TreeNode? selectedTreeNode = this.GetForUid(uuid);
+            if (selectedTreeNode != null)
             {
-                this.BrowseTree = client.BrowseTree;
-                this.BrowseTree.SelectedTreeNode = uuid;
-                TreeNode? selectedTreeNode = this.GetForUid(uuid);
-                if (selectedTreeNode != null)
+                NodeId nodeId = selectedTreeNode.NodeData.node.NodeId;
+                string? namespaceUrl = this.app.OpcUaClient.GetNamespaceTable().GetString(nodeId.NamespaceIndex);
+                string? identifier = nodeId.Identifier.ToString();
+                if (namespaceUrl != null && identifier != null)
                 {
-                    client.publishNode(selectedTreeNode.NodeData.node.NodeId);
+                    PublishedNode publishedNode = new PublishedNode();
+                    publishedNode.NamespaceUrl = namespaceUrl;
+                    publishedNode.Type = nodeId.IdType.ToString();
+                    publishedNode.NodeId = identifier;
+                    publishedNode.BaseType = "";
+                    this.app.ActiveConfiguration.MqttProviderConfig.PublishedNodes.Add(publishedNode);
+                }
+            }
+            return new PageResult();
+        }
+        public IActionResult OnPostAddNodeOpcPubSubConfig(string uuid)
+        {
+            this.BrowseTree = app.BrowseTreeController.BrowseTree;
+            this.BrowseTree.SelectedTreeNode = uuid;
+            TreeNode? selectedTreeNode = this.GetForUid(uuid);
+            if (selectedTreeNode != null)
+            {
+                NodeId nodeId = selectedTreeNode.NodeData.node.NodeId;
+                string? namespaceUrl = this.app.OpcUaClient.GetNamespaceTable().GetString(nodeId.NamespaceIndex);
+                string? identifier = nodeId.Identifier.ToString();
+                if (namespaceUrl != null && identifier != null)
+                {
+                    PublishedNode publishedNode = new PublishedNode();
+                    publishedNode.NamespaceUrl = namespaceUrl;
+                    publishedNode.Type = nodeId.IdType.ToString();
+                    publishedNode.NodeId = identifier;
+                    publishedNode.BaseType = "";
+                    this.app.ActiveConfiguration.PubSubProviderConfig.PublishedNodes.Add(publishedNode);
                 }
             }
             return new PageResult();
         }
         public IActionResult OnPostBrowseSelectedTreeNode(string uuid)
         {
-            UmatiGatewayApp? client = this.getClient();
-            if (client != null)
+            this.BrowseTree = app.BrowseTreeController.BrowseTree;
+            this.BrowseTree.SelectedTreeNode = uuid;
+            TreeNode? selectedTreeNode = this.GetForUid(uuid);
+            if (selectedTreeNode != null && selectedTreeNode.IsExpanded == false)
             {
-                this.BrowseTree = client.BrowseTree;
-                this.BrowseTree.SelectedTreeNode = uuid;
-                TreeNode? selectedTreeNode = this.GetForUid(uuid);
-                if (selectedTreeNode != null && selectedTreeNode.IsExpanded == false)
-                {
-                    selectedTreeNode.IsExpanded = true;
-                    client.BrowseSelectedTreeNode(selectedTreeNode);
-                }
-                else if (selectedTreeNode != null && selectedTreeNode.IsExpanded == true)
-                {
-                    selectedTreeNode.IsExpanded = false;
-                    selectedTreeNode.children.Clear();
-                }
-
+                selectedTreeNode.IsExpanded = true;
+                app.BrowseTreeController.BrowseSelectedTreeNode(selectedTreeNode);
             }
-            else
+            else if (selectedTreeNode != null && selectedTreeNode.IsExpanded == true)
             {
-                //Put an Error here that the Client is not connected
+                selectedTreeNode.IsExpanded = false;
+                selectedTreeNode.children.Clear();
             }
             return new PageResult();
-        }
-        private UmatiGatewayApp? getClient()
-        {
-            UmatiGatewayApp? client = null;
-            string? mySessionId = HttpContext.Session.GetString("SessionId");
-            if (mySessionId != null)
-            {
-                client = this.ClientFactory.getClient(mySessionId);
-            }
-            return client;
         }
         public TreeNode? GetForUid(string? uid)
         {
             if (uid == null) { return null; }
-            UmatiGatewayApp? client = this.getClient();
-            if (client != null)
+            this.BrowseTree = app.BrowseTreeController.BrowseTree;
+            if (this.BrowseTree.uids.TryGetValue(uid, out var node))
             {
-                this.BrowseTree = client.BrowseTree;
-                if (this.BrowseTree.uids.TryGetValue(uid, out var node))
-                {
-                    //client.BrowseSelectedTreeNode(node);
-                    return node;
-                }
+                //client.BrowseSelectedTreeNode(node);
+                return node;
             }
             return null;
         }

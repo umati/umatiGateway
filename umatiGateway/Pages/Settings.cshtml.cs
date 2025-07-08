@@ -4,7 +4,8 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Text;
-using UmatiGateway.OPC;
+using umatiGateway.Core.Configuration;
+using umatiGateway.Core.OPC;
 
 namespace UmatiGateway.Pages
 {
@@ -12,7 +13,7 @@ namespace UmatiGateway.Pages
     {
         private String SessionId = "";
         private ClientFactory ClientFactory;
-        public Configuration configuration { get; set; } = new Configuration();
+        public UmatiConfiguration configuration { get; set; } = new UmatiConfiguration();
 
         public SettingsModel(ClientFactory ClientFactory)
         {
@@ -21,11 +22,11 @@ namespace UmatiGateway.Pages
         public void OnGet()
         {
             UmatiGatewayApp client = this.getClient();
-            this.configuration = client.configuration;
+            this.configuration = client.ActiveConfiguration;
         }
         public IActionResult OnPostSave(string configFilePath, bool? AutoStart, bool? ReadExtraLibs)
         {
-            UmatiGatewayApp client = this.getClient();
+            /*UmatiGatewayApp client = this.getClient();
             this.configuration = client.configuration;
             if (AutoStart == null)
             {
@@ -47,6 +48,7 @@ namespace UmatiGateway.Pages
 
             ConfigurationWriter configurationWriter = new ConfigurationWriter();
             configurationWriter.WriteConfiguration(configuration);
+            */
             return new PageResult();
         }
         private UmatiGatewayApp getClient()

@@ -6,52 +6,143 @@
 @{
     ViewData["Title"] = "UMATI Mqtt";
 }
-<h1>MQTT Configuration</h1>
+<h1>umatiGateway</h1>
 
-<p>Configure your MQTT connection.</p>
+<p>Configure your umatiGateway.</p>
 
 <form method="post">
-    <div style="float:left; width:49%">
+    <div style="float:left; width:20%">
         <fieldset class="settings-fieldset">
             <legend class="settings-legend">Mqtt Connection</legend>
-            <label for="MqttUser" class="settings-label">User (typical = ClientId)</label>
-            <input type="text" class="settings-input" id="MqttUser" name="MqttUser" value="@Model.MqttUser">
+            <label for="MqttUser" class="settings-label">User</label>
+            <input type="text" class="settings-input" id="MqttUser" name="MqttUser" value="@Model.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.UserName">
             <label for="Password" class="settings-label">Password</label>
-            <input type="password" class="settings-input" id="Password" name="MqttPassword" value="@Model.Password">
+            <input type="password" class="settings-input" id="Password" name="MqttPassword" value="@Model.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.Password">
             <label for="ClientId" class="settings-label">ClientId</label>
-            <input type="text" class="settings-input" id="ClientId" name="MqttClientId" value="@Model.ClientId">
+            <input type="text" class="settings-input" id="ClientId" name="MqttClientId" value="@Model.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.ClientId">
             <label for="Prefix" class="settings-label">Prefix</label>
-            <input type="text" class="settings-input" id="Prefix" name="MqttPrefix" value="@Model.Prefix">
+            <input type="text" class="settings-input" id="Prefix" name="MqttPrefix" value="@Model.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.Prefix">
             <label for="MqttConnection" class="settings-label">ConnectionUrl (typical = wss://umati.app/ws)</label>
-            <input id="MqttConnection" class="settings-input" type="text" name="ConnectionUrl" value="@Model.ConnectionUrl">
+            <input id="MqttConnection" class="settings-input" type="text" name="ConnectionUrl" value="@Model.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.ServerEndpoint">
             <div class="settings-button-container">
                 <button asp-page-handler="Connect" class="settings-button">Connect</button>
                 <button asp-page-handler="Disconnect" class="settings-button" style="margin-left:10px">Disconnect</button>
             </div>
         </fieldset>
     </div>
-    <div style="float:right; width:49%">
+    <div style="float:right; width:79%">
         <fieldset class="settings-fieldset">
             <legend class="settings-legend">Published Nodes</legend>
             <table class="nodetable">
                 <thead>
+                    <colgroup>
+                        <col style="width: 3ch;">
+                        <col style="width: 10ch;">
+                        <col style="width: 10%;">
+                        <col style="width: 10%;">
+                        <col style="width: 10%;">
+                        <col style="width: 10ch;">
+                    </colgroup>
                     <tr>
                         <th>#</th>
                         <th>Type</th>
                         <th>NamespaceUrl</th>
                         <th>Identifier</th>
-                        <th>BasisType</th>
+                        <th>BaseType</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @for (var i = 0; i < Model.publishedNodes.Count; i++)
+                    @for (var i = 0; i < Model.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.PublishedNodes.Count; i++)
+                    {
+                        if (@Model.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.PublishedNodes[i].GetType().Name == "PublishedNode")
+                        {
+                            <tr>
+                                <td>@(i + 1)</td>
+                                <td>@Model.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.PublishedNodes[i].Type</td>
+                                <td>@Model.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.PublishedNodes[i].NamespaceUrl</td>
+                                <td>@Model.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.PublishedNodes[i].NodeId</td>
+                                <td>@Model.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.PublishedNodes[i].BaseType</td>
+                                <td>
+                                    <Button asp-page-handler="RemoveNodeMqttConfig" asp-route-index=@i
+                                    class="settings-button"><img src="~/css/delete.png" /></Button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </fieldset>
+        <fieldset class="settings-fieldset">
+            <legend class="settings-legend">Published Child Nodes</legend>
+            <table class="nodetable">
+                <thead>
+                    <colgroup>
+                        <col style="width: 3ch;">
+                        <col style="width: 10ch;">
+                        <col style="width: 10%;">
+                        <col style="width: 10%;">
+                        <col style="width: 10%;">
+                        <col style="width: 10ch;">
+                    </colgroup>
+                    <tr>
+                        <th>#</th>
+                        <th>Type</th>
+                        <th>NamespaceUrl</th>
+                        <th>Identifier</th>
+                        <th>BaseType</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (var i = 0; i < Model.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.PublishedNodes.Count; i++)
+                    {
+                        if(@Model.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.PublishedNodes[i].GetType().Name == "PublishedChildNodes")
+                        {
+                            <tr>
+                                <td>@(i + 1)</td>
+                                <td>@Model.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.PublishedNodes[i].Type</td>
+                                <td>@Model.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.PublishedNodes[i].NamespaceUrl</td>
+                                <td>@Model.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.PublishedNodes[i].NodeId</td>
+                                <td>@Model.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.PublishedNodes[i].BaseType</td>
+                                <td><Button asp-page-handler="RemoveNodeMqttConfig" asp-route-index=@i class ="settings-button"><img src="~/css/delete.png" /></Button></td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </fieldset>
+        <fieldset class="settings-fieldset">
+            <legend class="settings-legend">Resolved Nodes</legend>
+            <table class="nodetable">
+                <thead>
+                    <colgroup>
+                        <col style="width: 3ch;">
+                        <col style="width: 10ch;">
+                        <col style="width: 10%;">
+                        <col style="width: 10%;">
+                        <col style="width: 10%;">
+                        <col style="width: 15ch;">
+                    </colgroup>
+                    <tr>
+                        <th>#</th>
+                        <th>Type</th>
+                        <th>NamespaceUrl</th>
+                        <th>Identifier</th>
+                        <th>BaseType</th>
+                        <th>NodeId</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (var i = 0; i < Model.UmatiGatewayApp.MqttProvider.MachineNodes.Count(); i++)
                     {
                         <tr>
                             <td>@(i + 1)</td>
-                            <td>@Model.publishedNodes[i].Type</td>
-                            <td>@Model.publishedNodes[i].NamespaceUrl</td>
-                            <td>@Model.publishedNodes[i].NodeId</td>
-                            <td>@Model.publishedNodes[i].BaseType</td>
+                            <td>@Model.UmatiGatewayApp.MqttProvider.MachineNodes[i].NodeIdType</td>
+                            <td>@Model.UmatiGatewayApp.MqttProvider.MachineNodes[i].NamespaceUrl</td>
+                            <td>@Model.UmatiGatewayApp.MqttProvider.MachineNodes[i].NodeIdString</td>
+                            <td>@Model.UmatiGatewayApp.MqttProvider.MachineNodes[i].BaseType</td>
+                            <td>@Model.UmatiGatewayApp.MqttProvider.MachineNodes[i].ResolvedNodeId</td>
                         </tr>
                     }
                 </tbody>
