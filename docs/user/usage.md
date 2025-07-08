@@ -68,31 +68,31 @@ The defaul configuration file looks like:
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <umatiGatewayConfig version="2.0" logLevel="Debug">
-	<StartConfiguration startWebUI="True" startOPCConnection="False" startMqttProvider="False" startPubSubProvider="False"/>
-	<WebUI url="https://127.0.0.1:7079"></WebUI>
-	<!-- <OPCConnection serverendpoint="opc.tcp://opcua.umati.app:4840" authentication="None" user ="" password="" ReadExtraLibs="False"/> -->
-	<OPCConnection serverendpoint="opc.tcp://localhost:4840" authentication="None" user ="" password="" ReadExtraLibs="False"/>
-	<MqttProvider serverendpoint="mqtt://localhost:1883" user="" password="" clientId="company/client" prefix="umati/v2" includeStructuredComponents="False" publishInterval="5000">
-		<PublishedNodes>
-			<!-- <PublishedNode type="Numeric" namespaceurl="http://example.com/FullMachineTool/" nodeId="66382" baseType="" /> -->
-			<PublishedNode type="Numeric" namespaceurl="http://example.com/BasicMachineTool/" nodeId="66382" baseType="" />
-			<!-- <PublishedNode type="Numeric" namespaceurl="http://example.com/StringIdExample/" nodeId="StringId" baseType="" /> -->
-		</PublishedNodes>
-		<CustomEncodings>
-			<CustomEncoding name="GMSResultDataTypeEncoding" active="False" />
-			<CustomEncoding name="ProcessingCategoryDataTypeEncoding" active="False" />
-		</CustomEncodings>
-		<IgnoredPlaceholderTags>
-			<IgnoredPlaceholderTag name="&lt;ParameterIdentifier&gt;"/>
-		</IgnoredPlaceholderTags>
-	</MqttProvider>
-	<PubSubProvider serverendpoint="mqtt://localhost:1883" user="" password="" clientId="company/client" prefix="umati/v3">
-		<PublishedNodes>
-			<!-- <PublishedNode type="Numeric" namespaceurl="http://example.com/FullMachineTool/" nodeId="66382" baseType="" /> -->
-				 <PublishedNode type="Numeric" namespaceurl="http://example.com/BasicMachineTool/" nodeId="66382" baseType="" />
-			<!-- <PublishedNode type="String" namespaceurl="http://example.com/StringIdExample/" nodeId="StringId" baseType="" /> -->
-		</PublishedNodes>
-	</PubSubProvider>
+  <StartConfiguration startWebUI="True" startOPCConnection="False" startMqttProvider="False" startPubSubProvider="False"/>
+  <WebUI url="https://127.0.0.1:7079"></WebUI>
+  <!-- <OPCConnection serverendpoint="opc.tcp://opcua.umati.app:4840" authentication="None" user ="" password="" ReadExtraLibs="False"/> -->
+  <OPCConnection serverendpoint="opc.tcp://localhost:4840" authentication="None" user ="" password="" ReadExtraLibs="False"/>
+  <MqttProvider serverendpoint="mqtt://localhost:1883" user="" password="" clientId="company/client" prefix="umati/v2" includeStructuredComponents="False" publishInterval="5000">
+    <PublishedNodes>
+       <!-- <PublishedNode type="Numeric" namespaceurl="http://example.com/FullMachineTool/" nodeId="66382" baseType="" /> -->
+       <PublishedNode type="Numeric" namespaceurl="http://example.com/BasicMachineTool/" nodeId="66382" baseType="" />
+       <!-- <PublishedNode type="Numeric" namespaceurl="http://example.com/StringIdExample/" nodeId="StringId" baseType="" /> -->
+    </PublishedNodes>
+    <CustomEncodings>
+      <CustomEncoding name="GMSResultDataTypeEncoding" active="False" />
+      <CustomEncoding name="ProcessingCategoryDataTypeEncoding" active="False" />
+    </CustomEncodings>
+    <IgnoredPlaceholderTags>
+      <IgnoredPlaceholderTag name="&lt;ParameterIdentifier&gt;"/>
+    </IgnoredPlaceholderTags>
+    </MqttProvider>
+  <PubSubProvider serverendpoint="mqtt://localhost:1883" user="" password="" clientId="company/client" prefix="umati/v3">
+    <PublishedNodes>
+      <!-- <PublishedNode type="Numeric" namespaceurl="http://example.com/FullMachineTool/" nodeId="66382" baseType="" /> -->
+      <PublishedNode type="Numeric" namespaceurl="http://example.com/BasicMachineTool/" nodeId="66382" baseType="" />
+      <!-- <PublishedNode type="String" namespaceurl="http://example.com/StringIdExample/" nodeId="StringId" baseType="" /> -->
+    </PublishedNodes>
+  </PubSubProvider>
 </umatiGatewayConfig>
 ```
 
@@ -107,7 +107,7 @@ The defaul configuration file looks like:
 | →→startMqttProvider                        | Indicates if the Mqtt Provider should be started when gateway starts.                                | True \| False                                             |
 | →→startPubSubProvider                      | Indicates if the PubSub Provider should be started when gateway starts.                              | True \| False                                             |
 | →**WebUI**                                 | Tag configuring the Web Ui of the gateway.                                                           | -                                                         |
-| →→url                                      | Sets the url for the Web Ui.                                                                         | e.g: "http:localhost:8080" or "https:127.0.0.1:80"        |
+| →→`url`                                    | Sets the URL for the Web Ui.                                                                         | e.g: "http:localhost:8080" or "https:127.0.0.1:80"        |
 | →**OPCConnection**                         | Tag Configuring the connection to the OPC Server.                                                    | -                                                         |
 | →→serverendpoint                           | Host address of the OPC Ua Server.                                                                   | e.g: "pc.tcp://localhost:4840"                            |
 | →→authentication                           | Reserved for future use.                                                                             | None                                                      |
@@ -120,12 +120,12 @@ The defaul configuration file looks like:
 | →→password                                 | Password for basic User/Password authentication.                                                     | e.g: password1                                            |
 | →→clientId                                 | Client id that is used to construct the mqtt topics.                                                 | e.g: company/client                                       |
 | →→prefix                                   | Prefix that is used to construct the mqtt topics.                                                    | e.g: umati/v2                                             |
-| →→includeStructuredComponents              | Indicates if StructuredCompnents should be included in resulting JSON.                               | True \| False                                             | 
+| →→includeStructuredComponents              | Indicates if StructuredCompnents should be included in resulting JSON.                               | True \| False                                             |
 | →→publishInterval                          | Determines the interval in ms in which the MqttTopics are published.                                 | e.g: 5000                                                 |
 | →→**PublishedNodes**                       | Tag that holds a list of the Nodes that are published.                                               | -                                                         |
 | →→→**PublishedNode**                       | Tag that holds the configuration for one published node.                                             | -                                                         |
 | →→→→type                                   | Defines the type of the NodeId of the PublishedNode.                                                 | Numeric \| String                                         |
-| →→→→namespaceurl                           | Defines the nsu of the PublishedNode.                                                                | e.g: http://example.com/BasicMachineTool/                 |
+| →→→→namespaceurl                           | Defines the nsu of the PublishedNode.                                                                | e.g: `http://example.com/BasicMachineTool/`               |
 | →→→→nodeId                                 | Defines the id of the PublishedNode.                                                                 | e.g: 61982 or MyMachine (Numeric or String)               |
 | →→→→baseType                               | Alias name for the Typedefintion that is used in the resulting JSON.                                 | e.g: MachineToolType Empty if no alias should be used.    |
 | →→**CustomEncodings**                      | Tag that holds possible CustomEncodings for certain DataStructures.                                  | -                                                         |
@@ -143,7 +143,7 @@ The defaul configuration file looks like:
 | →→**PublishedNodes**                       | Tag that holds a list of the Nodes that are published.                                               | -                                                         |
 | →→→**PublishedNode**                       | Tag that holds the configuration for one published node.                                             | -                                                         |
 | →→→→type                                   | Defines the type of the NodeId of the PublishedNode.                                                 | Numeric \| String                                         |
-| →→→→namespaceurl                           | Defines the nsu of the PublishedNode.                                                                | e.g: http://example.com/BasicMachineTool/                 |
+| →→→→namespaceurl                           | Defines the nsu of the PublishedNode.                                                                | e.g: `http://example.com/BasicMachineTool/`               |
 | →→→→nodeId                                 | Defines the id of the PublishedNode.                                                                 | e.g: 61982 or MyMachine (Numeric or String)               |
 | →→→→baseType                               | Alias name for the Typedefintion that is used in the resulting JSON.                                 | e.g: MachineToolType Empty if no alias should be used.    |
 
