@@ -18,7 +18,7 @@ For starting the container with its default configuration:
 
 Start the container directly with the configuration files mounted:
 
-`docker run -it -v ./LocalConfigumatiApp.xml:/app/Configuration/Files/LocalConfigumatiApp.xml -v ./umatiGatewayConfig.xml:/app/Configuration/umatiGatewayConfig.xml ghcr.io/umati/umatigateway:develop`
+`docker run -it -v ./umatiGatewayConfig.xml:/app/umatiGatewayConfig.xml ghcr.io/umati/umatigateway:develop`
 
 or via Compose with this config:
 
@@ -28,10 +28,9 @@ services:
     image: ghcr.io/umati/umatigateway:develop
     container_name: umatigateway
     ports:
-      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:7079:7079"
     volumes:
-      - ./LocalConfigumatiApp.xml:/app/Configuration/Files/LocalConfigumatiApp.xml
-      - ./umatiGatewayConfig.xml:/app/Configuration/umatiGatewayConfig.xml
+      - ./umatiGateway.xml:/app/umatiGatewayConfig.xml
 ```
 
 ### GUI
@@ -40,9 +39,9 @@ Web-based interface is accessible on port 8080 by default. There the connection 
 
 > When running the gateway on a remote machine you can create a tunnel to it via SSH:
 >
-> `ssh -L 8080:localhost:8080 user@remote-server`
+> `ssh -L 7079:localhost:7079 user@remote-server`
 
-The interface will be then available at [http://localhost:8080](http://localhost:8080).
+The interface will be then available at [http://localhost:7079](http://localhost:7079).
 
 ## License
 
