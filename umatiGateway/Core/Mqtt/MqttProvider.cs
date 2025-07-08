@@ -1248,9 +1248,18 @@ namespace umatiGateway.Core.Mqtt
                     default: AddError(nodeId, $"Unimplemented Type for nodeId: {nodeId.ToString()}."); return "";
                 }
             }
+            catch (OpcUaException opcUaException)
+            {
+                Exception? innerException = opcUaException.InnerException;
+                if (innerException != null && innerException is ServiceResultException)
+                {
+                    return innerException.Message;
+                }
+                return opcUaException.Message;
+            }
             catch (Exception ex)
             {
-                return ex.ToString();
+                return ex.Message;
             }
         }
         /// <summary>
@@ -1939,6 +1948,24 @@ namespace umatiGateway.Core.Mqtt
                     {
                         Logger.Info("Reconnecting OPC");
                         client.Connect();
+                    }
+                }
+                catch (OpcUaException opcUaException)
+                {
+                    Exception? innerException = opcUaException.InnerException;
+                    if (innerException != null && innerException is ServiceResultException)
+                    {
+                        firstReadFinished = false;
+                        TypeBrowseName = "";
+                        InstanceNSU = "";
+                        subscriptions.Clear();
+                        client.ClearSubscriptions();
+                        Logger.Info("Message:" + innerException.Message);
+                        if (innerException.Message == "BadNotConnected")
+                        {
+                            Logger.Info("Reconnecting OPC");
+                            client.Connect();
+                        }
                     }
                 }
                 catch (MQTTnet.Exceptions.MqttClientNotConnectedException ex)
