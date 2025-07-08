@@ -17,7 +17,7 @@ You can use the default configuration to reach the configuration section via the
 Command line:
 
 ```sh
-docker run -it -v ./LocalConfigumatiApp.xml:/app/Configuration/Files/LocalConfigumatiApp.xml -v ./umatiGatewayConfig.xml:/app/Configuration/umatiGatewayConfig.xml ghcr.io/umati/umatigateway:develop
+docker run -it -v ./umatiGatewayConfig.xml:/app/umatiGatewayConfig.xml ghcr.io/umati/umatigateway:develop
 ```
 
 or via `docker/podman compose` with this `compose.yaml`:
@@ -28,10 +28,9 @@ services:
     image: ghcr.io/umati/umatigateway:develop
     container_name: umatigateway
     ports:
-      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:7079:7079"
     volumes:
-      - ./LocalConfigumatiApp.xml:/app/Configuration/Files/LocalConfigumatiApp.xml
-      - ./umatiGatewayConfig.xml:/app/Configuration/umatiGatewayConfig.xml
+      - ./umatiGatewayConfig.xml:/app/umatiGatewayConfig.xml
 ```
 
 #### Running a local MQTT broker for testing
@@ -63,70 +62,76 @@ or extend the `compose.yaml` with this block
 
 ### Configuration via config files
 
-The umatiGateway app has two configuration files per default.
-The first file called umatiGatewayConfig.xml is located in the *Configuration/* folder in the root directory of the umatiGateway app. It stores the basic application configuration.
+The umatiGateway app has one Configuration File called umatiGatewayConfig.xml that is located in the root directory of the umatiGateway application.
+The defaul configuration file looks like:
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
-<umatiGatewayConfig version="1.0" autostart="False" file="./Configuration/Files/LocalConfigumatiApp.xml"
- logLevel="Debug" ReadExtraLibs="False" singleThreadPolling="False" pollTime="10000" />
+<umatiGatewayConfig version="2.0" logLevel="Debug">
+	<StartConfiguration startWebUI="True" startOPCConnection="False" startMqttProvider="False" startPubSubProvider="False"/>
+	<WebUI url="https://127.0.0.1:7079"></WebUI>
+	<!-- <OPCConnection serverendpoint="opc.tcp://opcua.umati.app:4840" authentication="None" user ="" password="" ReadExtraLibs="False"/> -->
+	<OPCConnection serverendpoint="opc.tcp://localhost:4840" authentication="None" user ="" password="" ReadExtraLibs="False"/>
+	<MqttProvider serverendpoint="mqtt://localhost:1883" user="" password="" clientId="company/client" prefix="umati/v2" includeStructuredComponents="False" publishInterval="5000">
+		<PublishedNodes>
+			<!-- <PublishedNode type="Numeric" namespaceurl="http://example.com/FullMachineTool/" nodeId="66382" baseType="" /> -->
+			<PublishedNode type="Numeric" namespaceurl="http://example.com/BasicMachineTool/" nodeId="66382" baseType="" />
+			<!-- <PublishedNode type="Numeric" namespaceurl="http://example.com/StringIdExample/" nodeId="StringId" baseType="" /> -->
+		</PublishedNodes>
+		<CustomEncodings>
+			<CustomEncoding name="GMSResultDataTypeEncoding" active="False" />
+			<CustomEncoding name="ProcessingCategoryDataTypeEncoding" active="False" />
+		</CustomEncodings>
+		<IgnoredPlaceholderTags>
+			<IgnoredPlaceholderTag name="&lt;ParameterIdentifier&gt;"/>
+		</IgnoredPlaceholderTags>
+	</MqttProvider>
+	<PubSubProvider serverendpoint="mqtt://localhost:1883" user="" password="" clientId="company/client" prefix="umati/v3">
+		<PublishedNodes>
+			<!-- <PublishedNode type="Numeric" namespaceurl="http://example.com/FullMachineTool/" nodeId="66382" baseType="" /> -->
+				 <PublishedNode type="Numeric" namespaceurl="http://example.com/BasicMachineTool/" nodeId="66382" baseType="" />
+			<!-- <PublishedNode type="String" namespaceurl="http://example.com/StringIdExample/" nodeId="StringId" baseType="" /> -->
+		</PublishedNodes>
+	</PubSubProvider>
+</umatiGatewayConfig>
 ```
 
-| Node/Attribute           | Description                                                                                          | Example Value                                             |
-|--------------------------|------------------------------------------------------------------------------------------------------|-----------------------------------------------------------|
-| `umatiGatewayConfig`     | Root node of the configuration file for umatiGateway.                                                |                                                           |
-| `version`                | Version of the configuration format.                                                                 | `1.0`                                                     |
-| `autostart`              | Whether the gateway should start automatically when launched ('True', 'False').                      | `False`                                                   |
-| `file`                   | Path to the referenced local configuration file containing node and connection details.              | `./Configuration/Files/LocalConfigLocalSampleServer.xml`  |
-| `logLevel`               | Log level for the application (`Trace`, `Debug`, `Info`, `Warn`, `Error`).                           | `Debug`                                                   |
-| `ReadExtraLibs`          | Flag to enable loading of extra libraries.                                                           | `False`                                                   |
-| `singleThreadPolling`    | Whether to use single-threaded polling for connected devices. (**currently not used**)               | `False`                                                   |
-| `pollTime`               | Minimum Publishing intervall for the Mqtt Topic. The Data Topic is also published on data change.    | `10000` (10 seconds)                                      |
-
-The second file is called LocalConfigumatiApp.xml and it is stored in the *Configuration/Files* folder in the root directory of the umatiGateway app. It stores the configuration for the connections to the OPC Server and to the Mqtt server as well as the nodes that are published.
-
-```xml
-<?xml version="1.0" encoding="utf-8" ?>
-<Configuration version="1.0">
-    <!--For authentication with username and password use the line below.-->
-    <!--<OPCConnection serverendpoint="opc.tcp://opcua.umati.app:4843" authentication="None" user ="admin" password="pw1"/>-->
-    <OPCConnection serverendpoint="opc.tcp://opcua.umati.app:4840" authentication="None" user ="" password=""/>
-    <MqttConnection serverendpoint="mqtt://localhost:1883" user="" password="" clientId="fva/matthias2" prefix="umati/v2"/>
-    <PublishedNodes>
-        <PublishedNode type="Numeric" namespaceurl="http://example/instance/" nodeId="5003" BaseType=""/>
-    </PublishedNodes>
-    <CustomEncodings>
-    <CustomEncoding name="GMSResultDataTypeEncoding" active="False" />
-        <CustomEncoding name="ProcessingCategoryDataTypeEncoding" active="False" />
-        </CustomEncodings>
-</Configuration>
-```
-
-| Node/Attribute                  | Description                                                                                     | Example Value                          |
-|---------------------------------|-------------------------------------------------------------------------------------------------|----------------------------------------|
-| `Configuration`                 | Root element containing all connection and node publishing settings.                            |                                        |
-| `version`                       | Version of the configuration format.                                                            | `1.0`                                  |
-| `OPCConnection`                 | Settings for the OPC UA server connection.                                                      |                                        |
-| `serverendpoint` (OPC)          | OPC UA server endpoint URL.                                                                     | `opc.tcp://opcua.umati.app:4840`       |
-| `authentication`                | Authentication method (e.g., None, UsernamePassword).                                           | `None`                                 |
-| `user` (OPC)                    | Username for authentication. **If empty, no authentication is used.**                           | (empty)                                |
-| `password` (OPC)                | Password for authentication. **If empty, no authentication is used.**                           | (empty)                                |
-| `MqttConnection`                | Settings for the MQTT server connection.                                                        |                                        |
-| `serverendpoint` (MQTT)         | MQTT broker address.                                                                            | `mqtt://localhost:1883`                |
-| `user` (MQTT)                   | MQTT username (optional). **If empty, no authentication is used.**                              | (empty)                                |
-| `password` (MQTT)               | MQTT password (optional). **If empty, no authentication is used.**                              | (empty)                                |
-| `clientId`                      | MQTT client ID that is used for the topic generation.                                           | `fva/matthias2`                        |
-| `prefix`                        | Topic prefix for published MQTT messages.                                                       | `umati/v2`                             |
-| `PublishedNodes`                | Collection of nodes to be published to MQTT.                                                    |                                        |
-| `PublishedNode`                 | A single node entry to be published.                                                            |                                        |
-| `type`                          | Node type (e.g., `Numeric` or `String`).                                                        | `Numeric`                              |
-| `namespaceurl`                  | Namespace URI for the node.                                                                     | `http://example/instance/`             |
-| `nodeId`                        | Node ID to identify the OPC UA node.                                                            | `5003`                                 |
-| `BaseType`                      | Base type of the published node (**set if Node should use display Typedefinition**).            | (empty)                                |
-| `CustomEncodings`               | List of custom data encodings used. **fixed list of custom encodings for legacy machines**      |                                        |
-| `CustomEncoding`                | A single custom encoding entry.                                                                 |                                        |
-| `name`                          | Name of the custom encoding.                                                                    | `GMSResultDataTypeEncoding`            |
-| `active`                        | Whether this custom encoding is active (`True`/`False`). **True for legacy only**               | `False`                                |
+| Tag/Attribute                              | Description                                                                                          | Possible Values                                           |
+|--------------------------------------------|------------------------------------------------------------------------------------------------------|-----------------------------------------------------------|
+| `umatiGatewayConfig`                       | Root Tag of the configuration file for umatiGateway.                                                 | -                                                         |
+| ├`version`                                 | Version of the configuration format.                                                                 | `2.0`                                                     |
+| ├`logLevel`                                | Determines the global Log level the application runs with.                                           | `Debug`                                                   |
+| ├`StartConfiguration`                      | Tag configuring the start up behaviour of the gateway.                                               | -                                                         |
+| │ ├`startWebUi`                            | Indicates if the WebUi should be started when gateway starts.                                        | True \| False                                             |
+| │ ├`startOPCConnection`                    | Indicates if the OPC Connection should be started when gateway starts.                               | True \| False                                             |
+| │ ├`startMqttProvider`                     | Indicates if the Mqtt Provider should be started when gateway starts.                                | True \| False                                             |
+| │ ├`startPubSubProvider`                   | Indicates if the PubSub Provider should be started when gateway starts.                              | True \| False                                             |
+| ├`WebUI`                                   | Tag configuring the Web Ui of the gateway.                                                           | -                                                         |
+| │ ├`url`                                   | Sets the url for the Web Ui.                                                                         | e.g: "http:localhost:8080" or "https:127.0.0.1:80"        |
+| ├`OPCConnection`                           | Tag Configuring the connection to the OPC Server.                                                    | -                                                         |
+| │ ├`serverendpoint`                        | Host address of the OPC Ua Server.                                                                   | e.g: "pc.tcp://localhost:4840"                            |
+| │ ├`authentication`                        | Reserved for future use.                                                                             | None                                                      |
+| │ ├`user`                                  | User for basic User/Password authentication.                                                         | e.g: admin                                                |
+| │ ├`password`                              | Password for basic User/Password authentication.                                                     | e.g: password1                                            |
+| │ ├`readExtraLibs`                         | Experimental. Reads Certain BSD files locally instead from the server.                               | True \| False                                             |
+| ├`MqttProvider`                            | Tag that configures the Mqtt Provider that publishes in umati/v2 format.                             | -                                                         |
+| │ ├`serverendpoint`                        | Host address of the MqttBroker.                                                                      | e.g: "mqtt://localhost:1883"                              |
+| │ ├`user`                                  | User for basic User/Password authentication.                                                         | e.g: admin                                                |
+| │ ├`password`                              | Password for basic User/Password authentication.                                                     | e.g: password1                                            |
+| │ ├`clientId`                              | Client id that is used to construct the mqtt topics.                                                 | e.g: company/client                                       |
+| │ ├`prefix`                                | Prefix that is used to construct the mqtt topics.                                                    | e.g: umati/v2                                             |
+| │ ├`includeStructuredComponents`           | Indicates if StructuredCompnents should be included in resulting JSON.                               | True \| False                                             | 
+| │ ├`publishInterval`                       | Determines the interval in ms in which the MqttTopics are published.                                 | e.g: 5000                                                 |
+| │ ├`PublishedNodes`                        | Tag that holds a list of the Nodes that are published.                                               | -                                                         |
+| │  ├`PublishedNode`                        | Tag that holds the configuration for one published node.                                             | -                                                         |
+| │   ├`type`                                | Defines the type of the NodeId of the PublishedNode.                                                 | Numeric \| String                                         |
+| │   ├`namespaceurl`                        | Defines the nsu of the PublishedNode.                                                                | e.g: http://example.com/BasicMachineTool/                 |
+| │   ├`nodeId`                              | Defines the id of the PublishedNode.                                                                 | e.g: 61982 or MyMachine (Numeric or String)               |
+| │   ├`baseType`                            | Alias name for the Typedefintion that is used in the resulting JSON.                                 | e.g: MachineToolType Empty if no alias should be used.    |
+| │ ├`CustomEncodings`                       | Tag that holds possible CustomEncodings for certain DataStructures.                                  | -                                                         |
+| │  ├`GmsResultDataTypeEncoding`            | Custom Encoding for the GmsResultDataType.                                                           | True \| False                                             |
+| │  ├`ProcessingCategorytDataTypeEncoding`  | Custom Encoding for the GmsResultDataType.                                                           | True \| False                                             |
+| ├`logLevel`                                | Determines the global Log level the application runs with                                            | `Debug`                                                   |
 
 ### Configuration via Web UI
 
