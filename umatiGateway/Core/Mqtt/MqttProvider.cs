@@ -1251,7 +1251,7 @@ namespace umatiGateway.Core.Mqtt
             catch (OpcUaException opcUaException)
             {
                 Exception? innerException = opcUaException.InnerException;
-                if(innerException != null && innerException is ServiceResultException)
+                if (innerException != null && innerException is ServiceResultException)
                 {
                     return innerException.Message;
                 }
