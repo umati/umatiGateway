@@ -193,8 +193,8 @@ namespace umatiGateway.Core.Mqtt
         {
             if (range == null) return GetDefaultNullValue();
             JObject jObject = new JObject();
-            jObject.Add("low", range.Low);
-            jObject.Add("high", range.High);
+            jObject.Add("Low", range.Low);
+            jObject.Add("High", range.High);
             return jObject;
         }
         /// <summary>
