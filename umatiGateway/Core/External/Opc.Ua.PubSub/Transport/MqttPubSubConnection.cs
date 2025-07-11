@@ -365,7 +365,7 @@ namespace Opc.Ua.PubSub.Transport
 
                 if (networkAddressUrlState.Url != null && Uri.TryCreate(networkAddressUrlState.Url, UriKind.Absolute, out connectionUri))
                 {
-                    if ((connectionUri.Scheme == Utils.UriSchemeMqtt) || (connectionUri.Scheme == Utils.UriSchemeMqtts) || (connectionUri.Scheme == "ws") || (connectionUri.Scheme =="wss"))
+                    if ((connectionUri.Scheme == Utils.UriSchemeMqtt) || (connectionUri.Scheme == Utils.UriSchemeMqtts) || (connectionUri.Scheme == "ws") || (connectionUri.Scheme == "wss"))
                     {
                         if (!String.IsNullOrEmpty(connectionUri.Host))
                         {

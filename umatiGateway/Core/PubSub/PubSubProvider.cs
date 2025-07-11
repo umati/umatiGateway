@@ -64,7 +64,7 @@ namespace umatiGateway.Core.PubSub
                 }),
             };
             KeyValuePairCollection connectionProperties = new KeyValuePairCollection();
-            if(!string.IsNullOrEmpty(this.app.ActiveConfiguration.PubSubProviderConfig.UserName))
+            if (!string.IsNullOrEmpty(this.app.ActiveConfiguration.PubSubProviderConfig.UserName))
             {
                 Opc.Ua.KeyValuePair user = new Opc.Ua.KeyValuePair
                 {
@@ -512,7 +512,7 @@ namespace umatiGateway.Core.PubSub
                 Value = new Variant(5)
             };
             connectionProperties.Add(protocolVersion);
-            if (app.ActiveConfiguration.PubSubProviderConfig.AllowUntrustedCertificates) 
+            if (app.ActiveConfiguration.PubSubProviderConfig.AllowUntrustedCertificates)
             {
                 Opc.Ua.KeyValuePair tlsAllowUntrustedCertificates = new Opc.Ua.KeyValuePair
                 {
