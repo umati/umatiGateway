@@ -75,7 +75,7 @@ namespace umatiGateway.Core.Mqtt
         private string InstanceNSU = "";
         private string TypeBrowseName = "";
         private JArray IdentificationArray = new JArray();
-        private JSONConverter jsonConverter = new JSONConverter();
+        private JSONConverter jsonConverter = new JSONConverter(false);
         private bool shortenVariables = true;
         private BlockingCollection<NodeId> changedNodes = new BlockingCollection<NodeId>();
         private Dictionary<NodeId, string> placeholderVariablesWithTypeDefinition = new Dictionary<NodeId, string>();
@@ -115,6 +115,7 @@ namespace umatiGateway.Core.Mqtt
         public void Connect()
         {
             MqttProviderConfig config = this.app.ActiveConfiguration.MqttProviderConfig;
+            this.jsonConverter = new JSONConverter(config.UpperCaseRange);
             Logger.Info("MQTT Connect with TCP");
             if (!TimerSetup)
             {

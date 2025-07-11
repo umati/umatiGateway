@@ -16,11 +16,11 @@ namespace umatiGateway.Core.Mqtt
     public class JSONConverter
     {
         //private readonly JToken defaultNullValue = JValue.CreateNull();
-        public JSONConverter()
+        private bool upperCaseRange = false;
+        public JSONConverter(bool upperCaseRange)
         {
+            this.upperCaseRange = upperCaseRange;
         }
-
-
         // Conversion of BaseDataTypes
 
         public JToken Convert(bool? value)
@@ -193,8 +193,16 @@ namespace umatiGateway.Core.Mqtt
         {
             if (range == null) return GetDefaultNullValue();
             JObject jObject = new JObject();
-            jObject.Add("Low", range.Low);
-            jObject.Add("High", range.High);
+            if (upperCaseRange)
+            {
+                jObject.Add("Low", range.Low);
+                jObject.Add("High", range.High);
+            }
+            else
+            {
+                jObject.Add("low", range.Low);
+                jObject.Add("high", range.High);
+            }
             return jObject;
         }
         /// <summary>

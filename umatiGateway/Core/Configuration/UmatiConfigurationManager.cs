@@ -37,6 +37,7 @@ namespace umatiGateway.Core.Configuration
         public const string MQTT_PROVIDER = "MqttProvider";
         public const string CLIENT_ID = "clientId";
         public const string PREFIX = "prefix";
+        public const string UPPERCASE_RANGE = "upperCaseRange";
         public const string ALLOW_UNTRUSTED_CERTIFICATES = "allowUntrustedCertificates";
         public const string PUBLISHED_NODES = "PublishedNodes";
         public const string PUBLISHED_NODE = "PublishedNode";
@@ -123,6 +124,8 @@ namespace umatiGateway.Core.Configuration
                             configuration.MqttProviderConfig.Prefix = ReadAttribute(mqttProviderNode, PREFIX);
                             string includeStructuredComponents = ReadAttribute(mqttProviderNode, INCLUDE_STRUCTURED_COMPONENTS);
                             configuration.MqttProviderConfig.IncludeStructuredComponents = string.Equals(includeStructuredComponents, "true", StringComparison.OrdinalIgnoreCase) ? true : false;
+                            string uppercaseRange = ReadAttribute(mqttProviderNode, UPPERCASE_RANGE);
+                            configuration.MqttProviderConfig.UpperCaseRange = string.Equals(uppercaseRange, "true", StringComparison.OrdinalIgnoreCase) ? true : false;
                             string publishInterval = ReadAttribute(mqttProviderNode, PUBLISH_INTERVAL);
                             configuration.MqttProviderConfig.PublishInterval = uint.Parse(publishInterval);
                             XmlNode? publishedNodesNode = ReadNode(mqttProviderNode, PUBLISHED_NODES);
@@ -280,6 +283,8 @@ namespace umatiGateway.Core.Configuration
             includeStructuredComponents.Value = configuration.MqttProviderConfig.IncludeStructuredComponents.ToString();
             XmlAttribute publishInterval = xmlDocument.CreateAttribute(PUBLISH_INTERVAL);
             publishInterval.Value = configuration.MqttProviderConfig.PublishInterval.ToString();
+            XmlAttribute upperCaseRange = xmlDocument.CreateAttribute(UPPERCASE_RANGE);
+            upperCaseRange.Value = configuration.MqttProviderConfig.UpperCaseRange.ToString();
             XmlElement customEncodingsNode = xmlDocument.CreateElement(CUSTOM_ENCODINGS);
             foreach (CustomEncoding customEncoding in configuration.MqttProviderConfig.CustomEncodings)
             {
@@ -307,6 +312,7 @@ namespace umatiGateway.Core.Configuration
             mqttConnectionNode.Attributes.Append(mqttClientId);
             mqttConnectionNode.Attributes.Append(mqttPrefix);
             mqttConnectionNode.Attributes.Append(includeStructuredComponents);
+            mqttConnectionNode.Attributes.Append(upperCaseRange);
             mqttConnectionNode.Attributes.Append(publishInterval);
             mqttConnectionNode.AppendChild(CreatePublishedNodesNode(xmlDocument, configuration.MqttProviderConfig.PublishedNodes));
             mqttConnectionNode.AppendChild(customEncodingsNode);

@@ -114,6 +114,7 @@ namespace umatiGateway.Core.Configuration
         public uint PublishInterval { get; set; } = 5000;
         public List<IgnoredPlaceholderTag> IgnoredPlaceholderTags { get; set; } = new List<IgnoredPlaceholderTag>();
         public List<CustomEncoding> CustomEncodings { get; set; } = new List<CustomEncoding>();
+        public bool UpperCaseRange { get; set; } = false;
         public List<PublishedNode> PublishedNodes { get; set; } = new List<PublishedNode>();
         public override string ToString()
         {
