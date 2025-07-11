@@ -24,6 +24,14 @@
             <input type="text" class="settings-input" id="Prefix" name="MqttPrefix" value="@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.Prefix">
             <label for="MqttConnection" class="settings-label">ConnectionUrl</label>
             <input id="MqttConnection" class="settings-input" type="text" name="ConnectionUrl" value="@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.ServerEndpoint">
+            <div class="settings-on-off-label">
+                <span class="off">Off</span>
+                <label class="settings-switch">
+                    <input id="PubSubAllowUntrustedCertificates" size="60" type="checkbox" name="PubSubAllowUntrustedCertificates" value="true" @(Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.AllowUntrustedCertificates ? "checked" : "")>
+                    <span class="settings-slider"></span>
+                </label>
+                <span class="on">On</span>
+            </div>
             <div class="settings-button-container">
                 <button asp-page-handler="Connect" class="settings-button">Connect</button>
                 <button asp-page-handler="Disconnect" class="settings-button" style="margin-left:10px">Disconnect</button>

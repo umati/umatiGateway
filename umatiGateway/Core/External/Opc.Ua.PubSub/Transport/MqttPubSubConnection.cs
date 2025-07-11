@@ -27,20 +27,22 @@
  * http://opcfoundation.org/License/MIT/1.00/
  * ======================================================================*/
 
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Security.Cryptography.X509Certificates;
-using System.Threading.Tasks;
 using MQTTnet;
 using MQTTnet.Formatter;
 using MQTTnet.Protocol;
 using Opc.Ua.PubSub.Encoding;
 using Opc.Ua.PubSub.PublishedData;
-using DataSet = Opc.Ua.PubSub.PublishedData.DataSet;
-using JsonNetworkMessage = Opc.Ua.PubSub.Encoding.JsonNetworkMessage;
-using JsonDataSetMessage = Opc.Ua.PubSub.Encoding.JsonDataSetMessage;
+using System;
 using System.Buffers;
+using System.Collections.Generic;
+using System.Data;
+using System.Net;
+using System.Security.Authentication;
+using System.Security.Cryptography.X509Certificates;
+using System.Threading.Tasks;
+using DataSet = Opc.Ua.PubSub.PublishedData.DataSet;
+using JsonDataSetMessage = Opc.Ua.PubSub.Encoding.JsonDataSetMessage;
+using JsonNetworkMessage = Opc.Ua.PubSub.Encoding.JsonNetworkMessage;
 
 namespace Opc.Ua.PubSub.Transport
 {
@@ -363,7 +365,7 @@ namespace Opc.Ua.PubSub.Transport
 
                 if (networkAddressUrlState.Url != null && Uri.TryCreate(networkAddressUrlState.Url, UriKind.Absolute, out connectionUri))
                 {
-                    if ((connectionUri.Scheme == Utils.UriSchemeMqtt) || (connectionUri.Scheme == Utils.UriSchemeMqtts))
+                    if ((connectionUri.Scheme == Utils.UriSchemeMqtt) || (connectionUri.Scheme == Utils.UriSchemeMqtts) || (connectionUri.Scheme == "ws") || (connectionUri.Scheme == "wss"))
                     {
                         if (!String.IsNullOrEmpty(connectionUri.Host))
                         {
@@ -701,7 +703,8 @@ namespace Opc.Ua.PubSub.Transport
             if (networkAddressUrlState.Url != null &&
                 Uri.TryCreate(networkAddressUrlState.Url, UriKind.Absolute, out connectionUri))
             {
-                if ((connectionUri.Scheme != Utils.UriSchemeMqtt) && (connectionUri.Scheme != Utils.UriSchemeMqtts))
+                if ((connectionUri.Scheme != Utils.UriSchemeMqtt) && (connectionUri.Scheme != Utils.UriSchemeMqtts)
+                    && (connectionUri.Scheme != "ws") && (connectionUri.Scheme != "wss"))
                 {
                     Utils.Trace(Utils.TraceMasks.Error,
                         "The configuration for mqttConnection '{0}' has an invalid Url value {1}. The Uri scheme should be either {2}:// or {3}://",
@@ -723,7 +726,8 @@ namespace Opc.Ua.PubSub.Transport
             }
 
             // Setup data needed also in mqttClientOptionsBuilder
-            if ((connectionUri.Scheme == Utils.UriSchemeMqtt) || (connectionUri.Scheme == Utils.UriSchemeMqtts))
+            if ((connectionUri.Scheme == Utils.UriSchemeMqtt) || (connectionUri.Scheme == Utils.UriSchemeMqtts)
+                || (connectionUri.Scheme == "ws") || (connectionUri.Scheme == "wss"))
             {
                 if (!String.IsNullOrEmpty(connectionUri.Host))
                 {
@@ -774,7 +778,7 @@ namespace Opc.Ua.PubSub.Transport
                             o.WithAllowUntrustedCertificates(mqttTlsOptions?.AllowUntrustedCertificates ?? false);
                             o.WithIgnoreCertificateChainErrors(mqttTlsOptions?.IgnoreCertificateChainErrors ?? false);
                             o.WithIgnoreCertificateRevocationErrors(mqttTlsOptions?.IgnoreRevocationListErrors ?? false);
-                            o.WithCertificateValidationHandler(ValidateBrokerCertificate);
+                            //o.WithCertificateValidationHandler(ValidateBrokerCertificate);
                         });
 
                     // Set user credentials.
@@ -823,8 +827,83 @@ namespace Opc.Ua.PubSub.Transport
 
                     mqttOptions = mqttClientOptionsBuilder.Build();
                 }
-            }
+                else if (connectionUri.Scheme == "wss")
+                {
+                    MqttTlsOptions mqttTlsOptions =
+                        ((MqttClientProtocolConfiguration)transportProtocolConfiguration).MqttTlsOptions;
 
+                    var x509Certificate2s = new List<X509Certificate2>();
+                    if (mqttTlsOptions?.Certificates != null)
+                    {
+                        foreach (X509Certificate2 x509cert in mqttTlsOptions.Certificates.X509Certificates)
+                        {
+                            x509Certificate2s.Add(X509CertificateLoader.LoadCertificate(x509cert.RawData));
+                        }
+                    }
+
+                    MqttClientOptionsBuilder mqttClientOptionsBuilder = new MqttClientOptionsBuilder()
+                        .WithWebSocketServer(o =>
+                        {
+                            o.WithUri($"wss://{m_brokerHostName}:{m_brokerPort}/ws");
+                        })
+                        .WithKeepAlivePeriod(mqttKeepAlive)
+                        .WithClientId(clientId)
+                        .WithProtocolVersion(mqttProtocolVersion)
+                        .WithTlsOptions(o =>
+                        {
+                            o.UseTls(true);
+                            o.WithClientCertificates(x509Certificate2s);
+                            o.WithSslProtocols(mqttTlsOptions?.SslProtocolVersion ?? SslProtocols.None);
+                            o.WithAllowUntrustedCertificates(mqttTlsOptions?.AllowUntrustedCertificates ?? false);
+                            o.WithIgnoreCertificateChainErrors(mqttTlsOptions?.IgnoreCertificateChainErrors ?? false);
+                            o.WithIgnoreCertificateRevocationErrors(mqttTlsOptions?.IgnoreRevocationListErrors ?? false);
+                            //o.WithCertificateValidationHandler(ValidateBrokerCertificate);
+                        });
+
+                    // Set user credentials.
+                    if (mqttProtocolConfiguration.UseCredentials)
+                    {
+                        mqttClientOptionsBuilder.WithCredentials(
+                            new System.Net.NetworkCredential(string.Empty, mqttProtocolConfiguration.UserName)
+                                .Password,
+                            new System.Net.NetworkCredential(string.Empty, mqttProtocolConfiguration.Password)
+                                .Password);
+
+                        // Set ClientId for Azure.
+                        if (mqttProtocolConfiguration.UseAzureClientId)
+                        {
+                            mqttClientOptionsBuilder.WithClientId(mqttProtocolConfiguration.AzureClientId);
+                        }
+                    }
+
+                    mqttOptions = mqttClientOptionsBuilder.Build();
+
+                    // Create the certificate validator for broker certificates.
+                    m_certificateValidator = CreateCertificateValidator(mqttTlsOptions);
+                    m_certificateValidator.CertificateValidation += CertificateValidator_CertificateValidation;
+                    m_mqttClientTlsOptions = mqttOptions?.ChannelOptions?.TlsOptions;
+                }
+                else if (connectionUri.Scheme == "ws")
+                {
+                    MqttClientOptionsBuilder mqttClientOptionsBuilder = new MqttClientOptionsBuilder()
+                        .WithWebSocketServer(o =>
+                        {
+                            o.WithUri($"ws://{m_brokerHostName}:{m_brokerPort}/ws");
+                        })
+                        .WithKeepAlivePeriod(mqttKeepAlive)
+                        .WithClientId(clientId)
+                        .WithProtocolVersion(mqttProtocolVersion);
+
+                    if (mqttProtocolConfiguration.UseCredentials)
+                    {
+                        mqttClientOptionsBuilder.WithCredentials(
+                            new NetworkCredential(string.Empty, mqttProtocolConfiguration.UserName).Password,
+                            new NetworkCredential(string.Empty, mqttProtocolConfiguration.Password).Password);
+                    }
+
+                    mqttOptions = mqttClientOptionsBuilder.Build();
+                }
+            }
             return mqttOptions;
         }
 
