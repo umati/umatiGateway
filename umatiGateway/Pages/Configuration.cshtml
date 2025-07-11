@@ -203,6 +203,14 @@
             <input type="text" class="settings-input" id="PubSubClientId" name="PubSubClientId" value="@Model.Configuration.PubSubProviderConfig.ClientId">
             <label for="PubSubPrefix" class="settings-label">Prefix</label>
             <input type="text" class="settings-input" id="PubSubPrefix" name="PubSubPrefix" value="@Model.Configuration.PubSubProviderConfig.Prefix">
+            <div class="settings-on-off-label">
+                <span class="off">Off</span>
+                <label class="settings-switch">
+                    <input id="PubSubAllowUntrustedCertificates" size="60" type="checkbox" name="PubSubAllowUntrustedCertificates" value="true" @(Model.Configuration.PubSubProviderConfig.AllowUntrustedCertificates ? "checked" : "")>
+                    <span class="settings-slider"></span>
+                </label>
+                <span class="on">On</span>
+            </div>
             <label for="PubSubNodes" class="settings-label">PubSub Nodes</label>
             <table id="PubSub" class="nodetable">
                 <thead>

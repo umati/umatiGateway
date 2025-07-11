@@ -1,12 +1,13 @@
 ﻿// SPDX-License-Identifier: Apache-2.0
 // Copyright (c) 2025 FVA GmbH - interop4x. All rights reserved.
+using MQTTnet.Formatter;
 using NLog;
 using Opc.Ua;
 using Opc.Ua.Client;
-using umatiGateway.Core.Configuration;
 using Opc.Ua.PubSub;
-using umatiGateway.Core.OPC;
+using umatiGateway.Core.Configuration;
 using umatiGateway.Core.Mqtt;
+using umatiGateway.Core.OPC;
 
 namespace umatiGateway.Core.PubSub
 {
@@ -62,7 +63,22 @@ namespace umatiGateway.Core.PubSub
                     )
                 }),
             };
-
+            KeyValuePairCollection connectionProperties = new KeyValuePairCollection();
+            if(!string.IsNullOrEmpty(this.app.ActiveConfiguration.PubSubProviderConfig.UserName))
+            {
+                Opc.Ua.KeyValuePair user = new Opc.Ua.KeyValuePair
+                {
+                    Key = "UserName",
+                    Value = new Variant(this.app.ActiveConfiguration.PubSubProviderConfig.UserName)
+                };
+                Opc.Ua.KeyValuePair password = new Opc.Ua.KeyValuePair
+                {
+                    Key = "PassWord",
+                    Value = new Variant(this.app.ActiveConfiguration.PubSubProviderConfig.Password)
+                };
+                connectionProperties.Add(user);
+                connectionProperties.Add(password);
+            }
             // Verbindung mit MQTT-Ziel
             PubSubConnectionDataType pubSubConnection = new PubSubConnectionDataType
             {
@@ -74,6 +90,7 @@ namespace umatiGateway.Core.PubSub
                 {
                     Url = this.app.ActiveConfiguration.PubSubProviderConfig.ServerEndpoint
                 }),
+                ConnectionProperties = connectionProperties,
                 WriterGroups = new WriterGroupDataTypeCollection { writerGroup }
             };
 
@@ -473,6 +490,49 @@ namespace umatiGateway.Core.PubSub
         }
         private void CreateApp()
         {
+            KeyValuePairCollection connectionProperties = new KeyValuePairCollection();
+            if (!string.IsNullOrEmpty(this.app.ActiveConfiguration.PubSubProviderConfig.UserName))
+            {
+                Opc.Ua.KeyValuePair user = new Opc.Ua.KeyValuePair
+                {
+                    Key = "UserName",
+                    Value = new Variant(this.app.ActiveConfiguration.PubSubProviderConfig.UserName)
+                };
+                Opc.Ua.KeyValuePair password = new Opc.Ua.KeyValuePair
+                {
+                    Key = "Password",
+                    Value = new Variant(this.app.ActiveConfiguration.PubSubProviderConfig.Password)
+                };
+                connectionProperties.Add(user);
+                connectionProperties.Add(password);
+            }
+            Opc.Ua.KeyValuePair protocolVersion = new Opc.Ua.KeyValuePair
+            {
+                Key = "ProtocolVersion",
+                Value = new Variant(5)
+            };
+            connectionProperties.Add(protocolVersion);
+            if (app.ActiveConfiguration.PubSubProviderConfig.AllowUntrustedCertificates) 
+            {
+                Opc.Ua.KeyValuePair tlsAllowUntrustedCertificates = new Opc.Ua.KeyValuePair
+                {
+                    Key = "TlsAllowUntrustedCertificates",
+                    Value = new Variant(true)
+                };
+                connectionProperties.Add(tlsAllowUntrustedCertificates);
+                Opc.Ua.KeyValuePair tlsIgnoreCertificateChainErrors = new Opc.Ua.KeyValuePair
+                {
+                    Key = "TlsIgnoreCertificateChainErrors",
+                    Value = new Variant(true)
+                };
+                connectionProperties.Add(tlsIgnoreCertificateChainErrors);
+                Opc.Ua.KeyValuePair tlsIgnoreRevocationListErrors = new Opc.Ua.KeyValuePair
+                {
+                    Key = "TlsIgnoreRevocationListErrors",
+                    Value = new Variant(true)
+                };
+                connectionProperties.Add(tlsIgnoreRevocationListErrors);
+            }
             var pubSubConnection = new PubSubConnectionDataType
             {
                 Name = "MQTTConnection",
@@ -483,10 +543,7 @@ namespace umatiGateway.Core.PubSub
                 {
                     Url = this.app.ActiveConfiguration.PubSubProviderConfig.ServerEndpoint
                 }),
-                ConnectionProperties = new KeyValuePairCollection
-            {
-                new Opc.Ua.KeyValuePair { Key = "mqtt.client.protocolVersion", Value = "5" }
-            },
+                ConnectionProperties = connectionProperties,
                 WriterGroups = writerGroups
             };
             var pubSubConfiguration = new PubSubConfigurationDataType

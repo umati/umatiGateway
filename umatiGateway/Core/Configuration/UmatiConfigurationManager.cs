@@ -3,9 +3,11 @@
 using Microsoft.Extensions.Configuration;
 using NLog;
 using Opc.Ua;
+using System;
 using System.Text;
 using System.Xml;
 using System.Xml.Linq;
+using umatiGateway.Core.Mqtt.CustomEncoding;
 
 namespace umatiGateway.Core.Configuration
 {
@@ -35,6 +37,7 @@ namespace umatiGateway.Core.Configuration
         public const string MQTT_PROVIDER = "MqttProvider";
         public const string CLIENT_ID = "clientId";
         public const string PREFIX = "prefix";
+        public const string ALLOW_UNTRUSTED_CERTIFICATES = "allowUntrustedCertificates";
         public const string PUBLISHED_NODES = "PublishedNodes";
         public const string PUBLISHED_NODE = "PublishedNode";
         public const string PUBLISHED_CHILD_NODES = "PublishedChildNodes";
@@ -185,6 +188,8 @@ namespace umatiGateway.Core.Configuration
                             configuration.PubSubProviderConfig.ServerEndpoint = ReadAttribute(pubSubProviderNode, SERVERENDPOINT);
                             configuration.PubSubProviderConfig.ClientId = ReadAttribute(pubSubProviderNode, CLIENT_ID);
                             configuration.PubSubProviderConfig.Prefix = ReadAttribute(pubSubProviderNode, PREFIX);
+                            string allowUntrustedCertificates = ReadAttribute(pubSubProviderNode, ALLOW_UNTRUSTED_CERTIFICATES);
+                            configuration.PubSubProviderConfig.AllowUntrustedCertificates = string.Equals(allowUntrustedCertificates, "true", StringComparison.OrdinalIgnoreCase) ? true : false;
                             XmlNode? publishedNodesNode = ReadNode(pubSubProviderNode, PUBLISHED_NODES);
                             if (publishedNodesNode != null)
                             {
@@ -317,13 +322,14 @@ namespace umatiGateway.Core.Configuration
             pubSubClientId.Value = configuration.PubSubProviderConfig.ClientId;
             XmlAttribute pubSubPrefix = xmlDocument.CreateAttribute(PREFIX);
             pubSubPrefix.Value = configuration.PubSubProviderConfig.Prefix;
-            pubSubNode.Attributes.Append(mqttServerEndpoint);
-            pubSubNode.Attributes.Append(mqttUser);
-            pubSubNode.Attributes.Append(mqttPassword);
-            pubSubNode.Attributes.Append(mqttClientId);
-            pubSubNode.Attributes.Append(mqttPrefix);
-            pubSubNode.Attributes.Append(includeStructuredComponents);
-            pubSubNode.Attributes.Append(publishInterval);
+            XmlAttribute pubSubAllowUntrustedCertificates = xmlDocument.CreateAttribute(ALLOW_UNTRUSTED_CERTIFICATES);
+            pubSubAllowUntrustedCertificates.Value = configuration.PubSubProviderConfig.AllowUntrustedCertificates.ToString();
+            pubSubNode.Attributes.Append(pubSubServerEndpoint);
+            pubSubNode.Attributes.Append(pubSubUser);
+            pubSubNode.Attributes.Append(pubSubPassword);
+            pubSubNode.Attributes.Append(pubSubClientId);
+            pubSubNode.Attributes.Append(pubSubPrefix);
+            pubSubNode.Attributes.Append(pubSubAllowUntrustedCertificates);
             pubSubNode.AppendChild(CreatePublishedNodesNode(xmlDocument, configuration.PubSubProviderConfig.PublishedNodes));
             configurationNode.AppendChild(startConfigurationNode);
             configurationNode.AppendChild(webUiNode);

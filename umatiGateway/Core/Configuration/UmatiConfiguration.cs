@@ -131,12 +131,13 @@ namespace umatiGateway.Core.Configuration
         public string Password { get; set; } = "";
         public string ClientId { get; set; } = "";
         public string Prefix { get; set; } = "";
+        public bool AllowUntrustedCertificates { get; set; } = false;
         public List<PublishedNode> PublishedNodes { get; set; } = new List<PublishedNode>();
         public override string ToString()
         {
             var nodes = string.Join(", ", PublishedNodes.Select(n => n.ToString()));
             return $"PubSubProviderConfig(Server={ServerEndpoint}, User={UserName}, Password={UmatiConfigurationUtils.MaskPassword(Password)}, " +
-                   $"ClientId={ClientId}, Prefix={Prefix}, PublishedNodes=[{nodes}])";
+                   $"ClientId={ClientId}, Prefix={Prefix}, AllowUntrustedCertificates={AllowUntrustedCertificates},PublishedNodes=[{nodes}])";
         }
     }
     public class OPCConnection
