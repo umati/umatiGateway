@@ -45,13 +45,13 @@ namespace UmatiGateway.Pages
             if (Label_ConnectionUrl_Translated != null) { this.LabelConnectionUrl = Label_ConnectionUrl_Translated; }
         }
 
-        public  JsonResult OnPostConnect()
+        public JsonResult OnPostConnect()
         {
             try
             {
                 IOpcUaClient client = app.OpcUaClient;
                 client.Connect();
-                return new JsonResult(new { success = true});
+                return new JsonResult(new { success = true });
             }
             catch (Exception ex)
             {
@@ -78,7 +78,7 @@ namespace UmatiGateway.Pages
             List<OpcUaClientState> opcUaClientStateHistory = this.app.OpcUaClient.GetClientStateHistory();
             OpcUaClientState lastClientState = opcUaClientStateHistory.Last();
             JsonArray jConnectionStateHistory = new JsonArray();
-            foreach(OpcUaClientState clientState in opcUaClientStateHistory)
+            foreach (OpcUaClientState clientState in opcUaClientStateHistory)
             {
                 JsonObject jClientState = new JsonObject();
                 jClientState.Add("ConnectionState", clientState.ConnectionState.ToString());

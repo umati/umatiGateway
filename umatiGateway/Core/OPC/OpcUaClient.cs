@@ -90,7 +90,8 @@ namespace umatiGateway.Core.OPC
                     this.ClientStateHistory.Add(this.ClientState.Copy());
                     Logger.Error($"Failed to disconnect Session.", ex);
                     throw new OpcUaException($"Failed to disconnect Session.", ex);
-                } finally
+                }
+                finally
                 {
                     this.ClientState.ClearBlocked();
                     this.notifyOpcUaClientListeners();
@@ -319,98 +320,98 @@ namespace umatiGateway.Core.OPC
             string serverUrl = this.app.ActiveConfiguration.OPCConnection.ServerEndpoint;
             if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
 
-                try
+            try
+            {
+                Logger.Info("Connecting to... {0}", serverUrl);
+
+                // Get the endpoint by connecting to server's discovery endpoint.
+                // Try to find the first endopint with security.
+                EndpointDescription endpointDescription = CoreClientUtils.SelectEndpoint(this.applicationConfiguration, serverUrl, false);
+                EndpointConfiguration endpointConfiguration = EndpointConfiguration.Create(this.applicationConfiguration);
+                ConfiguredEndpoint endpoint = new ConfiguredEndpoint(null, endpointDescription, endpointConfiguration);
+                UserIdentity userIdentity = new UserIdentity();
+                if (!string.IsNullOrWhiteSpace(this.app.ActiveConfiguration.OPCConnection.UserName))
                 {
-                    Logger.Info("Connecting to... {0}", serverUrl);
-
-                    // Get the endpoint by connecting to server's discovery endpoint.
-                    // Try to find the first endopint with security.
-                    EndpointDescription endpointDescription = CoreClientUtils.SelectEndpoint(this.applicationConfiguration, serverUrl, false);
-                    EndpointConfiguration endpointConfiguration = EndpointConfiguration.Create(this.applicationConfiguration);
-                    ConfiguredEndpoint endpoint = new ConfiguredEndpoint(null, endpointDescription, endpointConfiguration);
-                    UserIdentity userIdentity = new UserIdentity();
-                    if (!string.IsNullOrWhiteSpace(this.app.ActiveConfiguration.OPCConnection.UserName))
-                    {
-                        userIdentity = new UserIdentity(this.app.ActiveConfiguration.OPCConnection.UserName, this.app.ActiveConfiguration.OPCConnection.Password);
-                    }
-
-                    // Create the session
-                    Session session = await Session.Create(
-                        this.applicationConfiguration,
-                        endpoint,
-                    false,
-                    false,
-                        this.applicationConfiguration.ApplicationName,
-                        30 * 60 * 1000,
-                        userIdentity,
-                        null
-                    );
-
-                    // Assign the created session
-                    if (session != null && session.Connected)
-                    {
-                        this.ClientState.setState(OpcUaConnectionState.Connected, "");
-                        this.ClientStateHistory.Add(this.ClientState.Copy());
-                        this.notifyOpcUaClientListeners();
-                        this.session = session;
-
-
-                        // Session created successfully.
-                        Logger.Info($"New Session Created with SessionName = {session.SessionName}");
-
-                        TypeDictionaries = new TypeDictionaries(this.app);
-                        TypeDictionaries.ReadExtraLibs = this.app.ActiveConfiguration.OPCConnection.ReadExtraLibs;
-                        this.ClientState.setState(OpcUaConnectionState.Connected, "Read Binaries");
-                        this.ClientStateHistory.Add(this.ClientState.Copy());
-                        this.notifyOpcUaClientListeners();
-                        Logger.Info("Read Binaries");
-                        TypeDictionaries.ReadOpcBinary();
-                        this.ClientState.setState(OpcUaConnectionState.Connected, "Read DataTypes");
-                        this.ClientStateHistory.Add(this.ClientState.Copy());
-                        this.notifyOpcUaClientListeners();
-                        Logger.Info("Read DataTypes");
-                        TypeDictionaries.ReadDataTypes();
-                        this.ClientState.setState(OpcUaConnectionState.Connected, "Read EventTypes");
-                        this.ClientStateHistory.Add(this.ClientState.Copy());
-                        this.notifyOpcUaClientListeners();
-                        Logger.Info("Read EventTypes");
-                        TypeDictionaries.ReadEventTypes();
-                        this.ClientState.setState(OpcUaConnectionState.Connected, "Read InterfaceTypes");
-                        this.ClientStateHistory.Add(this.ClientState.Copy());
-                        this.notifyOpcUaClientListeners();
-                        Logger.Info("Read InterfaceTypes");
-                        TypeDictionaries.ReadInterfaceTypes();
-                        this.ClientState.setState(OpcUaConnectionState.Connected, "Read ObjectTypes");
-                        this.ClientStateHistory.Add(this.ClientState.Copy());
-                        this.notifyOpcUaClientListeners();
-                        Logger.Info("Read ObjectTypes");
-                        TypeDictionaries.ReadObjectTypes();
-                        this.ClientState.setState(OpcUaConnectionState.Connected, "Read ReferenceTypes");
-                        this.ClientStateHistory.Add(this.ClientState.Copy());
-                        Logger.Info("Read ReferenceTypes");
-                        TypeDictionaries.ReadReferenceTypes();
-                        this.ClientState.setState(OpcUaConnectionState.Connected, "Read VariableTypes");
-                        this.ClientStateHistory.Add(this.ClientState.Copy());
-                        this.notifyOpcUaClientListeners();
-                        Logger.Info("Read VariableTypes");
-                        TypeDictionaries.ReadVariableTypes();
-                        this.ClientState.setState(OpcUaConnectionState.Connected, "Read TypeDictionary finished");
-                        this.ClientStateHistory.Add(this.ClientState.Copy());
-                        this.notifyOpcUaClientListeners();
-                        return true;
-                    }
-                    else
-                    {
-                        Logger.Info("Unable to Create OPC Session.");
-                        return false;
-                    }
+                    userIdentity = new UserIdentity(this.app.ActiveConfiguration.OPCConnection.UserName, this.app.ActiveConfiguration.OPCConnection.Password);
                 }
-                catch (Exception ex)
+
+                // Create the session
+                Session session = await Session.Create(
+                    this.applicationConfiguration,
+                    endpoint,
+                false,
+                false,
+                    this.applicationConfiguration.ApplicationName,
+                    30 * 60 * 1000,
+                    userIdentity,
+                    null
+                );
+
+                // Assign the created session
+                if (session != null && session.Connected)
                 {
-                    Logger.Error($"Create Session Error : {ex.Message}");
-                    this.session = null;
+                    this.ClientState.setState(OpcUaConnectionState.Connected, "");
+                    this.ClientStateHistory.Add(this.ClientState.Copy());
+                    this.notifyOpcUaClientListeners();
+                    this.session = session;
+
+
+                    // Session created successfully.
+                    Logger.Info($"New Session Created with SessionName = {session.SessionName}");
+
+                    TypeDictionaries = new TypeDictionaries(this.app);
+                    TypeDictionaries.ReadExtraLibs = this.app.ActiveConfiguration.OPCConnection.ReadExtraLibs;
+                    this.ClientState.setState(OpcUaConnectionState.Connected, "Read Binaries");
+                    this.ClientStateHistory.Add(this.ClientState.Copy());
+                    this.notifyOpcUaClientListeners();
+                    Logger.Info("Read Binaries");
+                    TypeDictionaries.ReadOpcBinary();
+                    this.ClientState.setState(OpcUaConnectionState.Connected, "Read DataTypes");
+                    this.ClientStateHistory.Add(this.ClientState.Copy());
+                    this.notifyOpcUaClientListeners();
+                    Logger.Info("Read DataTypes");
+                    TypeDictionaries.ReadDataTypes();
+                    this.ClientState.setState(OpcUaConnectionState.Connected, "Read EventTypes");
+                    this.ClientStateHistory.Add(this.ClientState.Copy());
+                    this.notifyOpcUaClientListeners();
+                    Logger.Info("Read EventTypes");
+                    TypeDictionaries.ReadEventTypes();
+                    this.ClientState.setState(OpcUaConnectionState.Connected, "Read InterfaceTypes");
+                    this.ClientStateHistory.Add(this.ClientState.Copy());
+                    this.notifyOpcUaClientListeners();
+                    Logger.Info("Read InterfaceTypes");
+                    TypeDictionaries.ReadInterfaceTypes();
+                    this.ClientState.setState(OpcUaConnectionState.Connected, "Read ObjectTypes");
+                    this.ClientStateHistory.Add(this.ClientState.Copy());
+                    this.notifyOpcUaClientListeners();
+                    Logger.Info("Read ObjectTypes");
+                    TypeDictionaries.ReadObjectTypes();
+                    this.ClientState.setState(OpcUaConnectionState.Connected, "Read ReferenceTypes");
+                    this.ClientStateHistory.Add(this.ClientState.Copy());
+                    Logger.Info("Read ReferenceTypes");
+                    TypeDictionaries.ReadReferenceTypes();
+                    this.ClientState.setState(OpcUaConnectionState.Connected, "Read VariableTypes");
+                    this.ClientStateHistory.Add(this.ClientState.Copy());
+                    this.notifyOpcUaClientListeners();
+                    Logger.Info("Read VariableTypes");
+                    TypeDictionaries.ReadVariableTypes();
+                    this.ClientState.setState(OpcUaConnectionState.Connected, "Read TypeDictionary finished");
+                    this.ClientStateHistory.Add(this.ClientState.Copy());
+                    this.notifyOpcUaClientListeners();
+                    return true;
+                }
+                else
+                {
+                    Logger.Info("Unable to Create OPC Session.");
                     return false;
                 }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Create Session Error : {ex.Message}");
+                this.session = null;
+                return false;
+            }
         }
 
         private void CertificateValidation(CertificateValidator sender, CertificateValidationEventArgs e)

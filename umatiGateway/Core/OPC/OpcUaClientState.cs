@@ -39,7 +39,8 @@ namespace umatiGateway.Core.OPC
 
         public bool IsBlocked => blocked != 0;
     }
-    public enum OpcUaConnectionState {
+    public enum OpcUaConnectionState
+    {
         Idle,
         Connecting,
         Connected,
