@@ -806,5 +806,10 @@ namespace umatiGateway.Core.OPC
         {
             return this.ClientStateHistory;
         }
+
+        TypeDictionaries IOpcUaClient.GetTypeDictionaries()
+        {
+            return this.TypeDictionaries;
+        }
     }
 }

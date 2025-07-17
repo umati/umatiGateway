@@ -21,7 +21,6 @@ namespace umatiGateway.Core.OPC
         public PubSubProvider PubSubProvider { get; set; }
         public MqttProvider MqttProvider { get; set; }
         public BrowseTreeController BrowseTreeController { get; set; }
-        public TypeDictionaries TypeDictionaries { get; set; }
         public UmatiConfiguration ActiveConfiguration { get; set; } = new UmatiConfiguration();
         public UmatiGatewayApp(ApplicationConfiguration configuration, TextWriter writer, Action<IList, IList> validateResponse)
         {
@@ -31,7 +30,6 @@ namespace umatiGateway.Core.OPC
             Logger.Info("Reading Configuration");
             ConfigureLogging();
             OpcUaClient = new OpcUaClient(this, configuration);
-            TypeDictionaries = new TypeDictionaries(this);
             BrowseTreeController = new BrowseTreeController(this.OpcUaClient);
             MqttProvider = new MqttProvider(this);
             PubSubProvider = new PubSubProvider(this);

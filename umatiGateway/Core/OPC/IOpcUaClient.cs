@@ -5,6 +5,7 @@ namespace umatiGateway.Core.OPC
 {
     public interface IOpcUaClient
     {
+        public TypeDictionaries GetTypeDictionaries();
         public List<OpcUaClientState> GetClientStateHistory();
         public OpcUaClientState GetClientState();
         /// <summary>
