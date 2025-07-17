@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿// SPDX-License-Identifier: Apache-2.0
+// Copyright (c) 2025 FVA GmbH - interop4x. All rights reserved.
+
 using NLog;
 using Opc.Ua;
 using Opc.Ua.Client;
@@ -8,49 +10,95 @@ namespace umatiGateway.Core.OPC
     public class OpcUaClient : IOpcUaClient
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+        private readonly object _clientStateLock = new();
         private Session? session;
         private UmatiGatewayApp app;
-        private BlockingTransition blockingTransition;
         private ApplicationConfiguration applicationConfiguration;
         public bool AutoAccept { get; set; } = true;
         public List<OpcUaEventListener> opcUaEventListeners = new List<OpcUaEventListener>();
-        public List<UmatiGatewayAppListener> UmatiGatewayAppListeners = new List<UmatiGatewayAppListener>();
+        public List<IOpcClientListener> OpcClientListeners = new List<IOpcClientListener>();
         public Subscription? subscription = null;
         public TypeDictionaries TypeDictionaries { get; set; }
+        private bool ClientActive = false;
+        private OpcUaClientState ClientState { get; set; } = new OpcUaClientState(OpcUaConnectionState.Idle, "");
+        private List<OpcUaClientState> ClientStateHistory = new List<OpcUaClientState>();
 
         public OpcUaClient(UmatiGatewayApp app, ApplicationConfiguration applicationConfiguration)
         {
             this.app = app;
-            this.blockingTransition = new BlockingTransition();
             this.TypeDictionaries = new TypeDictionaries(app);
             this.applicationConfiguration = applicationConfiguration;
             this.applicationConfiguration.CertificateValidator.CertificateValidation += CertificateValidation;
+            this.ClientStateHistory.Add(this.ClientState);
         }
         public void Connect()
         {
-            try
+            if (this.ClientState.TrySetBlocked())
             {
-                _ = this.ConnectAsync().Result;
+                this.ClientStateHistory.Clear();
+                this.ClientState.setState(OpcUaConnectionState.Connecting);
+                this.ClientStateHistory.Add(this.ClientState.Copy());
+                this.notifyOpcUaClientListeners();
+                this.ClientActive = true;
+                try
+                {
+                    _ = this.ConnectAsync().Result;
+                    this.ClientState.setState(OpcUaConnectionState.Connected);
+                    this.ClientStateHistory.Add(this.ClientState.Copy());
+                }
+                catch (Exception ex)
+                {
+                    this.ClientState.setState(OpcUaConnectionState.Error, ex.Message);
+                    this.ClientStateHistory.Add(this.ClientState.Copy());
+                    Logger.Error("Unable to Connect to OPC Ua Server.", ex);
+                    throw new OpcUaException("Unable to Connect to OPC Ua Server.", ex);
+                }
+                finally
+                {
+                    this.ClientState.ClearBlocked();
+                    this.notifyOpcUaClientListeners();
+                }
             }
-            catch (Exception ex)
+            else
             {
-                throw new OpcUaException("Unable to Connect to OPC Ua Server.", ex);
+                Logger.Info("OpcUaClient is allready Connecting/Disconnecting.");
             }
         }
 
         public void Disconnect()
         {
-            try
+            if (this.ClientState.TrySetBlocked())
             {
-                Logger.Info($"Disconnection Opc Ua Session: {this.session}");
-                Session session = this.CheckSession();
-                session.Close();
-                session.Dispose();
-                this.session = null;
+                this.ClientStateHistory.Clear();
+                this.ClientActive = false;
+                this.ClientState.setState(OpcUaConnectionState.Disconnecting);
+                this.ClientStateHistory.Add(this.ClientState.Copy());
+                this.notifyOpcUaClientListeners();
+                try
+                {
+                    Logger.Info($"Disconnection Opc Ua Session: {this.session}");
+                    Session session = this.CheckSession();
+                    session.Close();
+                    session.Dispose();
+                    this.session = null;
+                    this.ClientState.setState(OpcUaConnectionState.Idle);
+                    this.ClientStateHistory.Add(this.ClientState.Copy());
+                }
+                catch (Exception ex)
+                {
+                    this.ClientState.setState(OpcUaConnectionState.Error, ex.Message);
+                    this.ClientStateHistory.Add(this.ClientState.Copy());
+                    Logger.Error($"Failed to disconnect Session.", ex);
+                    throw new OpcUaException($"Failed to disconnect Session.", ex);
+                } finally
+                {
+                    this.ClientState.ClearBlocked();
+                    this.notifyOpcUaClientListeners();
+                }
             }
-            catch (Exception ex)
+            else
             {
-                throw new OpcUaException($"Failed to disconnect Session.", ex);
+                Logger.Info("OpcUaClient is allready Connecting/Disconnecting.");
             }
         }
 
@@ -270,10 +318,7 @@ namespace umatiGateway.Core.OPC
         {
             string serverUrl = this.app.ActiveConfiguration.OPCConnection.ServerEndpoint;
             if (serverUrl == null) throw new ArgumentNullException(nameof(serverUrl));
-            if (!blockingTransition.isBlocking)
-            {
-                blockingTransition = new BlockingTransition("Connecting OPC", $"Connecting to {serverUrl}", "", true);
-                BlockingTransitionChange(blockingTransition);
+
                 try
                 {
                     Logger.Info("Connecting to... {0}", serverUrl);
@@ -304,7 +349,9 @@ namespace umatiGateway.Core.OPC
                     // Assign the created session
                     if (session != null && session.Connected)
                     {
-
+                        this.ClientState.setState(OpcUaConnectionState.Connected, "");
+                        this.ClientStateHistory.Add(this.ClientState.Copy());
+                        this.notifyOpcUaClientListeners();
                         this.session = session;
 
 
@@ -313,36 +360,43 @@ namespace umatiGateway.Core.OPC
 
                         TypeDictionaries = new TypeDictionaries(this.app);
                         TypeDictionaries.ReadExtraLibs = this.app.ActiveConfiguration.OPCConnection.ReadExtraLibs;
-                        blockingTransition.Message = "Read Type Dictionaries";
-                        blockingTransition.Detail = "Read Binaries";
-                        BlockingTransitionChange(blockingTransition);
-                        //this.TypeDictionaries.ReadTypeDictionary(false);
+                        this.ClientState.setState(OpcUaConnectionState.Connected, "Read Binaries");
+                        this.ClientStateHistory.Add(this.ClientState.Copy());
+                        this.notifyOpcUaClientListeners();
                         Logger.Info("Read Binaries");
                         TypeDictionaries.ReadOpcBinary();
-                        blockingTransition.Detail = "Read DataTypes";
-                        BlockingTransitionChange(blockingTransition);
+                        this.ClientState.setState(OpcUaConnectionState.Connected, "Read DataTypes");
+                        this.ClientStateHistory.Add(this.ClientState.Copy());
+                        this.notifyOpcUaClientListeners();
                         Logger.Info("Read DataTypes");
                         TypeDictionaries.ReadDataTypes();
-                        blockingTransition.Detail = "Read EventTypes";
-                        BlockingTransitionChange(blockingTransition);
+                        this.ClientState.setState(OpcUaConnectionState.Connected, "Read EventTypes");
+                        this.ClientStateHistory.Add(this.ClientState.Copy());
+                        this.notifyOpcUaClientListeners();
                         Logger.Info("Read EventTypes");
                         TypeDictionaries.ReadEventTypes();
-                        blockingTransition.Detail = "Read InterfaceTypes";
-                        BlockingTransitionChange(blockingTransition);
+                        this.ClientState.setState(OpcUaConnectionState.Connected, "Read InterfaceTypes");
+                        this.ClientStateHistory.Add(this.ClientState.Copy());
+                        this.notifyOpcUaClientListeners();
                         Logger.Info("Read InterfaceTypes");
                         TypeDictionaries.ReadInterfaceTypes();
-                        blockingTransition.Detail = "Read ObjectTypes";
-                        BlockingTransitionChange(blockingTransition);
+                        this.ClientState.setState(OpcUaConnectionState.Connected, "Read ObjectTypes");
+                        this.ClientStateHistory.Add(this.ClientState.Copy());
+                        this.notifyOpcUaClientListeners();
                         Logger.Info("Read ObjectTypes");
                         TypeDictionaries.ReadObjectTypes();
-                        blockingTransition.Detail = "Read ReferenceTypes";
-                        BlockingTransitionChange(blockingTransition);
+                        this.ClientState.setState(OpcUaConnectionState.Connected, "Read ReferenceTypes");
+                        this.ClientStateHistory.Add(this.ClientState.Copy());
                         Logger.Info("Read ReferenceTypes");
                         TypeDictionaries.ReadReferenceTypes();
-                        blockingTransition.Detail = "Read VariableTypes";
-                        BlockingTransitionChange(blockingTransition);
+                        this.ClientState.setState(OpcUaConnectionState.Connected, "Read VariableTypes");
+                        this.ClientStateHistory.Add(this.ClientState.Copy());
+                        this.notifyOpcUaClientListeners();
                         Logger.Info("Read VariableTypes");
                         TypeDictionaries.ReadVariableTypes();
+                        this.ClientState.setState(OpcUaConnectionState.Connected, "Read TypeDictionary finished");
+                        this.ClientStateHistory.Add(this.ClientState.Copy());
+                        this.notifyOpcUaClientListeners();
                         return true;
                     }
                     else
@@ -357,31 +411,8 @@ namespace umatiGateway.Core.OPC
                     this.session = null;
                     return false;
                 }
-                finally
-                {
-                    blockingTransition = new BlockingTransition();
-                }
-            }
-            else
-            {
-                Logger.Info("Allready trying to Connect to OPC Server");
-                return false;
-            }
         }
-        private void BlockingTransitionChange(BlockingTransition blockingTransition)
-        {
-            foreach (UmatiGatewayAppListener UmatiGatewayAppListener in UmatiGatewayAppListeners)
-            {
-                try
-                {
-                    UmatiGatewayAppListener.blockingTransitionChanged(blockingTransition);
-                }
-                catch (Exception ex)
-                {
-                    Logger.Info($"Unable to notify Listener: {ex.StackTrace}");
-                }
-            }
-        }
+
         private void CertificateValidation(CertificateValidator sender, CertificateValidationEventArgs e)
         {
             bool certificateAccepted = false;
@@ -747,9 +778,32 @@ namespace umatiGateway.Core.OPC
         {
             this.subscription = null;
         }
-        public void AddUmatiGatewayAppListener(UmatiGatewayAppListener umatiGatewayAppListener)
+
+        bool IOpcUaClient.IsClientActive()
         {
-            this.UmatiGatewayAppListeners.Add(umatiGatewayAppListener);
+            return this.ClientActive;
+        }
+
+        public OpcUaClientState GetClientState()
+        {
+            return this.ClientState;
+        }
+
+        void IOpcUaClient.AddOpcClientListener(IOpcClientListener opcClientListener)
+        {
+            this.OpcClientListeners.Add(opcClientListener);
+        }
+        private void notifyOpcUaClientListeners()
+        {
+            foreach (IOpcClientListener listener in this.OpcClientListeners)
+            {
+                listener.Change();
+            }
+        }
+
+        List<OpcUaClientState> IOpcUaClient.GetClientStateHistory()
+        {
+            return this.ClientStateHistory;
         }
     }
 }

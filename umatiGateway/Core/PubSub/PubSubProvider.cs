@@ -113,7 +113,7 @@ namespace umatiGateway.Core.PubSub
             foreach (VirtualId virtualId in virtualIds)
             {
                 pubSubDataStore.WritePublishedDataItem(virtualId.nodeId, Attributes.Value, virtualId.dv);
-                Logger.Info($"Added Value to PubSUb DataStore: {virtualId.nodeId} \t {virtualId.dv}");
+                Logger.Info($"Added Value to PubSub DataStore: {virtualId.nodeId} \t {virtualId.dv}");
             }
         }
         public void Disconnect()

@@ -4,6 +4,7 @@ using NLog;
 using System;
 using System.Net;
 using umatiGateway.Core.OPC;
+using umatiGateway.Hub;
 using UmatiGateway;
 
 Logger Logger = LogManager.GetCurrentClassLogger();
@@ -28,14 +29,15 @@ if (umatiGateway.ActiveConfiguration.StartConfiguration.StartWebUI == true)
     }
     // Add services to the container
     builder.Services.AddRazorPages();
+    builder.Services.AddSignalR();
+    builder.Services.AddSingleton<SignalHubBridge>();
     builder.Services.AddControllers();
     builder.Services.AddSingleton<ClientFactory>(clientFactory);
-    SSEController sseController = new SSEController(clientFactory);
-    builder.Services.AddSingleton<UmatiGateway.SSEController>(sseController);
     builder.Services.AddSession();
     builder.Services.AddMemoryCache();
 
     var app = builder.Build();
+    app.Services.GetRequiredService<SignalHubBridge>();
 
     // Configure the HTTP request pipeline.
     if (!app.Environment.IsDevelopment())
@@ -55,6 +57,7 @@ if (umatiGateway.ActiveConfiguration.StartConfiguration.StartWebUI == true)
 
     app.MapControllers();
     app.MapRazorPages();
+    app.MapHub<SignalHub>("/signalHub");
 
     app.Run();
 }
