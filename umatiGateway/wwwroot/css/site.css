@@ -149,6 +149,10 @@ btn-txt {
     width: 100%;
     margin-bottom: 20px;
 }
+input[readonly], textarea[readonly] {
+    background-color: #e9ecef;
+    color: #495057;
+}
 
 /* Container für den Schalter mit fester Breite */
 .settings-switch {
@@ -330,4 +334,308 @@ btn-txt {
         opacity: 1;
         transform: scale(1);
     }
+}
+.settings-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #ffffff;
+    border-top: 2px solid #28a745; /* grün wie Connect-Button */
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    display: inline-block;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+button.settings-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.settings-text {
+    color: #ffffff;
+}
+
+.animate-fill {
+    animation: opacityCycle 1.5s ease-in-out infinite;
+}
+
+@keyframes opacityCycle {
+    0% {
+        color: #ffffff;
+        text-shadow: 0 0 0px #ffffff;
+    }
+
+    2% {
+        color: #fefefe;
+        text-shadow: 0 0 0px #fefefe;
+    }
+
+    4% {
+        color: #fbfbfb;
+        text-shadow: 0 0 0px #fbfbfb;
+    }
+
+    6% {
+        color: #f6f6f6;
+        text-shadow: 0 0 0px #f6f6f6;
+    }
+
+    8% {
+        color: #efefef;
+        text-shadow: 0 0 1px #efefef;
+    }
+
+    10% {
+        color: #e7e7e7;
+        text-shadow: 0 0 1px #e7e7e7;
+    }
+
+    12% {
+        color: #dcdcdc;
+        text-shadow: 0 0 1px #dcdcdc;
+    }
+
+    14% {
+        color: #d1d1d1;
+        text-shadow: 0 0 2px #d1d1d1;
+    }
+
+    16% {
+        color: #c4c4c4;
+        text-shadow: 0 0 2px #c4c4c4;
+    }
+
+    18% {
+        color: #b6b6b6;
+        text-shadow: 0 0 3px #b6b6b6;
+    }
+
+    20% {
+        color: #a7a7a7;
+        text-shadow: 0 0 3px #a7a7a7;
+    }
+
+    22% {
+        color: #979797;
+        text-shadow: 0 0 4px #979797;
+    }
+
+    24% {
+        color: #888888;
+        text-shadow: 0 0 5px #888888;
+    }
+
+    26% {
+        color: #777777;
+        text-shadow: 0 0 5px #777777;
+    }
+
+    28% {
+        color: #686868;
+        text-shadow: 0 0 6px #686868;
+    }
+
+    30% {
+        color: #585858;
+        text-shadow: 0 0 7px #585858;
+    }
+
+    32% {
+        color: #494949;
+        text-shadow: 0 0 7px #494949;
+    }
+
+    34% {
+        color: #3b3b3b;
+        text-shadow: 0 0 8px #3b3b3b;
+    }
+
+    36% {
+        color: #2e2e2e;
+        text-shadow: 0 0 8px #2e2e2e;
+    }
+
+    38% {
+        color: #232323;
+        text-shadow: 0 0 9px #232323;
+    }
+
+    40% {
+        color: #181818;
+        text-shadow: 0 0 9px #181818;
+    }
+
+    42% {
+        color: #101010;
+        text-shadow: 0 0 9px #101010;
+    }
+
+    44% {
+        color: #090909;
+        text-shadow: 0 0 10px #090909;
+    }
+
+    46% {
+        color: #040404;
+        text-shadow: 0 0 10px #040404;
+    }
+
+    48% {
+        color: #010101;
+        text-shadow: 0 0 10px #010101;
+    }
+
+    50% {
+        color: #000000;
+        text-shadow: 0 0 10px #000000;
+    }
+
+    52% {
+        color: #010101;
+        text-shadow: 0 0 10px #010101;
+    }
+
+    54% {
+        color: #040404;
+        text-shadow: 0 0 10px #040404;
+    }
+
+    56% {
+        color: #090909;
+        text-shadow: 0 0 10px #090909;
+    }
+
+    58% {
+        color: #101010;
+        text-shadow: 0 0 9px #101010;
+    }
+
+    60% {
+        color: #181818;
+        text-shadow: 0 0 9px #181818;
+    }
+
+    62% {
+        color: #232323;
+        text-shadow: 0 0 9px #232323;
+    }
+
+    64% {
+        color: #2e2e2e;
+        text-shadow: 0 0 8px #2e2e2e;
+    }
+
+    66% {
+        color: #3b3b3b;
+        text-shadow: 0 0 8px #3b3b3b;
+    }
+
+    68% {
+        color: #494949;
+        text-shadow: 0 0 7px #494949;
+    }
+
+    70% {
+        color: #585858;
+        text-shadow: 0 0 7px #585858;
+    }
+
+    72% {
+        color: #686868;
+        text-shadow: 0 0 6px #686868;
+    }
+
+    74% {
+        color: #777777;
+        text-shadow: 0 0 5px #777777;
+    }
+
+    76% {
+        color: #888888;
+        text-shadow: 0 0 5px #888888;
+    }
+
+    78% {
+        color: #979797;
+        text-shadow: 0 0 4px #979797;
+    }
+
+    80% {
+        color: #a7a7a7;
+        text-shadow: 0 0 3px #a7a7a7;
+    }
+
+    82% {
+        color: #b6b6b6;
+        text-shadow: 0 0 3px #b6b6b6;
+    }
+
+    84% {
+        color: #c4c4c4;
+        text-shadow: 0 0 2px #c4c4c4;
+    }
+
+    86% {
+        color: #d1d1d1;
+        text-shadow: 0 0 2px #d1d1d1;
+    }
+
+    88% {
+        color: #dcdcdc;
+        text-shadow: 0 0 1px #dcdcdc;
+    }
+
+    90% {
+        color: #e7e7e7;
+        text-shadow: 0 0 1px #e7e7e7;
+    }
+
+    92% {
+        color: #efefef;
+        text-shadow: 0 0 1px #efefef;
+    }
+
+    94% {
+        color: #f6f6f6;
+        text-shadow: 0 0 0px #f6f6f6;
+    }
+
+    96% {
+        color: #fbfbfb;
+        text-shadow: 0 0 0px #fbfbfb;
+    }
+
+    98% {
+        color: #fefefe;
+        text-shadow: 0 0 0px #fefefe;
+    }
+
+    100% {
+        color: #ffffff;
+        text-shadow: 0 0 0px #ffffff;
+    }
+}
+
+.equal-columns {
+    display: flex;
+    gap: 2%;
+    align-items: stretch;
+}
+
+.equal-columns > div {
+    width: 49%;
+}
+
+.equal-columns fieldset {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* optional */
 }

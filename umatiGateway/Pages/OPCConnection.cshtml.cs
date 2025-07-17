@@ -3,16 +3,22 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Localization;
+using Newtonsoft.Json.Linq;
 using NLog;
+using Opc.Ua;
 using System.Collections.Concurrent;
 using System.Reflection;
 using System.Resources;
+using System.Text.Json.Nodes;
 using umatiGateway.Core.OPC;
+using umatiGateway.Hub;
 
 namespace UmatiGateway.Pages
 {
-    public class OPCConnectionModel : PageModel, UmatiGatewayAppListener
+    [IgnoreAntiforgeryToken]
+    public class OPCConnectionModel : PageModel
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         public string LabelConnectionUrl { get; } = "Connection URL:";
@@ -29,71 +35,67 @@ namespace UmatiGateway.Pages
         public UmatiGatewayApp app { get; set; }
 
         private static readonly BlockingCollection<string> UpdateQueue = new BlockingCollection<string>();
-        public OPCConnectionModel(ClientFactory ClientFactory)
+        private readonly IHubContext<SignalHub> signalHub;
+        public OPCConnectionModel(ClientFactory ClientFactory, IHubContext<SignalHub> signalHub)
         {
             this.app = ClientFactory.getClient();
+            this.signalHub = signalHub;
             ResourceManager rm = new ResourceManager("UmatiGateway.Pages.Ressource", Assembly.GetExecutingAssembly());
             string? Label_ConnectionUrl_Translated = rm.GetString("TestPage_Label_ConnectionUrl");
             if (Label_ConnectionUrl_Translated != null) { this.LabelConnectionUrl = Label_ConnectionUrl_Translated; }
         }
 
-        public IActionResult OnPostConnect(String ConnectionUrl, String OpcUser, String OpcPassword)
+        public JsonResult OnPostConnect()
         {
-            app.ActiveConfiguration.OPCConnection.ServerEndpoint = ConnectionUrl;
-            app.ActiveConfiguration.OPCConnection.UserName = OpcUser ?? "";
-            app.ActiveConfiguration.OPCConnection.Password = OpcPassword ?? "";
-            IOpcUaClient client = app.OpcUaClient;
-            if (ConnectionUrl != null)
-            {
-                client.Connect();
-            }
-            return new PageResult();
-        }
-        public IActionResult OnPostDisconnect()
-        {
-            IOpcUaClient client = app.OpcUaClient;
-            client.Disconnect();
-            return new PageResult();
-        }
-
-        public IActionResult OnGetStreamUpdates()
-        {
-            Response.ContentType = "text/event-stream";
-            Response.Headers.Append("Cache-Control", "no-cache");
-            Response.Headers.Append("Connection", "keep-alive");
-
             try
             {
-                // Loop indefinitely, checking for updates
-                foreach (var update in UpdateQueue.GetConsumingEnumerable())
-                {
-                    if (Response.HttpContext.RequestAborted.IsCancellationRequested)
-                        break; // Exit if the client disconnects
-
-                    var message = $"data: {update}\n\n";
-                    Response.WriteAsync(message);
-                    Response.Body.FlushAsync();
-                }
+                IOpcUaClient client = app.OpcUaClient;
+                client.Connect();
+                return new JsonResult(new { success = true });
             }
             catch (Exception ex)
             {
-                Logger.Info($"Error in SSE connection: {ex.Message}");
+                return new JsonResult(new { success = false, message = $"Fehler: {ex.Message}" });
             }
-
-            return new EmptyResult();
+        }
+        public IActionResult OnPostDisconnect()
+        {
+            try
+            {
+                IOpcUaClient client = app.OpcUaClient;
+                client.Disconnect();
+                return new JsonResult(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return new JsonResult(new { success = false, message = $"Fehler: {ex.Message}" });
+            }
         }
 
-        public void blockingTransitionChanged(BlockingTransition blockingTransition)
+        public JsonResult OnGetOpcClientState()
         {
-            var bt = new
+            JsonObject jObj = new JsonObject();
+            List<OpcUaClientState> opcUaClientStateHistory = this.app.OpcUaClient.GetClientStateHistory();
+            OpcUaClientState lastClientState = opcUaClientStateHistory.Last();
+            JsonArray jConnectionStateHistory = new JsonArray();
+            foreach (OpcUaClientState clientState in opcUaClientStateHistory)
             {
-                transition = blockingTransition.Transition,
-                message = blockingTransition.Message,
-                detail = blockingTransition.Detail,
-                isBlocking = blockingTransition.isBlocking
-            };
-            string jsonData = System.Text.Json.JsonSerializer.Serialize(bt);
-            UpdateQueue.Add(jsonData); // Add update to the queue
+                JsonObject jClientState = new JsonObject();
+                jClientState.Add("ConnectionState", clientState.ConnectionState.ToString());
+                jClientState.Add("Detail", clientState.Detail);
+                jConnectionStateHistory.Add(jClientState);
+            }
+            jObj.Add("OpcServerEndpoint", this.app.ActiveConfiguration.OPCConnection.ServerEndpoint);
+            jObj.Add("OpcUser", this.app.ActiveConfiguration.OPCConnection.UserName);
+            jObj.Add("OpcPassword", this.app.ActiveConfiguration.OPCConnection.Password);
+            jObj.Add("UseInternalLibs", this.app.ActiveConfiguration.OPCConnection.ReadExtraLibs);
+            jObj.Add("ConnectionState", this.app.OpcUaClient.GetClientState().ConnectionState.ToString());
+            jObj.Add("ConnectionDetails", this.app.OpcUaClient.GetClientState().Detail);
+            jObj.Add("ConnectionStateHistory", jConnectionStateHistory);
+            jObj.Add("OpcSessionName", this.app.OpcUaClient.GetSessionName());
+            jObj.Add("OpcSessionId", this.app.OpcUaClient.GetSessionId());
+            jObj.Add("Blocked", this.app.OpcUaClient.GetClientState().IsBlocked);
+            return new JsonResult(jObj);
         }
     }
 }

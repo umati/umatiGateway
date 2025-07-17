@@ -5,6 +5,13 @@ namespace umatiGateway.Core.OPC
 {
     public interface IOpcUaClient
     {
+        public List<OpcUaClientState> GetClientStateHistory();
+        public OpcUaClientState GetClientState();
+        /// <summary>
+        /// Indicates if the client tries to maintain an active connection or not.
+        /// </summary>
+        /// <returns>True if the client tries to maintain or establish the connection. False if the client disconnects or is disconnected.</returns>
+        public bool IsClientActive();
         /// <summary>
         /// Connects the OpcUaClient to the OPC Server.
         /// </summary>
@@ -177,7 +184,8 @@ namespace umatiGateway.Core.OPC
         /// <exception cref="OpcUaException">Exception in Opc Ua Context.</exception>
         public List<NodeId> BrowseAllHierarchicalSubType(NodeId nodeId, List<NodeId> subTypeList);
         public Session CheckSession();
-        public void AddUmatiGatewayAppListener(UmatiGatewayAppListener umatiGatewayAppListener);
+        public void AddOpcClientListener(IOpcClientListener opcClientListener);
+        public Task<bool> ConnectAsync();
         public List<NodeId> BrowseNodeIds(BrowseDescriptionCollection included, BrowseDescriptionCollection? excluded = null);
         public NodeId? BrowseFirstNodeId(BrowseDescriptionCollection included, BrowseDescriptionCollection? excluded = null);
     }

@@ -10,30 +10,185 @@
 <h1>OPC Connection</h1>
 
 <p>Configure the connection to the OPC Server.</p>
-<form method="post">
-    <div style="float:left; width:49%">
+
+<div class="equal-columns">
+<div style="width:49%">
     <fieldset class="settings-fieldset">
-    <legend class="settings-legend">OPC Connection</legend>
-    <label for="OPCConnection" class="settings-label">OPC Connection</label>
-    <input id="OPCConnection" class="settings-input" type="text" name="ConnectionUrl" value="@Model.app.ActiveConfiguration.OPCConnection.ServerEndpoint">
-    <label for="OPCUser" class="settings-label">OPC User</label>
-    <input id="OPCUser" class="settings-input" type="text" name="OpcUser" value="@Model.app.ActiveConfiguration.OPCConnection.UserName">
-    <label for="OPCPassword" class="settings-label">OPC Password</label>
-    <input id="OPCPassword" class="settings-input" type="text" name="OpcPassword" value="@Model.app.ActiveConfiguration.OPCConnection.Password">
-    <div class="settings-button-container">
-        <button asp-page-handler="Connect" class="settings-button">Connect</button>
-        <button asp-page-handler="Disconnect" class="settings-button" style="margin-left:10px">Disconnect</button>
-    </div>
-    <label for="OPCSessionName" class="settings-label">@Model.LabelOPCSessionName</label>
-    <input id="OPCSessionIdName" type="text" class="settings-input" value="@Model.OPCSessionName" readonly />
-    <label for="OPCSessionId" class="settings-label">@Model.LabelOPCSessionId</label>
-    <input id="OPCSessionId" type="text" class="settings-input" value="@Model.app.OpcUaClient.GetSessionId()" readonly />
-    <label for="ConnectionStatus" class="settings-label">@Model.LabelConnectionStatus</label>
-    <input id="ConnectionStatus" type="text" class="settings-input" value="@Model.app.OpcUaClient.GetSessionName()" readonly />
+        <legend class="settings-legend">OPC Connection</legend>
+        <label for="OPCConnection" class="settings-label">OPC Connection</label>
+        <input id="OPCConnection" class="settings-input" type="text" name="ConnectionUrl" data-toggle-group="opc" value="@Model.app.ActiveConfiguration.OPCConnection.ServerEndpoint" @(Model.app.OpcUaClient.IsClientActive() ? "readonly" : "") />
+        <label for="OPCUser" class="settings-label">OPC User</label>
+         <input id="OPCUser" class="settings-input" type="text" name="OpcUser" data-toggle-group="opc" value="@Model.app.ActiveConfiguration.OPCConnection.UserName" @(Model.app.OpcUaClient.IsClientActive() ? "readonly" : "")>
+        <label for="OPCPassword" class="settings-label">OPC Password</label>
+        <input id="OPCPassword" class="settings-input" type="text" name="OpcPassword" data-toggle-group="opc" value="@Model.app.ActiveConfiguration.OPCConnection.Password" @(Model.app.OpcUaClient.IsClientActive() ? "readonly" : "")>
+        <label for="UseInternalLibs" class="settings-label">UseInternalLibs</label>
+        <input id="UseInternalLibs" class="settings-input" type="text" name="UseInternalLibs" data-toggle-group="opc" value="@Model.app.ActiveConfiguration.OPCConnection.Password" @(Model.app.OpcUaClient.IsClientActive() ? "readonly" : "")>
+        <div class="settings-button-container">
+            <button id="DisconnectButton" onclick="disconnectOpc()" class="settings-button" data-toggle-group="opc">
+                <span id="DisconnectText" class="settings-text">Disconnect</span>
+            </button>
+            <button id="ConnectButton" onclick="connectOpc()" class="settings-button" data-toggle-group="opc" style="margin-left:10px; display: inline-flex; align-items: center;">
+                <span id="ConnectText" class="settings-text">Connect</span>
+            </button>
+        </div>
     </fieldset>
     </div>
-</form>
+    <div style="width:49%">
+    <fieldset class="settings-fieldset">
+    <legend class="settings-legend">OPC Client Staus</legend>
+        <label for="ConnectionStatus" class="settings-label">@Model.LabelConnectionStatus</label>
+        <input id="ConnectionStatus" type="text" class="settings-input" value="@Model.app.OpcUaClient.GetClientState().ConnectionState.ToString()" readonly />
+        <textarea id="ConnectionLog" readonly class="settings-input" rows="10" style="resize: none; height: 200px;"></textarea>
+        <label for="OPCSessionName" class="settings-label">@Model.LabelOPCSessionName</label>
+        <input id="OPCSessionName" type="text" class="settings-input" value="@Model.app.OpcUaClient.GetSessionName()" readonly />
+        <label for="OPCSessionId" class="settings-label">@Model.LabelOPCSessionId</label>
+        <input id="OPCSessionId" type="text" class="settings-input" value="@Model.app.OpcUaClient.GetSessionId()" readonly />
+    </fieldset>
+</div>
+</div>
 
+<script src="~/js/signalr.min.js"></script>
+<script>
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/signalHub")
+        .withAutomaticReconnect()
+        .build();
+
+    connection.on("OpcClientChange", () => {getData();});
+    connection.start()
+        .then(() => console.log("SignalR verbunden."))
+        .catch(err => console.error("SignalR Fehler:", err));
+</script>
+<script>
+    function connectOpc() {
+        /*const text = document.getElementById("ConnectText");           
+        text.classList.add("animate-fill");
+        document.querySelectorAll('[data-toggle-group="opc"]').forEach(btn => {
+            btn.disabled = true;
+        });*/
+        fetch("/OPCConnection?handler=Connect", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => response.json())
+        .then(data => {})
+        .catch(error => {console.error(error);})
+        .finally(() => {
+                /*document.querySelectorAll('[data-toggle-group="opc"]').forEach(btn => {
+                    btn.disabled = false;
+                });
+            text.classList.remove("animate-fill");*/
+        });
+    }
+</script>
+<script>
+    function disconnectOpc() {
+        const text = document.getElementById("DisconnectText");
+        text.classList.add("animate-fill");
+        document.querySelectorAll('[data-toggle-group="opc"]').forEach(btn => {
+            if (btn.tagName == "BUTTON")
+            {
+                btn.disabled = true;
+            } 
+            else if(btn.tagName == "INPUT")
+            {
+                btn.readOnly = true;
+            }
+        });
+        fetch("/OPCConnection?handler=DisConnect", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => response.json())
+        .then(data => {})
+        .catch(error => {console.error(error);})
+        .finally(() => {
+                document.querySelectorAll('[data-toggle-group="opc"]').forEach(btn => {
+                    if (btn.tagName == "BUTTON")
+                    {
+                        btn.disabled = false;
+                    }
+                    else if(btn.tagName == "INPUT")
+                    {
+                        btn.readOnly = false;
+                    }
+                });
+            text.classList.remove("animate-fill");
+        });
+    }
+</script>
+<script>
+    function getData() {
+        fetch("/OPCConnection?handler=OpcClientState")
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("OPCConnection").value = data.OpcServerEndpoint;
+                document.getElementById("OPCUser").value = data.OpcUser;
+                document.getElementById("OPCPassword").value = data.OpcPassword;
+                document.getElementById("UseInternalLibs").value = data.UseInternalLibs;
+                document.getElementById("ConnectionStatus").value = data.ConnectionState;
+                document.getElementById("OPCSessionName").value = data.OpcSessionName;
+                document.getElementById("OPCSessionId").value = data.OpcSessionId;
+                document.getElementById("ConnectionLog").value = data.ConnectionStateHistory.reverse().map(obj => {
+                    return obj.ConnectionState + " " + obj.Detail;
+                }).join('\n');
+                const textDisconnect = document.getElementById("DisconnectText");
+                const textConnect = document.getElementById("ConnectText");
+                if(data.Blocked)
+                {
+                     document.querySelectorAll('[data-toggle-group="opc"]').forEach(
+                         btn => {
+                                if (btn.tagName == "BUTTON")
+                                {
+                                    btn.disabled = true;
+                                }
+                                else if(btn.tagName == "INPUT")
+                                {
+                                    btn.readOnly = true;
+                                }
+                        });
+                     if(data.ConnectionState == "Disconnecting")
+                     {
+                        textDisconnect.classList.add("animate-fill");
+                     }
+                     else
+                     {
+                        textConnect.classList.add("animate-fill");
+                     }
+                } 
+                else
+                {
+                    document.querySelectorAll('[data-toggle-group="opc"]').forEach(
+                        btn => {
+                                if (btn.tagName == "BUTTON")
+                                {
+                                    btn.disabled = false;
+                                }
+                                else if(btn.tagName == "INPUT")
+                                {
+                                    btn.readOnly = false;
+                                }
+                        });
+                    textConnect.classList.remove("animate-fill");
+                    textDisconnect.classList.remove("animate-fill");
+                }
+                
+                
+            })
+            .catch(err => console.error("Fehler:", err));
+    }
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        getData();
+    });
+</script>
 </body>
 
 

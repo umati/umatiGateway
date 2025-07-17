@@ -19,23 +19,40 @@ namespace UmatiGateway.Pages
         public void OnGet()
         {
         }
-        public IActionResult OnPostDownload(string OpcConnectionUrl, string OpcUser, string OpcPassword,
+        public IActionResult OnPostDownload(string LogLevel, bool? StartWebUI, bool? StartOPCConnection, bool? StartMqttProvider, bool? StartPubSubProvider,
+            string WebURL, string OpcConnectionUrl, string OpcUser, string OpcPassword, bool? readExtraLibs,
             string MqttConnectionUrl, string MqttUser, string MqttPassword, string MqttClientId, string MqttPrefix,
-            bool? AutoStart, bool? readExtraLibs, bool? includeStructuredComponents, string LogLevel, string configfilePath, List<CustomEncoding> CustomEncodings, List<PublishedNode> PublishedNodes)
+            bool? includeStructuredComponents, bool? upperCaseRange, uint? publishInterval, List<CustomEncoding> CustomEncodings, List<PublishedNode> PublishedNodes,
+            string PubSubConnectionUrl, string PubSubUser, string PubSubPassword, string PubSubClientId, string PubSubPrefix, bool? allowUntrustedCertificates,
+            List<PublishedNode> PubSubPublishedNodes)
         {
-            /*Configuration.OPCConnection.ServerEndpoint = OpcConnectionUrl ?? "";
+            /*Configuration.LogLevel = LogLevel;
+            Configuration.StartConfiguration.StartWebUI = StartWebUI ?? false;
+            Configuration.StartConfiguration.StartOPCConnection = StartOPCConnection ?? false;
+            Configuration.StartConfiguration.StartMQTTProvider = StartMqttProvider ?? false;
+            Configuration.StartConfiguration.StartPubSubProvider = StartPubSubProvider ?? false;
+            Configuration.WebUI.URL = WebURL ?? "";
+            Configuration.OPCConnection.ServerEndpoint = OpcConnectionUrl ?? "";
             Configuration.OPCConnection.UserName = OpcUser ?? "";
             Configuration.OPCConnection.Password = OpcPassword ?? "";
-            Configuration.OPCConnection.ServerEndpoint = MqttConnectionUrl ?? "";
+            Configuration.OPCConnection.ReadExtraLibs = readExtraLibs ?? false;
+            Configuration.MqttProviderConfig.ServerEndpoint = MqttConnectionUrl ?? "";
             Configuration.MqttProviderConfig.UserName = MqttUser ?? "";
             Configuration.MqttProviderConfig.Password = MqttPassword ?? "";
             Configuration.MqttProviderConfig.ClientId = MqttClientId ?? "";
             Configuration.MqttProviderConfig.Prefix = MqttPrefix ?? "";
-            Configuration.OPCConnection.ReadExtraLibs = readExtraLibs ?? false;
             Configuration.MqttProviderConfig.IncludeStructuredComponents = includeStructuredComponents ?? false;
-            Configuration.LogLevel = LogLevel;
+            Configuration.MqttProviderConfig.UpperCaseRange = upperCaseRange ?? false;
             Configuration.MqttProviderConfig.CustomEncodings = CustomEncodings ?? new List<CustomEncoding>();
-            Configuration.MqttProviderConfig.PublishedNodes = PublishedNodes ?? new List<PublishedNode>();*/
+            Configuration.MqttProviderConfig.PublishInterval = publishInterval ?? 5000;
+            Configuration.MqttProviderConfig.PublishedNodes = PublishedNodes ?? new List<PublishedNode>();
+            Configuration.PubSubProviderConfig.ServerEndpoint = PubSubConnectionUrl ?? "";
+            Configuration.PubSubProviderConfig.UserName = PubSubUser ?? "";
+            Configuration.PubSubProviderConfig.Password = PubSubPassword ?? "";
+            Configuration.PubSubProviderConfig.ClientId = PubSubClientId ?? "";
+            Configuration.PubSubProviderConfig.Prefix = PubSubPrefix ?? "";
+            Configuration.PubSubProviderConfig.AllowUntrustedCertificates = allowUntrustedCertificates ?? false;
+            Configuration.PubSubProviderConfig.PublishedNodes = PubSubPublishedNodes ?? new List<PublishedNode>();*/
             UmatiConfigurationManager configManager = new UmatiConfigurationManager();
             var byteArray = Encoding.UTF8.GetBytes(configManager.GetConfigurationAsString(this.Configuration));
             return File(byteArray, "application/xml", "umatiGatewayConfig.xml");

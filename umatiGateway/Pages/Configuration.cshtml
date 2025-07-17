@@ -19,7 +19,7 @@
             <label for="LogLevel" class="settings-label">Log Level</label>
             @removeTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.SelectTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers
             @removeTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.OptionTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers
-            <select class="settings-input" id="LogLevel" name="LogLevel">
+            <select class="settings-input" id="LogLevel" name="LogLevel" readonly>
                 <option value="Trace" @(Model.Configuration.LogLevel == "Trace" ? "selected" : "")>Trace</option>
                 <option value="Debug" @(Model.Configuration.LogLevel == "Debug" ? "selected" : "")>Debug</option>
                 <option value="Info" @(Model.Configuration.LogLevel == "Info" ? "selected" : "")>Info</option>
