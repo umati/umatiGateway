@@ -33,6 +33,7 @@ namespace umatiGateway.Core.PubSub
         private WriterGroupDataType WriterGroup = new WriterGroupDataType();
         private readonly System.Timers.Timer pubTestTimer = new System.Timers.Timer(5000);
         private ReferenceDescriptionResolver referenceDescriptionResolver;
+        private bool alwaysIncludeBrowsePathIndex = false;
         public List<MachineNode> MachineNodes { get; set; } = new List<MachineNode>();
 
         public PubSubProvider(UmatiGatewayApp app)
@@ -186,7 +187,7 @@ namespace umatiGateway.Core.PubSub
         public string GetBrowsePath(HierarchicalNode hierarchicalNode, bool includeNamespaceIndex = false, string delimeter = "/")
         {
             string browsePath = "";
-            if (includeNamespaceIndex)
+            if (includeNamespaceIndex || alwaysIncludeBrowsePathIndex)
             {
                 browsePath = hierarchicalNode.BrowseName.ToString();
             }
@@ -197,7 +198,7 @@ namespace umatiGateway.Core.PubSub
             HierarchicalNode? parentNode = hierarchicalNode.Parent;
             while (parentNode != null)
             {
-                if (includeNamespaceIndex)
+                if (includeNamespaceIndex || alwaysIncludeBrowsePathIndex)
                 {
                     browsePath = parentNode.BrowseName.ToString() + delimeter + browsePath;
                 }

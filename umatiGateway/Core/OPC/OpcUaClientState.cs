@@ -42,6 +42,7 @@ namespace umatiGateway.Core.OPC
     public enum OpcUaConnectionState
     {
         Idle,
+        Reconnecting,
         Connecting,
         Connected,
         Disconnecting,

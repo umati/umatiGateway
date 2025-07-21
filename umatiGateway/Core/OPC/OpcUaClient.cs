@@ -4,6 +4,7 @@
 using NLog;
 using Opc.Ua;
 using Opc.Ua.Client;
+using System.Reflection;
 
 namespace umatiGateway.Core.OPC
 {
@@ -11,17 +12,24 @@ namespace umatiGateway.Core.OPC
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         private readonly object _clientStateLock = new();
-        private Session? session;
+        private volatile Session? session;
         private UmatiGatewayApp app;
         private ApplicationConfiguration applicationConfiguration;
         public bool AutoAccept { get; set; } = true;
         public List<OpcUaEventListener> opcUaEventListeners = new List<OpcUaEventListener>();
         public List<IOpcClientListener> OpcClientListeners = new List<IOpcClientListener>();
-        public Subscription? subscription = null;
+        public List<NodeId> subscribedNodeIds = new List<NodeId>();
+        public MonitoredItemNotificationEventHandler? publishedDataEventHandler = null;
+        public Subscription? publishedDataSubscription = null;
+        public Subscription? eventSubscription = null;
         public TypeDictionaries TypeDictionaries { get; set; }
         private bool ClientActive = false;
         private OpcUaClientState ClientState { get; set; } = new OpcUaClientState(OpcUaConnectionState.Idle, "");
         private List<OpcUaClientState> ClientStateHistory = new List<OpcUaClientState>();
+        private SessionReconnectHandler? reconnectHandler = null;
+        private Thread? reconnectThread;
+        private volatile bool keepRunning = true;
+        private volatile bool reconnect = false;
 
         public OpcUaClient(UmatiGatewayApp app, ApplicationConfiguration applicationConfiguration)
         {
@@ -30,6 +38,7 @@ namespace umatiGateway.Core.OPC
             this.applicationConfiguration = applicationConfiguration;
             this.applicationConfiguration.CertificateValidator.CertificateValidation += CertificateValidation;
             this.ClientStateHistory.Add(this.ClientState);
+            this.StartReconnectMonitor();
         }
         public void Connect()
         {
@@ -45,6 +54,7 @@ namespace umatiGateway.Core.OPC
                     _ = this.ConnectAsync().Result;
                     this.ClientState.setState(OpcUaConnectionState.Connected);
                     this.ClientStateHistory.Add(this.ClientState.Copy());
+                    this.reconnect = true;
                 }
                 catch (Exception ex)
                 {
@@ -69,6 +79,7 @@ namespace umatiGateway.Core.OPC
         {
             if (this.ClientState.TrySetBlocked())
             {
+                this.reconnect = false;
                 this.ClientStateHistory.Clear();
                 this.ClientActive = false;
                 this.ClientState.setState(OpcUaConnectionState.Disconnecting);
@@ -119,10 +130,10 @@ namespace umatiGateway.Core.OPC
         {
             Session session = this.CheckSession();
             opcUaEventListeners.Add(opcUaEventListener);
-            Subscription subscription = new Subscription(session.DefaultSubscription);
-            subscription.DisplayName = "ModelChangeEventSubscription";
-            subscription.PublishingInterval = 1000;
-            MonitoredItem eventMonitoredItem = new MonitoredItem(subscription.DefaultItem);
+            this.eventSubscription = new Subscription(session.DefaultSubscription);
+            eventSubscription.DisplayName = "ModelChangeEventSubscription";
+            eventSubscription.PublishingInterval = 1000;
+            MonitoredItem eventMonitoredItem = new MonitoredItem(eventSubscription.DefaultItem);
             eventMonitoredItem.StartNodeId = ObjectIds.Server;
             eventMonitoredItem.AttributeId = Attributes.EventNotifier;
             eventMonitoredItem.MonitoringMode = MonitoringMode.Reporting;
@@ -135,9 +146,9 @@ namespace umatiGateway.Core.OPC
             eventMonitoredItem.Filter = filter;
 
             eventMonitoredItem.Notification += HandleEventNotification;
-            subscription.AddItem(eventMonitoredItem);
-            session.AddSubscription(subscription);
-            subscription.Create();
+            eventSubscription.AddItem(eventMonitoredItem);
+            session.AddSubscription(eventSubscription);
+            eventSubscription.Create();
         }
         private void HandleEventNotification(MonitoredItem item, MonitoredItemNotificationEventArgs notification)
         {
@@ -410,8 +421,120 @@ namespace umatiGateway.Core.OPC
             {
                 Logger.Error($"Create Session Error : {ex.Message}");
                 this.session = null;
-                return false;
+                throw;
             }
+        }
+        public void TryReconnect()
+        {
+            if (this.ClientState.TrySetBlocked())
+            {
+                bool hasException = false;
+                this.ClientStateHistory.Clear();
+                this.ClientState.setState(OpcUaConnectionState.Reconnecting);
+                this.ClientStateHistory.Add(this.ClientState.Copy());
+                this.notifyOpcUaClientListeners();
+                try
+                {
+                    Logger.Info("ReConnecting to... {0}", this.app.ActiveConfiguration.OPCConnection.ServerEndpoint);
+
+                    // Get the endpoint by connecting to server's discovery endpoint.
+                    // Try to find the first endopint with security.
+                    EndpointDescription endpointDescription = CoreClientUtils.SelectEndpoint(this.applicationConfiguration, this.app.ActiveConfiguration.OPCConnection.ServerEndpoint, false);
+                    EndpointConfiguration endpointConfiguration = EndpointConfiguration.Create(this.applicationConfiguration);
+                    ConfiguredEndpoint endpoint = new ConfiguredEndpoint(null, endpointDescription, endpointConfiguration);
+                    UserIdentity userIdentity = new UserIdentity();
+                    if (!string.IsNullOrWhiteSpace(this.app.ActiveConfiguration.OPCConnection.UserName))
+                    {
+                        userIdentity = new UserIdentity(this.app.ActiveConfiguration.OPCConnection.UserName, this.app.ActiveConfiguration.OPCConnection.Password);
+                    }
+
+                    // Create the session
+                    this.session = Session.Create(
+                        this.applicationConfiguration,
+                        endpoint,
+                    false,
+                    false,
+                        this.applicationConfiguration.ApplicationName,
+                        30 * 60 * 1000,
+                        userIdentity,
+                        null
+                    ).Result;
+                    if (this.publishedDataEventHandler != null && this.publishedDataSubscription != null)
+                    {
+                        this.publishedDataSubscription.Dispose();
+                        this.publishedDataSubscription = null;
+                        this.SubscribeToDataChanges(this.subscribedNodeIds, this.publishedDataEventHandler);
+                        foreach (OpcUaEventListener eventListener in this.opcUaEventListeners)
+                        {
+                            this.ConnectEvents(eventListener);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    hasException = true;
+                    this.ClientState.setState(OpcUaConnectionState.Error, ex.Message);
+                    this.ClientStateHistory.Add(this.ClientState.Copy());
+                    Logger.Error(ex, "Exception on Reconnecting");
+                }
+                finally
+                {
+                    if (session != null && session.Connected && !hasException)
+                    {
+                        this.ClientState.setState(OpcUaConnectionState.Connected);
+                        this.ClientStateHistory.Add(this.ClientState.Copy());
+                    }
+                    else
+                    {
+                        this.ClientState.setState(OpcUaConnectionState.Idle);
+                        this.ClientStateHistory.Add(this.ClientState.Copy());
+                    }
+                    this.ClientState.ClearBlocked();
+                    this.notifyOpcUaClientListeners();
+                }
+            }
+            else
+            {
+                Logger.Info("Allready trying to Connect/Reconnect/Disconnect!");
+            }
+        }
+        public void StartReconnectMonitor()
+        {
+            reconnectThread = new Thread(() =>
+            {
+                while (keepRunning)
+                {
+                    if (reconnect)
+                    {
+                        try
+                        {
+                            bool stillConnected = true;
+                            try
+                            {
+                                this.ReadNode(VariableIds.ServerType_ServerStatus_CurrentTime);
+                            }
+                            catch (Exception ex)
+                            {
+                                stillConnected = false;
+                                Logger.Error(ex, "Error Reading server Current Time");
+                            }
+                            if (session == null || !session.Connected || !stillConnected)
+                            {
+                                Console.WriteLine("🔄 Verbindung verloren – versuche Reconnect...");
+                                TryReconnect();
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine("❌ Reconnect-Fehler: " + ex.Message);
+                        }
+                    }
+                    Thread.Sleep(10000); // 10 Sekunden warten
+                }
+            });
+
+            reconnectThread.IsBackground = true;
+            reconnectThread.Start();
         }
 
         private void CertificateValidation(CertificateValidator sender, CertificateValidationEventArgs e)
@@ -740,33 +863,35 @@ namespace umatiGateway.Core.OPC
         }
         public uint SubscribeToDataChanges(List<NodeId> nodeIds, MonitoredItemNotificationEventHandler eventHandler)
         {
+            this.subscribedNodeIds = nodeIds;
+            this.publishedDataEventHandler = eventHandler;
             Session session = this.CheckSession();
             uint subscriptionId = 0;
             try
             {
-                if (subscription == null)
+                if (this.publishedDataSubscription == null)
                 {
-                    subscription = new Subscription(session.DefaultSubscription);
-                    subscription.DisplayName = "Subscription for NodeIds";
-                    subscription.PublishingEnabled = true;
-                    subscription.PublishingInterval = 1000;
-                    session.AddSubscription(subscription);
-                    subscription.Create();
-                    subscriptionId = subscription.Id;
+                    this.publishedDataSubscription = new Subscription(session.DefaultSubscription);
+                    this.publishedDataSubscription.DisplayName = "Subscription for NodeIds";
+                    this.publishedDataSubscription.PublishingEnabled = true;
+                    this.publishedDataSubscription.PublishingInterval = 1000;
+                    session.AddSubscription(publishedDataSubscription);
+                    publishedDataSubscription.Create();
+                    subscriptionId = publishedDataSubscription.Id;
                 }
 
                 foreach (NodeId nodeId in nodeIds)
                 {
-                    MonitoredItem intMonitoredItem = new MonitoredItem(subscription.DefaultItem);
+                    MonitoredItem intMonitoredItem = new MonitoredItem(publishedDataSubscription.DefaultItem);
                     intMonitoredItem.StartNodeId = nodeId;
                     intMonitoredItem.AttributeId = Attributes.Value;
                     intMonitoredItem.DisplayName = "Subscription";
                     intMonitoredItem.SamplingInterval = 1000;
                     intMonitoredItem.Notification += eventHandler;
 
-                    subscription.AddItem(intMonitoredItem);
+                    publishedDataSubscription.AddItem(intMonitoredItem);
                 }
-                subscription.ApplyChanges();
+                publishedDataSubscription.ApplyChanges();
             }
             catch (Exception exception)
             {
@@ -777,7 +902,7 @@ namespace umatiGateway.Core.OPC
 
         public void ClearSubscriptions()
         {
-            this.subscription = null;
+            //this.publishedDataSubscription = null;
         }
 
         bool IOpcUaClient.IsClientActive()
