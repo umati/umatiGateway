@@ -1,33 +1,14 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright (c) 2025 FVA GmbH - interop4x. All rights reserved.
-using System;
-using System.Collections.Generic;
-using System.Linq;
+
 using System.Text;
-using System.Security.Authentication;
-using System.Threading.Tasks;
 using MQTTnet;
-using System.Threading;
 using Newtonsoft.Json.Linq;
 using Opc.Ua;
-using Opc.Ua.Client.ComplexTypes;
-using Microsoft.AspNetCore.Authentication;
-using Opc.Ua.Schema.Binary;
-using Org.BouncyCastle.Utilities.Encoders;
-using System.Reflection.PortableExecutable;
-using Org.BouncyCastle.Crypto.IO;
 using System.Reflection;
-using System.ComponentModel.DataAnnotations;
-using Microsoft.Extensions.Configuration;
 using Opc.Ua.Client;
-using System.IO;
-using System.Text.Json.Nodes;
 using System.Timers;
-using Org.BouncyCastle.Asn1.Ocsp;
 using System.Xml;
-using Org.BouncyCastle.Utilities;
-using System.Reflection.Metadata;
-using Org.BouncyCastle.Tls.Crypto;
 using System.Collections.Concurrent;
 using NLog;
 
@@ -203,6 +184,7 @@ namespace umatiGateway.Core.Mqtt
                 };
 
                 var mqttClientOptionsBuilder = new MqttClientOptionsBuilder()
+
                     .WithWebSocketServer(options => options.WithUri(config.ServerEndpoint))
                     .WithProtocolVersion(MQTTnet.Formatter.MqttProtocolVersion.V500);
 
@@ -369,7 +351,7 @@ namespace umatiGateway.Core.Mqtt
                     .Build();
                     if (mqttClient != null)
                     {
-                        _ = mqttClient.PublishAsync(applicationMessage, CancellationToken.None).Result;
+                        _ = mqttClient.PublishAsync(applicationMessage, CancellationToken.None).GetAwaiter().GetResult();
                     }
                     return true;
                 }
@@ -378,7 +360,6 @@ namespace umatiGateway.Core.Mqtt
                     Logger.Info(e.ToString());
                     connected = false;
                     throw;
-                    //return false;
                 }
             }
         }
@@ -1281,6 +1262,7 @@ namespace umatiGateway.Core.Mqtt
                     case Argument argument: return jsonConverter.Convert(argument);
                     case EUInformation euInformation: return jsonConverter.Convert(euInformation);
                     case Opc.Ua.Range range: return jsonConverter.Convert(range);
+                    case EnumValueType enumValueType: return jsonConverter.Convert(enumValueType);
                     default: AddError(nodeId, $"The type of the iEncodeable is not implemented {iEncodeable.GetType()}"); return new JObject();
                 }
             }

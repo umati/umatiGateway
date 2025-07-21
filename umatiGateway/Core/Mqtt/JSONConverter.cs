@@ -205,6 +205,15 @@ namespace umatiGateway.Core.Mqtt
             }
             return jObject;
         }
+        public JToken Convert(EnumValueType enumValueType)
+        {
+            if (enumValueType == null) return GetDefaultNullValue();
+            JObject jObject = new JObject();
+            jObject.Add("Value", enumValueType.Value);
+            jObject.Add("DisplayName", enumValueType.DisplayName.ToString());
+            jObject.Add("Description", enumValueType.Description.ToString());
+            return jObject;
+        }
         /// <summary>
         /// Returns the JToken that should be used if the DataValue is null.
         /// </summary>
