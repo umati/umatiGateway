@@ -45,7 +45,7 @@ namespace umatiGateway.Core.Mqtt
                                 }
                                 else
                                 {
-                                    Logger.Info($"NodeId {child} allready added to published Maschines.");
+                                    Logger.Info($"NodeId {child} already added to published Machines.");
                                 }
                             }
                         }
@@ -68,7 +68,7 @@ namespace umatiGateway.Core.Mqtt
                             }
                             else
                             {
-                                Logger.Info($"NodeId {nodeId} allready added to published Maschines.");
+                                Logger.Info($"NodeId {nodeId} already added to published Machines.");
                             }
                         }
                         else
@@ -111,7 +111,7 @@ namespace umatiGateway.Core.Mqtt
                 }
                 else
                 {
-                    Logger.Error($"Unimplemented FilterType: {filter.FilterType.GetType()}");
+                    Logger.Error($"Not implemented FilterType: {filter.FilterType.GetType()}");
                 }
             }
             List<NodeId> filteredIds = new List<NodeId>();
@@ -147,7 +147,7 @@ namespace umatiGateway.Core.Mqtt
                         singleConditionNodeIdsList.Add(this.MatchFilterTypeIdCondition(parentNodeId, typeIdCondition));
                         break;
                     default:
-                        Logger.Error($"Unimplemented ConditionType: {condition.GetType()}");
+                        Logger.Error($"Not implemented ConditionType: {condition.GetType()}");
                         break;
                 }
             }
@@ -173,7 +173,7 @@ namespace umatiGateway.Core.Mqtt
                 }
                 else
                 {
-                    Logger.Error($"Unimplemented ConditionType: {conditions.ConditionType}");
+                    Logger.Error($"Not implemented ConditionType: {conditions.ConditionType}");
                 }
             }
             nodeIdsMatchingConditions.Distinct().ToList();

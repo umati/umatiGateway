@@ -80,7 +80,7 @@ namespace umatiGateway.Core.OPC
             }
             if (startConfiguration.StartMQTTProvider)
             {
-                Logger.Info("Create Mqtt Connection");
+                Logger.Info("Create MQTT Connection");
                 MqttProvider.Connect();
             }
             if (startConfiguration.StartPubSubProvider)

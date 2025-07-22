@@ -206,7 +206,7 @@ namespace umatiGateway.Core.Configuration
                     }
                     else
                     {
-                        Logger.Error($"Unable to load configuration file with Version: {configuration.Version}.\n" +
+                        Logger.Error($"Unable to load configuration file with version: {configuration.Version}.\n" +
                             $"Minimum configuration version is: {VERSION_2_0}");
                     }
                 }
@@ -217,7 +217,7 @@ namespace umatiGateway.Core.Configuration
             }
             catch (Exception ex)
             {
-                Logger.Error("Error on Loading ConfigurationFile." + ex.ToString());
+                Logger.Error("Error on loading configuration file." + ex.ToString());
             }
             return configuration;
         }
@@ -545,7 +545,7 @@ namespace umatiGateway.Core.Configuration
                         publishedNodesNode.AppendChild(publishedNodeNode);
                         break;
                     default:
-                        Logger.Error($"Unknown SubType of Published Node: {publishedNodeObj.GetType()}");
+                        Logger.Error($"Unknown SubType of published node: {publishedNodeObj.GetType()}");
                         break;
                 }
             }
@@ -565,13 +565,13 @@ namespace umatiGateway.Core.Configuration
                 value = node.Attributes[attributeName]?.Value;
                 if (value == null)
                 {
-                    Logger.Warn($"Reading Configuration: Attribute \"{attributeName}\" of node \"{node.Name}\" is missing.");
+                    Logger.Warn($"Reading configuration: Attribute \"{attributeName}\" of node \"{node.Name}\" is missing.");
                     value = "";
                 }
             }
             else
             {
-                Logger.Warn($"Error on Reading Configuration: Attribute \"{attributeName}\" of node \"{node.Name}\" is missing. The node \"{node.Name}\" does not contain attributes.");
+                Logger.Warn($"Error on reading configuration: Attribute \"{attributeName}\" of node \"{node.Name}\" is missing. The node \"{node.Name}\" does not contain attributes.");
             }
             //Log config values except password because of security reasons (log will be shared)
             if (attributeName == "password")

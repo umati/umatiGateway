@@ -372,7 +372,7 @@ namespace umatiGateway.Core.OPC
                 }
                 else
                 {
-                    Logger.Info("Error Reading Node for NodeId:", dataTypeNodeId);
+                    Logger.Info("Error reading node for NodeId:", dataTypeNodeId);
                 }
             }
             SetDataTypes(dataTypes);
@@ -392,7 +392,7 @@ namespace umatiGateway.Core.OPC
                 }
                 else
                 {
-                    Logger.Info("Error Reading Node for NodeId:", eventTypeNodeId);
+                    Logger.Info("Error reading node for NodeId:", eventTypeNodeId);
                 }
             }
             SetEventTypes(eventTypes);
@@ -412,7 +412,7 @@ namespace umatiGateway.Core.OPC
                 }
                 else
                 {
-                    Logger.Info("Error Reading Node for NodeId:", interfaceTypeNodeId);
+                    Logger.Info("Error reading node for NodeId:", interfaceTypeNodeId);
                 }
             }
             SetInterfaceTypes(interfaceTypes);
@@ -433,7 +433,7 @@ namespace umatiGateway.Core.OPC
                 }
                 else
                 {
-                    Logger.Info("Error Reading Node for NodeId:", objectTypeNodeId);
+                    Logger.Info("Error reading node for NodeId:", objectTypeNodeId);
                 }
             }
             SetObjectTypes(objectTypes);
@@ -454,7 +454,7 @@ namespace umatiGateway.Core.OPC
                 }
                 else
                 {
-                    Logger.Info("Error Reading Node for NodeId:", referenceTypeNodeId);
+                    Logger.Info("Error reading node for NodeId:", referenceTypeNodeId);
                 }
             }
             SetReferenceTypes(referenceTypes);
@@ -475,7 +475,7 @@ namespace umatiGateway.Core.OPC
                 }
                 else
                 {
-                    Logger.Info("Error Reading Node for NodeId:", variableTypeNodeId);
+                    Logger.Info("Error reading node for NodeId:", variableTypeNodeId);
                 }
             }
             SetVariableTypes(variableTypes);

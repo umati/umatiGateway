@@ -97,7 +97,7 @@ namespace umatiGateway.Core.Mqtt
         {
             MqttProviderConfig config = this.app.ActiveConfiguration.MqttProviderConfig;
             this.jsonConverter = new JSONConverter(config.UpperCaseRange);
-            Logger.Info("MQTT Connect with TCP");
+            Logger.Info("MQTT Connect");
             if (!TimerSetup)
             {
                 aTimer.Interval = PollTimer;
@@ -154,13 +154,13 @@ namespace umatiGateway.Core.Mqtt
                 }
                 else
                 {
-                    Console.Out.WriteLine("Unkonown Mqtt Connection Type");
+                    Console.Out.WriteLine("Unknown MQTT connection type");
                 }
                 connected = true;
             }
             catch (Exception e)
             {
-                Logger.Error($"Exception on Connecting to MqttBroker. {e}");
+                Logger.Error($"Exception on connecting to MQTT broker. {e}");
                 connected = false;
             }
         }
@@ -928,7 +928,7 @@ namespace umatiGateway.Core.Mqtt
 
                             }
                             break;
-                        default: Logger.Info($"Unexpected NodeClass Detected! {childNodeClass}"); break;
+                        default: Logger.Info($"Unexpected NodeClass detected! {childNodeClass}"); break;
                     }
                     createJSON(childObject, child, machineNode, nodeId);
                 }
@@ -1989,7 +1989,7 @@ namespace umatiGateway.Core.Mqtt
                 {
                     if (ConnectedOnce)
                     {
-                        Logger.Info("Reconnecting Mqtt");
+                        Logger.Info("Reconnecting MQTT");
                         Reconnect();
                     }
                 }
@@ -2026,16 +2026,16 @@ namespace umatiGateway.Core.Mqtt
                                 {
                                     InstanceNSU = getInstanceNsu(machine);
                                     TypeBrowseName = TypeDefinitionNode.BrowseName.Name;
-                                    Logger.Debug($"InstanceNSU:\t{InstanceNSU}\tTypeBrowseName:\t{TypeBrowseName}");
+                                    Logger.Debug($"InstanceNsu:\t{InstanceNSU}\tTypeBrowseName:\t{TypeBrowseName}");
                                 }
                                 else
                                 {
-                                    Logger.Error($"Unable to get TypeDefinitionNode for Type NodeID:\t{typedefinition}");
+                                    Logger.Error($"Unable to get TypeDefinitionNode for type NodeId:\t{typedefinition}");
                                 }
                             }
                             else
                             {
-                                Logger.Error($"Unable to browse NodeId of Typedefinition for machine NodeId:\t{machine}");
+                                Logger.Error($"Unable to browse NodeId of TypeDefinition for machine NodeId:\t{machine}");
                             }
                         }
                         else
@@ -2048,7 +2048,7 @@ namespace umatiGateway.Core.Mqtt
                         Logger.Error("Unable to read machine Node. Machine is null.");
                     }
                 }
-                Logger.Debug("Read Instance Nsu for published Machines");
+                Logger.Debug("Read InstanceNsu for published Machines");
                 foreach (MachineNode machineNode in MachineNodes)
                 {
                     Logger.Debug($"Machine:\t{machineNode.NodeIdType}\t{machineNode.NamespaceUrl}\t{machineNode.NodeIdString}\t{machineNode.BaseType}");
@@ -2065,11 +2065,11 @@ namespace umatiGateway.Core.Mqtt
                             {
                                 machineNode.InstanceNamespace = getInstanceNsu(machineNodeId);
                                 machineNode.TypeBrowseName = typeDefinitionNode.BrowseName.Name;
-                                Logger.Debug($"InstanceNSU:\t{machineNode.InstanceNamespace}\tTypeBrowseName:\t{machineNode.TypeBrowseName}");
+                                Logger.Debug($"InstanceNsu:\t{machineNode.InstanceNamespace}\tTypeBrowseName:\t{machineNode.TypeBrowseName}");
                             }
                             else
                             {
-                                Logger.Error($"Unable to get TypeDefinitionNode for Type NodeID:\t{typedefinitionNodeId}");
+                                Logger.Error($"Unable to get TypeDefinitionNode for Type NodeId:\t{typedefinitionNodeId}");
                             }
                         }
                         else

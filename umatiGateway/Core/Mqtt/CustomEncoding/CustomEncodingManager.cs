@@ -71,7 +71,7 @@ namespace umatiGateway.Core.Mqtt.CustomEncoding
             }
             else
             {
-                Logger.Info("No nodes for Custom Encodings found.");
+                Logger.Info("No nodes for custom encodings found.");
             }
 
         }
@@ -110,7 +110,7 @@ namespace umatiGateway.Core.Mqtt.CustomEncoding
             }
             else
             {
-                Logger.Info("Unable to save Custom ENcodings");
+                Logger.Info("Unable to save custom encodings");
             }
 
             XmlWriterSettings settings = new XmlWriterSettings { Indent = true, IndentChars = "  ", NewLineOnAttributes = false, Encoding = Encoding.UTF8 };
