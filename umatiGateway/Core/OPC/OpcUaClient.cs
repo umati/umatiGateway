@@ -60,8 +60,8 @@ namespace umatiGateway.Core.OPC
                 {
                     this.ClientState.setState(OpcUaConnectionState.Error, ex.Message);
                     this.ClientStateHistory.Add(this.ClientState.Copy());
-                    Logger.Error("Unable to Connect to OPC Ua Server.", ex);
-                    throw new OpcUaException("Unable to Connect to OPC Ua Server.", ex);
+                    Logger.Error("Unable to connect to OPC UA server.", ex);
+                    throw new OpcUaException("Unable to connect to OPC UA server.", ex);
                 }
                 finally
                 {
@@ -71,7 +71,7 @@ namespace umatiGateway.Core.OPC
             }
             else
             {
-                Logger.Info("OpcUaClient is allready Connecting/Disconnecting.");
+                Logger.Info("OPC UA client is already connecting/disconnecting.");
             }
         }
 
@@ -87,7 +87,7 @@ namespace umatiGateway.Core.OPC
                 this.notifyOpcUaClientListeners();
                 try
                 {
-                    Logger.Info($"Disconnection Opc Ua Session: {this.session}");
+                    Logger.Info($"Disconnection OPC UA Session: {this.session}");
                     Session session = this.CheckSession();
                     session.Close();
                     session.Dispose();
@@ -99,8 +99,8 @@ namespace umatiGateway.Core.OPC
                 {
                     this.ClientState.setState(OpcUaConnectionState.Error, ex.Message);
                     this.ClientStateHistory.Add(this.ClientState.Copy());
-                    Logger.Error($"Failed to disconnect Session.", ex);
-                    throw new OpcUaException($"Failed to disconnect Session.", ex);
+                    Logger.Error($"Failed to disconnect session.", ex);
+                    throw new OpcUaException($"Failed to disconnect session.", ex);
                 }
                 finally
                 {
@@ -110,7 +110,7 @@ namespace umatiGateway.Core.OPC
             }
             else
             {
-                Logger.Info("OpcUaClient is allready Connecting/Disconnecting.");
+                Logger.Info("OPC UA client is already connecting/disconnecting.");
             }
         }
 
@@ -368,7 +368,7 @@ namespace umatiGateway.Core.OPC
 
 
                     // Session created successfully.
-                    Logger.Info($"New Session Created with SessionName = {session.SessionName}");
+                    Logger.Info($"New session created with SessionName = {session.SessionName}");
 
                     TypeDictionaries = new TypeDictionaries(this.app);
                     TypeDictionaries.ReadExtraLibs = this.app.ActiveConfiguration.OPCConnection.ReadExtraLibs;
@@ -413,7 +413,7 @@ namespace umatiGateway.Core.OPC
                 }
                 else
                 {
-                    Logger.Info("Unable to Create OPC Session.");
+                    Logger.Info("Unable to create OPC Session.");
                     return false;
                 }
             }
@@ -435,7 +435,7 @@ namespace umatiGateway.Core.OPC
                 this.notifyOpcUaClientListeners();
                 try
                 {
-                    Logger.Info("ReConnecting to... {0}", this.app.ActiveConfiguration.OPCConnection.ServerEndpoint);
+                    Logger.Info("Reconnecting to... {0}", this.app.ActiveConfiguration.OPCConnection.ServerEndpoint);
 
                     // Get the endpoint by connecting to server's discovery endpoint.
                     // Try to find the first endopint with security.
@@ -516,11 +516,11 @@ namespace umatiGateway.Core.OPC
                             catch (Exception ex)
                             {
                                 stillConnected = false;
-                                Logger.Error(ex, "Error Reading server Current Time");
+                                Logger.Error(ex, "Error Reading server CurrentTime");
                             }
                             if (session == null || !session.Connected || !stillConnected)
                             {
-                                Console.WriteLine("🔄 Verbindung verloren – versuche Reconnect...");
+                                Console.WriteLine("Connection lost - trying reconnect...");
                                 TryReconnect();
                             }
                         }
@@ -556,12 +556,12 @@ namespace umatiGateway.Core.OPC
 
             if (certificateAccepted)
             {
-                Logger.Info("Untrusted Certificate accepted. Subject = {0}", e.Certificate.Subject);
+                Logger.Info("Untrusted certificate accepted. Subject = {0}", e.Certificate.Subject);
                 e.Accept = true;
             }
             else
             {
-                Logger.Info("Untrusted Certificate rejected. Subject = {0}", e.Certificate.Subject);
+                Logger.Info("Untrusted certificate rejected. Subject = {0}", e.Certificate.Subject);
             }
         }
         public Session CheckSession()

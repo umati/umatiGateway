@@ -114,7 +114,7 @@ namespace umatiGateway.Core.PubSub
             foreach (VirtualId virtualId in virtualIds)
             {
                 pubSubDataStore.WritePublishedDataItem(virtualId.nodeId, Attributes.Value, virtualId.dv);
-                Logger.Info($"Added Value to PubSub DataStore: {virtualId.nodeId} \t {virtualId.dv}");
+                Logger.Info($"Added value to PubSub DataStore: {virtualId.nodeId} \t {virtualId.dv}");
             }
         }
         public void Disconnect()
@@ -155,7 +155,7 @@ namespace umatiGateway.Core.PubSub
             }
             else
             {
-                Logger.Error($"Unable to get node Id for Pub: {machineNode}");
+                Logger.Error($"Unable to get NodeId for publishing: {machineNode}");
             }
         }
         private void PreSubscribe(NodeId nodeId)
@@ -486,7 +486,7 @@ namespace umatiGateway.Core.PubSub
                 case NodeClass.DataType:
                 case NodeClass.Unspecified:
                 case NodeClass.View:
-                default: Logger.Trace($"No DataSet Created due to Nodeclass: {nodeClass}"); break;
+                default: Logger.Trace($"No DataSet created due to NodeClass: {nodeClass}"); break;
             }
         }
         private void CreateApp()
@@ -566,7 +566,7 @@ namespace umatiGateway.Core.PubSub
             {
                 DataValue dv = valueNotification.Value;
                 pubSubDataStore.WritePublishedDataItem(monitoredItem.ResolvedNodeId, Attributes.Value, dv);
-                Logger.Info($"Added Value to PubSUb DataStore: {monitoredItem.ResolvedNodeId} \t {dv}");
+                Logger.Info($"Added Value to PubSub DataStore: {monitoredItem.ResolvedNodeId} \t {dv}");
             }
             else
             {
@@ -589,7 +589,7 @@ namespace umatiGateway.Core.PubSub
             }
             else
             {
-                Logger.Error($"Unable to get NamespaceIndex for NameSpaceUrl: {publishedNode.NamespaceUrl}");
+                Logger.Error($"Unable to get NamespaceIndex for NamespaceUri: {publishedNode.NamespaceUrl}");
             }
             return nodeId;
         }
@@ -657,7 +657,7 @@ namespace umatiGateway.Core.PubSub
                     }
                     else
                     {
-                        Logger.Error($"No TypeDefinition for ChildNodeId {childNodeId}");
+                        Logger.Error($"No TypeDefinition for child NodeId {childNodeId}");
                     }
                 }
                 if (node is VariableNode variableNode)

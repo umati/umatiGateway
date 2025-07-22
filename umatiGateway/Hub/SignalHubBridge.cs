@@ -25,7 +25,7 @@ namespace umatiGateway.Hub
                 }
                 catch (Exception ex)
                 {
-                    Logger.Warn(ex, "SignalR Push fehlgeschlagen.");
+                    Logger.Warn(ex, "SignalR Push failed.");
                 }
             });
         }
