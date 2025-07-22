@@ -61,6 +61,10 @@
 </script>
 <script>
     function connectOpc() {
+        const connectionUrl = document.getElementById('OPCConnection').value;
+        const user = document.getElementById('OPCUser').value;
+        const password = document.getElementById('OPCPassword').value;
+        const useInternalLibs = document.getElementById('UseInternalLibs').value;
         /*const text = document.getElementById("ConnectText");           
         text.classList.add("animate-fill");
         document.querySelectorAll('[data-toggle-group="opc"]').forEach(btn => {
@@ -71,7 +75,12 @@
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({})
+            body: JSON.stringify({
+                ConnectionUrl: connectionUrl,
+                User: user,
+                Password: password,
+                UseInternalLibs: useInternalLibs
+            })
         })
         .then(response => response.json())
         .then(data => {})

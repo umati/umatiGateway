@@ -45,10 +45,18 @@ namespace UmatiGateway.Pages
             if (Label_ConnectionUrl_Translated != null) { this.LabelConnectionUrl = Label_ConnectionUrl_Translated; }
         }
 
-        public JsonResult OnPostConnect()
+        public JsonResult OnPostConnect([FromBody] OpcConnectionParams opcConnectionParams)
         {
             try
             {
+                OpcConnectionParams? local = opcConnectionParams;
+                if (local != null)
+                {
+                    app.ActiveConfiguration.OPCConnection.ServerEndpoint = local.ConnectionUrl ?? "";
+                    app.ActiveConfiguration.OPCConnection.UserName = local.User ?? "";
+                    app.ActiveConfiguration.OPCConnection.Password = local.Password ?? "";
+                    app.ActiveConfiguration.OPCConnection.ReadExtraLibs = Convert.ToBoolean(opcConnectionParams.UseInternalLibs);
+                }
                 IOpcUaClient client = app.OpcUaClient;
                 client.Connect();
                 return new JsonResult(new { success = true });
@@ -97,5 +105,12 @@ namespace UmatiGateway.Pages
             jObj.Add("Blocked", this.app.OpcUaClient.GetClientState().IsBlocked);
             return new JsonResult(jObj);
         }
+    }
+    public class OpcConnectionParams
+    {
+        public string? ConnectionUrl { get; set; }
+        public string? User { get; set; }
+        public string? Password { get; set; }
+        public string? UseInternalLibs { get; set; }
     }
 }

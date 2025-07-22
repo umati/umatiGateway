@@ -325,7 +325,12 @@ namespace umatiGateway.Core.PubSub
         {
             KeyValuePairCollection keyValuePairs = new KeyValuePairCollection();
             keyValuePairs.AddRange(referenceDescriptionResolver.ResolveReferences(hierarchicalNode));
-            return keyValuePairs;
+            Opc.Ua.KeyValuePair keyValuePair = new Opc.Ua.KeyValuePair();
+            keyValuePair.Key = new QualifiedName($"relations", 0);
+            keyValuePair.Value = new Variant(keyValuePairs.Select(kv => kv.Value.Value).ToArray());
+            KeyValuePairCollection relationsAsArray = new KeyValuePairCollection();
+            relationsAsArray.Add(keyValuePair);
+            return relationsAsArray;
         }
         private StructureDescriptionCollection GetStructureDescriptions(HierarchicalNode hierarchicalNode)
         {
