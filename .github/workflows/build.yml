@@ -139,7 +139,7 @@ jobs:
 
       - name: Build and Push container image to ${{ env.REGISTRY }}
         uses: docker/build-push-action@v6.18.0
-        if: github.event_name != 'pull_request'
+        # if: github.event_name != 'pull_request'
         with:
           context: ./umatiGateway
           file: "./umatiGateway/umatiGateway/Dockerfile"
