@@ -108,7 +108,7 @@ The mapping is based on the structure but deviates from it if necessary e.g., fo
 | Key                                 | Description                                                |
 | ----------------------------------- | ---------------------------------------------------------- |
 | `<Prefix>`                          | umati/v3                                                   |
-| `<Encoding>`                        | json                                                       |
+| `<Encoding>`                        | JSON                                                       |
 | `<MqttMessageType>`                 | as defined in OPC UA PubSub                                |
 | `<PublisherId>`                     | Name of the Client.                                        |
 | `<UNS>`                             | The location of the device in the ISA-95 common data model |
