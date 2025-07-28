@@ -1,6 +1,5 @@
 ﻿// SPDX-License-Identifier: Apache-2.0
 // Copyright (c) 2025 FVA GmbH - interop4x. All rights reserved.
-using MQTTnet.Formatter;
 using NLog;
 using Opc.Ua;
 using Opc.Ua.Client;
@@ -41,62 +40,6 @@ namespace umatiGateway.Core.PubSub
             this.app = app;
             this.client = app.OpcUaClient;
             this.referenceDescriptionResolver = new ReferenceDescriptionResolver(client);
-
-            // Init Config
-            PubSubConfigurationDataType = new PubSubConfigurationDataType
-            {
-                PublishedDataSets = publishedDataSets,
-                Connections = new PubSubConnectionDataTypeCollection()
-            };
-
-            // WriterGroup direkt lokal anlegen
-            var writerGroup = new WriterGroupDataType
-            {
-                Name = "AutoWriter",
-                Enabled = true,
-                PublishingInterval = 1000,
-                DataSetWriters = dataSetWriters,
-                MessageSettings = new ExtensionObject(new JsonWriterGroupMessageDataType
-                {
-                    NetworkMessageContentMask = (uint)(
-                        JsonNetworkMessageContentMask.PublisherId |
-                        JsonNetworkMessageContentMask.DataSetMessageHeader
-                    )
-                }),
-            };
-            KeyValuePairCollection connectionProperties = new KeyValuePairCollection();
-            if (!string.IsNullOrEmpty(this.app.ActiveConfiguration.PubSubProviderConfig.UserName))
-            {
-                Opc.Ua.KeyValuePair user = new Opc.Ua.KeyValuePair
-                {
-                    Key = "UserName",
-                    Value = new Variant(this.app.ActiveConfiguration.PubSubProviderConfig.UserName)
-                };
-                Opc.Ua.KeyValuePair password = new Opc.Ua.KeyValuePair
-                {
-                    Key = "PassWord",
-                    Value = new Variant(this.app.ActiveConfiguration.PubSubProviderConfig.Password)
-                };
-                connectionProperties.Add(user);
-                connectionProperties.Add(password);
-            }
-            // Verbindung mit MQTT-Ziel
-            PubSubConnectionDataType pubSubConnection = new PubSubConnectionDataType
-            {
-                Name = "umati Gateway Mqtt Connection",
-                Enabled = true,
-                PublisherId = (ushort)1234,
-                TransportProfileUri = Profiles.PubSubMqttJsonTransport,
-                Address = new ExtensionObject(new NetworkAddressUrlDataType
-                {
-                    Url = this.app.ActiveConfiguration.PubSubProviderConfig.ServerEndpoint
-                }),
-                ConnectionProperties = connectionProperties,
-                WriterGroups = new WriterGroupDataTypeCollection { writerGroup }
-            };
-
-            // Verbindung anhängen
-            PubSubConfigurationDataType.Connections.Add(pubSubConnection);
         }
         public void Connect()
         {
@@ -120,7 +63,20 @@ namespace umatiGateway.Core.PubSub
         public void Disconnect()
         {
             Logger.Info("Disconnecting");
-            //AsyncHelper.RunSync(() => this.mqttClient.DisconnectAsync());
+            if (pubSubApp != null)
+            {
+                this.pubSubApp.Stop();
+                this.pubSubApp.Dispose();
+                this.pubSubApp = null;
+                this.pubSubDataStore = new UaPubSubDataStore();
+                this.publishedDataSets = new();
+                this.dataSetWriters = new();
+                this.writerGroups = new();
+                this.virtualIds = new List<VirtualId>();
+                this.WriterGroup = new WriterGroupDataType();
+                this.subscriptionIds = new List<NodeId>();
+                this.rootNodes = new Dictionary<NodeId, HierarchicalNode>();
+            }
             Logger.Info("Disconnected");
         }
 
@@ -163,9 +119,8 @@ namespace umatiGateway.Core.PubSub
             subscriptionIds.Add(nodeId);
         }
         public void Subscribe(HierarchicalNode hierarchicalNode)
-        {   //Make a Pre subscription List
+        {
             PreSubscribe(hierarchicalNode.NodeId);
-            //client.SubscribeToDataChanges(hierarchicalNode.NodeId, updateDataValue);
             foreach (HierarchicalNode hierarchicalChildNode in hierarchicalNode.hierarchicalChilds.Values)
             {
                 Subscribe(hierarchicalChildNode);
@@ -338,9 +293,6 @@ namespace umatiGateway.Core.PubSub
             StructureDescription structureDescription = new StructureDescription();
             StructureFieldCollection structureFieldCollection = new StructureFieldCollection();
             StructureField structureField = new StructureField();
-            /*structureField.BinaryEncodingId =;
-            structureField.JsonEncodingId =;
-            structureField.XmlEncodingId =;*/
             StructureDefinition structureDefinition = new StructureDefinition();
             structureDefinition.StructureType = StructureType.Structure;
             structureDefinition.Fields.Add(structureField);
@@ -571,33 +523,14 @@ namespace umatiGateway.Core.PubSub
             {
                 DataValue dv = valueNotification.Value;
                 pubSubDataStore.WritePublishedDataItem(monitoredItem.ResolvedNodeId, Attributes.Value, dv);
-                Logger.Info($"Added Value to PubSub DataStore: {monitoredItem.ResolvedNodeId} \t {dv}");
+                Logger.Info($"Updated Value in PubSub DataStore: {monitoredItem.ResolvedNodeId} \t {dv}");
             }
             else
             {
-                Logger.Error("Other notification");
+                Logger.Info($"Unexpected Notification type: {monitoredItemsArgs.NotificationValue}");
             }
         }
-        public NodeId? ResolveNodeId(PublishedNode publishedNode)
-        {
-            string type = publishedNode.Type.ToUpper();
-            NodeId? nodeId = null;
-            int namespaceIndex = client.GetNamespaceTable().GetIndex(publishedNode.NamespaceUrl);
-            if (namespaceIndex != -1)
-            {
-                switch (type)
-                {
-                    case "NUMERIC": nodeId = new NodeId(Convert.ToUInt32(publishedNode.NodeId), (ushort)namespaceIndex); break;
-                    case "STRING": nodeId = new NodeId(publishedNode.NodeId, (ushort)namespaceIndex); break;
-                    default: break;
-                }
-            }
-            else
-            {
-                Logger.Error($"Unable to get NamespaceIndex for NamespaceUri: {publishedNode.NamespaceUrl}");
-            }
-            return nodeId;
-        }
+
         private HierarchicalNode? ReadNodeIdAsHierarchicalNode(HierarchicalNode? parent, NodeId nodeId)
         {
             HierarchicalNode? hierarchicalNode = null;
@@ -684,65 +617,6 @@ namespace umatiGateway.Core.PubSub
                 Logger.Error($"Unable to read Node for NodeId {nodeId}");
             }
             return hierarchicalNode;
-        }
-    }
-    public class HierarchicalNode
-    {
-        public HierarchicalNode? Parent { get; set; }
-        public NodeId NodeId { get; set; }
-        public ExpandedNodeId TypeId { get; set; }
-        public QualifiedName BrowseName { get; set; }
-        public LocalizedText DisplayName { get; set; } = "";
-        public LocalizedText Description { get; set; } = "";
-        public ExpandedNodeId TypeDefinitionNodeId { get; set; } = "";
-
-        public FieldMetaData? fieldMetaData = null;
-        public TypeDefinitionNode? TypeDefinitionNode { get; set; } = null;
-        public NodeClass? NodeClass { get; set; } = null;
-
-        public Dictionary<NodeId, HierarchicalNode> hierarchicalChilds = new Dictionary<NodeId, HierarchicalNode>();
-        public HierarchicalNode(NodeId nodeId, ExpandedNodeId typeId, QualifiedName browseName)
-        {
-            NodeId = nodeId;
-            TypeId = typeId;
-            BrowseName = browseName;
-        }
-    }
-
-    public class TypeDefinitionNode
-    {
-        ExpandedNodeId NodeId { get; set; }
-        IList<TypeChild> Children { get; set; } = new List<TypeChild>();
-        public TypeDefinitionNode(NodeId nodeId)
-        {
-            NodeId = nodeId;
-        }
-    }
-    public class TypeChild
-    {
-        NodeId ReferenceTypeId { get; set; }
-        NodeId ModellingRule { get; set; }
-        NodeId NodeId { get; set; }
-        NodeId Origin { get; set; }
-        NodeClass NodeClass { get; set; }
-
-        public TypeChild(NodeId nodeId, NodeClass nodeClass, NodeId referenceTypeId, NodeId origin, NodeId modellingRule)
-        {
-            NodeId = nodeId;
-            ReferenceTypeId = referenceTypeId;
-            Origin = origin;
-            NodeClass = nodeClass;
-            ModellingRule = modellingRule;
-        }
-    }
-    public class VirtualId
-    {
-        public NodeId nodeId;
-        public DataValue dv;
-        public VirtualId(NodeId nodeId, DataValue dv)
-        {
-            this.nodeId = nodeId;
-            this.dv = dv;
         }
     }
 }

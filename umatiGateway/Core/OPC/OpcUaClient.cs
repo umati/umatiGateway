@@ -26,7 +26,6 @@ namespace umatiGateway.Core.OPC
         private bool ClientActive = false;
         private OpcUaClientState ClientState { get; set; } = new OpcUaClientState(OpcUaConnectionState.Idle, "");
         private List<OpcUaClientState> ClientStateHistory = new List<OpcUaClientState>();
-        private SessionReconnectHandler? reconnectHandler = null;
         private Thread? reconnectThread;
         private volatile bool keepRunning = true;
         private volatile bool reconnect = false;

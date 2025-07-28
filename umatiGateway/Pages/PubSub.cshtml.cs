@@ -28,7 +28,7 @@ namespace UmatiGateway.Pages
         }
         public IActionResult OnPostDisconnect()
         {
-            this.UmatiGatewayApp.PubSubProvider.Connect();
+            this.UmatiGatewayApp.PubSubProvider.Disconnect();
             return RedirectToPage();
         }
         public IActionResult OnPostRemovePubsSubNode(int index)
