@@ -171,7 +171,7 @@ namespace umatiGateway.Core.PubSub
             int uniqueint = ++counter;
             topic = CreateTopic(hierarchicalNode);
             metaTopic = CreateMetaTopic(hierarchicalNode);
-            string dataSetName = $"DataSet_{publishedDataSets.Count + uniqueint}";
+            string dataSetName = new ExpandedNodeId(hierarchicalNode.NodeId).ToString();
             PublishedVariableDataTypeCollection publishedVariableDataTypeCollection = new PublishedVariableDataTypeCollection();
             FieldMetaDataCollection fields = new FieldMetaDataCollection();
             if (hierarchicalNode.hierarchicalChilds.Count > 0)
@@ -220,11 +220,11 @@ namespace umatiGateway.Core.PubSub
 
             var publishedDataSet = new PublishedDataSetDataType
             {
-                Name = "DataSet" + uniqueint,
+                Name = dataSetName,
                 DataSetSource = new ExtensionObject(publishedDataItems),
                 DataSetMetaData = new DataSetMetaDataType
                 {
-                    Name = "DataSet" + uniqueint,
+                    Name = dataSetName,
                     Fields = fields,
                     ConfigurationVersion = new ConfigurationVersionDataType
                     {
@@ -245,7 +245,7 @@ namespace umatiGateway.Core.PubSub
                 Name = "Writer" + uniqueint,
                 DataSetWriterId = (ushort)uniqueint,
                 DataSetFieldContentMask = (uint)DataSetFieldContentMask.RawData,
-                DataSetName = "DataSet" + uniqueint,
+                DataSetName = dataSetName,
                 KeyFrameCount = 1,
                 Enabled = true,
                 MessageSettings = new ExtensionObject(new JsonDataSetWriterMessageDataType()),
@@ -346,7 +346,7 @@ namespace umatiGateway.Core.PubSub
             }
             int uniqueint = ++counter;
             topic = CreateTopic(hierarchicalNode);
-            string dataSetName = $"DataSet_{publishedDataSets.Count + uniqueint}";
+            string dataSetName = new ExpandedNodeId(hierarchicalNode.NodeId).ToString();
             //Add a Virtaul Id
             DataValue dataValue = new DataValue(GetBrowsePath(hierarchicalNode, true, "."));
             VirtualId virtualId = new VirtualId(new NodeId("virtualId_" + uniqueint, 1), dataValue);
@@ -376,11 +376,11 @@ namespace umatiGateway.Core.PubSub
 
             var publishedDataSet = new PublishedDataSetDataType
             {
-                Name = "DataSet" + uniqueint,
+                Name = dataSetName,
                 DataSetSource = new ExtensionObject(publishedDataItems),
                 DataSetMetaData = new DataSetMetaDataType
                 {
-                    Name = "DataSet" + uniqueint,
+                    Name = dataSetName,
                     Fields = fields,
                     ConfigurationVersion = new ConfigurationVersionDataType
                     {
