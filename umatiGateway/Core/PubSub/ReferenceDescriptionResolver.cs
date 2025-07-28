@@ -1,8 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc.Razor.Infrastructure;
-using Newtonsoft.Json.Linq;
+﻿// SPDX-License-Identifier: Apache-2.0
+// Copyright (c) 2025 FVA GmbH - interop4x. All rights reserved.
 using Opc.Ua;
 using Opc.Ua.Client;
-using Org.BouncyCastle.Tls.Crypto;
 using umatiGateway.Core.OPC;
 
 namespace umatiGateway.Core.PubSub
@@ -62,7 +61,15 @@ namespace umatiGateway.Core.PubSub
                             referenceDescription.BrowseName = node.BrowseName;
                             referenceDescription.DisplayName = node.DisplayName;
                             referenceDescription.NodeClass = node.NodeClass;
-                            referenceDescription.TypeDefinition = node.TypeDefinitionId;
+                            if (node.TypeDefinitionId != null)
+                            {
+                                referenceDescription.TypeDefinition = node.TypeDefinitionId;
+                            }
+                            else
+                            {
+                                referenceDescription.TypeDefinition = this.client.BrowseTypeDefinition(node.NodeId);
+                            }
+
                         }
                         keyValuePair.Value = new Variant(referenceDescription);
                         keyValuePairs.Add(keyValuePair);
