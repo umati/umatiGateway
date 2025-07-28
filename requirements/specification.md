@@ -176,19 +176,17 @@ Each DataSet need an Field called "virual_id" which contains the BrowsePath.
 
 If two nodes have the same _BrowsePath_ an iterator (".Number") can be send to avoid collisions (e.g., `Parent/Tool.1`, `Parent.3/Tool.2` `Parent3/Tool.3` )
 
-The metadata of the object is write to the Properties.
+The metadata of the object is written to the Properties.
 
-| Key          | DataType             | ModellingRule | Description                |
-| ------------ | -------------------- | ------------- | -------------------------- |
-| Reference_No | ReferenceDescription | Optional      | References from the object |
+| Key          | DataType               | ModellingRule | Description                |
+| ------------ | ---------------------- | ------------- | -------------------------- |
+| Reference    | ReferenceDescription[] | Optional      | References of the object |
 
 Reference_No (e.g., Reference_1, Reference_23) should be counted to that each reference has a different key.
 The following Reference must be set, other Reference can be send:
 
 - HasSubtype
 - GenerateEvent
-
-HasComponent Refernce must not be send because this is mapped via the topic structure.
 
 ### DataSetMetaData Example
 
