@@ -8,8 +8,20 @@ using umatiGateway.Hub;
 using UmatiGateway;
 
 Logger Logger = LogManager.GetCurrentClassLogger();
+AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
+{
+    var ex = e.ExceptionObject as Exception;
+    Logger.Error(ex, $"[Unhandled Exception] {ex?.Message}");
+};
+
+TaskScheduler.UnobservedTaskException += (sender, e) =>
+{
+    Logger.Error(e.Exception, $"[Unobserved Task Exception] {e.Exception?.Message}");
+    e.SetObserved();
+};
+
 ClientFactory clientFactory = new ClientFactory();
-UmatiGatewayApp umatiGateway = clientFactory.getClient("Egal");
+UmatiGatewayApp umatiGateway = clientFactory.getClient("UmatiAppClient");
 if (umatiGateway.ActiveConfiguration.StartConfiguration.StartWebUI == true)
 {
     var builder = WebApplication.CreateBuilder(args);
@@ -24,7 +36,7 @@ if (umatiGateway.ActiveConfiguration.StartConfiguration.StartWebUI == true)
         }
         else
         {
-            Logger.Error($"Invalid formatted Uri specified: {uriResult}");
+            Logger.Error($"Invalid formatted Uri specified: {url}");
         }
     }
     // Add services to the container
