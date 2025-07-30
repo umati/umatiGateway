@@ -132,6 +132,8 @@ namespace umatiGateway.Core.Configuration
         public string Password { get; set; } = "";
         public string ClientId { get; set; } = "";
         public string Prefix { get; set; } = "";
+        public double MetaDataUpdateTime { get; set; } = 10000;
+        public double PublishInterval { get; set; } = 10000;
         public bool AllowUntrustedCertificates { get; set; } = false;
         public List<PublishedNode> PublishedNodes { get; set; } = new List<PublishedNode>();
         public override string ToString()
