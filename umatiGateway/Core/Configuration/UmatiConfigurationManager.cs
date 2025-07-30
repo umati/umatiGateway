@@ -22,6 +22,7 @@ namespace umatiGateway.Core.Configuration
         public const string READ_EXTRA_LIBS = "ReadExtraLibs";
         public const string INCLUDE_STRUCTURED_COMPONENTS = "includeStructuredComponents";
         public const string PUBLISH_INTERVAL = "publishInterval";
+        public const string META_DATA_UPDATE_TIME = "metaDataUpdateTime";
         public const string STARTCONFIGURATION = "StartConfiguration";
         public const string START_WEB_UI = "startWebUI";
         public const string START_OPC_CONNECTION = "startOPCConnection";
@@ -192,6 +193,10 @@ namespace umatiGateway.Core.Configuration
                             configuration.PubSubProviderConfig.ClientId = ReadAttribute(pubSubProviderNode, CLIENT_ID);
                             configuration.PubSubProviderConfig.Prefix = ReadAttribute(pubSubProviderNode, PREFIX);
                             string allowUntrustedCertificates = ReadAttribute(pubSubProviderNode, ALLOW_UNTRUSTED_CERTIFICATES);
+                            string publishInterval = ReadAttribute(pubSubProviderNode, PUBLISH_INTERVAL);
+                            configuration.PubSubProviderConfig.PublishInterval = double.Parse(publishInterval);
+                            string metaDataUpdateTime = ReadAttribute(pubSubProviderNode, META_DATA_UPDATE_TIME);
+                            configuration.PubSubProviderConfig.MetaDataUpdateTime = double.Parse(metaDataUpdateTime);
                             configuration.PubSubProviderConfig.AllowUntrustedCertificates = string.Equals(allowUntrustedCertificates, "true", StringComparison.OrdinalIgnoreCase) ? true : false;
                             XmlNode? publishedNodesNode = ReadNode(pubSubProviderNode, PUBLISHED_NODES);
                             if (publishedNodesNode != null)
@@ -330,12 +335,18 @@ namespace umatiGateway.Core.Configuration
             pubSubPrefix.Value = configuration.PubSubProviderConfig.Prefix;
             XmlAttribute pubSubAllowUntrustedCertificates = xmlDocument.CreateAttribute(ALLOW_UNTRUSTED_CERTIFICATES);
             pubSubAllowUntrustedCertificates.Value = configuration.PubSubProviderConfig.AllowUntrustedCertificates.ToString();
+            XmlAttribute pubSubPublishInterval = xmlDocument.CreateAttribute(PUBLISH_INTERVAL);
+            pubSubPublishInterval.Value = configuration.PubSubProviderConfig.PublishInterval.ToString();
+            XmlAttribute pubSubMetaDataUpdateTime = xmlDocument.CreateAttribute(META_DATA_UPDATE_TIME);
+            pubSubMetaDataUpdateTime.Value = configuration.PubSubProviderConfig.MetaDataUpdateTime.ToString();
             pubSubNode.Attributes.Append(pubSubServerEndpoint);
             pubSubNode.Attributes.Append(pubSubUser);
             pubSubNode.Attributes.Append(pubSubPassword);
             pubSubNode.Attributes.Append(pubSubClientId);
             pubSubNode.Attributes.Append(pubSubPrefix);
             pubSubNode.Attributes.Append(pubSubAllowUntrustedCertificates);
+            pubSubNode.Attributes.Append(pubSubPublishInterval);
+            pubSubNode.Attributes.Append(pubSubMetaDataUpdateTime);
             pubSubNode.AppendChild(CreatePublishedNodesNode(xmlDocument, configuration.PubSubProviderConfig.PublishedNodes));
             configurationNode.AppendChild(startConfigurationNode);
             configurationNode.AppendChild(webUiNode);

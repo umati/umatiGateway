@@ -17,8 +17,17 @@ namespace UmatiGateway.Pages
             this.UmatiGatewayApp = ClientFactory.getClient();
         }
 
-        public IActionResult OnPostConnect(string ConnectionUrl, string Port, string MqttUser, string MqttPassword, string MqttClientId, string MqttPrefix)
+        public IActionResult OnPostConnect(string ConnectionUrl, string MqttUser, string MqttPassword, string MqttClientId, string MqttPrefix,
+            bool? PubSubAllowUntrustedCertificates, double PublishInterval, double MetaDataUpdateTime)
         {
+            this.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.ServerEndpoint = ConnectionUrl;
+            this.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.UserName = MqttUser;
+            this.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.Password = MqttPassword;
+            this.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.ClientId = MqttClientId;
+            this.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.Prefix = MqttPrefix;
+            this.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.AllowUntrustedCertificates = PubSubAllowUntrustedCertificates == true;
+            this.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.PublishInterval = PublishInterval;
+            this.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.MetaDataUpdateTime = MetaDataUpdateTime;
             this.UmatiGatewayApp.PubSubProvider.Connect();
             return RedirectToPage();
         }

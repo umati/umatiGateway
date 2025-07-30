@@ -15,7 +15,7 @@
             <legend class ="settings-legend">Active Configuration</legend>
             <div class="divider">Application Settings</div>
             <label for="ConfigVersion" class="settings-label">Config Version</label>
-            <input id="ConfigVersion" class="settings-input" type="text" name="Configversion" value="@Model.Configuration.Version">
+            <input id="ConfigVersion" class="settings-input" type="text" name="Configversion" value="@Model.Configuration.Version" readonly>
             <label for="LogLevel" class="settings-label">Log Level</label>
             @removeTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.SelectTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers
             @removeTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.OptionTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers
@@ -65,11 +65,11 @@
             </div>
             <div class="divider">OPC Configuration</div>
             <label for="OpcConnection" class="settings-label">OPC Server Endpoint</label>
-            <input id="OpcConnection" class="settings-input" type="text" name="OpcConnectionUrl" value="@Model.Configuration.OPCConnection.ServerEndpoint">
+            <input id="OpcConnection" class="settings-input" type="text" name="OpcConnectionUrl" value="@Model.Configuration.OPCConnection.ServerEndpoint" readonly>
             <label for="OpcUser" class="settings-label">User</label>
-            <input id="OpcUser" class="settings-input" type="text" name="OpcUser" value="@Model.Configuration.OPCConnection.UserName">
+            <input id="OpcUser" class="settings-input" type="text" name="OpcUser" value="@Model.Configuration.OPCConnection.UserName" readonly>
             <label for="OpcPassword" class="settings-label">Password</label>
-            <input id="OpcPassword" class="settings-input" type="text" name="OpcPassword" value="@Model.Configuration.OPCConnection.Password">
+            <input id="OpcPassword" class="settings-input" type="text" name="OpcPassword" value="@Model.Configuration.OPCConnection.Password" readonly>
             <label for="ReadExtraLibs" class="settings-label">Read Extra Libs</label>
             <div class="settings-on-off-label">
                 <span class="off">Off</span>
@@ -84,15 +84,15 @@
             <legend class="settings-legend">&nbsp</legend>
             <div class="divider">MQTT Configuration</div>
             <label for="MQTTBrokerConnection" class="settings-label">MQTT Broker Connectiont</label>
-            <input id="MQTTBrokerConnection" class="settings-input" type="text" name="MqttConnectionUrl" value="@Model.Configuration.MqttProviderConfig.ServerEndpoint">
+            <input id="MQTTBrokerConnection" class="settings-input" type="text" name="MqttConnectionUrl" value="@Model.Configuration.MqttProviderConfig.ServerEndpoint" readonly>
             <label for="MqttUser" class="settings-label">User</label>
-            <input type="text" class="settings-input" id="MqttUser" name="MqttUser" value="@Model.Configuration.MqttProviderConfig.UserName">
+            <input type="text" class="settings-input" id="MqttUser" name="MqttUser" value="@Model.Configuration.MqttProviderConfig.UserName" readonly>
             <label for="Password" class="settings-label">Password</label>
-            <input type="password" class="settings-input" id="Password" name="MqttPassword" value="@Model.Configuration.MqttProviderConfig.Password">
+            <input type="password" class="settings-input" id="Password" name="MqttPassword" value="@Model.Configuration.MqttProviderConfig.Password" readonly>
             <label for="ClientId" class="settings-label">ClientId</label>
-            <input type="text" class="settings-input" id="ClientId" name="MqttClientId" value="@Model.Configuration.MqttProviderConfig.ClientId">
+            <input type="text" class="settings-input" id="ClientId" name="MqttClientId" value="@Model.Configuration.MqttProviderConfig.ClientId" readonly>
             <label for="Prefix" class="settings-label">Prefix</label>
-            <input type="text" class="settings-input" id="Prefix" name="MqttPrefix" value="@Model.Configuration.MqttProviderConfig.Prefix">
+            <input type="text" class="settings-input" id="Prefix" name="MqttPrefix" value="@Model.Configuration.MqttProviderConfig.Prefix" readonly>
             <label for="IncludeStructuredComponents" class="settings-label">Include Structured Components</label>
             <div class="settings-on-off-label">
                 <span class="off">Off</span>
@@ -194,15 +194,15 @@
             </table>
             <div class="divider">PubSub Configuration</div>
             <label for="PubSubConnection" class="settings-label">PubSub Server Endpoint</label>
-            <input id="PubSubConnection" class="settings-input" type="text" name="PubSubConnection" value="@Model.Configuration.PubSubProviderConfig.ServerEndpoint">
+            <input id="PubSubConnection" class="settings-input" type="text" name="PubSubConnection" value="@Model.Configuration.PubSubProviderConfig.ServerEndpoint" readonly>
             <label for="PubSubUser" class="settings-label">User</label>
-            <input type="text" class="settings-input" id="PubSubUser" name="PubSubUser" value="@Model.Configuration.PubSubProviderConfig.UserName">
+            <input type="text" class="settings-input" id="PubSubUser" name="PubSubUser" value="@Model.Configuration.PubSubProviderConfig.UserName" readonly>
             <label for="PubSubPassword" class="settings-label">Password</label>
-            <input type="password" class="settings-input" id="PubSubPassword" name="PubSubPassword" value="@Model.Configuration.PubSubProviderConfig.Password">
+            <input type="password" class="settings-input" id="PubSubPassword" name="PubSubPassword" value="@Model.Configuration.PubSubProviderConfig.Password" readonly>
             <label for="PubSubClientId" class="settings-label">ClientId</label>
-            <input type="text" class="settings-input" id="PubSubClientId" name="PubSubClientId" value="@Model.Configuration.PubSubProviderConfig.ClientId">
+            <input type="text" class="settings-input" id="PubSubClientId" name="PubSubClientId" value="@Model.Configuration.PubSubProviderConfig.ClientId" readonly>
             <label for="PubSubPrefix" class="settings-label">Prefix</label>
-            <input type="text" class="settings-input" id="PubSubPrefix" name="PubSubPrefix" value="@Model.Configuration.PubSubProviderConfig.Prefix">
+            <input type="text" class="settings-input" id="PubSubPrefix" name="PubSubPrefix" value="@Model.Configuration.PubSubProviderConfig.Prefix" readonly>
             <div class="settings-on-off-label">
                 <span class="off">Off</span>
                 <label class="settings-switch">
@@ -211,6 +211,10 @@
                 </label>
                 <span class="on">On</span>
             </div>
+            <label for="PublishInterval" class="settings-label">Publish Interval</label>
+            <input type="text" class="settings-input" id="PublishInterval" name="PublishInterval" value="@Model.Configuration.PubSubProviderConfig.PublishInterval" readonly>
+            <label for="MetaDataUpdateTime" class="settings-label">MetaData Update Time</label>
+            <input type="text" class="settings-input" id="MetaDataUpdateTime" name="MetaDataUpdateTime" value="@Model.Configuration.PubSubProviderConfig.MetaDataUpdateTime" readonly>
             <label for="PubSubNodes" class="settings-label">PubSub Nodes</label>
             <table id="PubSub" class="nodetable">
                 <thead>

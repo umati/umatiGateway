@@ -252,7 +252,8 @@ namespace umatiGateway.Core.PubSub
                 TransportSettings = new ExtensionObject(new BrokerDataSetWriterTransportDataType
                 {
                     QueueName = "opcua/" + topic,
-                    MetaDataQueueName = "opcua/" + metaTopic
+                    MetaDataQueueName = "opcua/" + metaTopic,
+                    MetaDataUpdateTime = app.ActiveConfiguration.PubSubProviderConfig.MetaDataUpdateTime
                 }),
             };
             // Create WriterGroup
@@ -260,7 +261,7 @@ namespace umatiGateway.Core.PubSub
             {
                 Name = "WriterGroup" + uniqueint,
                 Enabled = true,
-                PublishingInterval = 5000,
+                PublishingInterval = app.ActiveConfiguration.PubSubProviderConfig.PublishInterval,
                 MessageSettings = new ExtensionObject(new JsonWriterGroupMessageDataType
                 {
                     NetworkMessageContentMask = (uint)(
@@ -407,7 +408,8 @@ namespace umatiGateway.Core.PubSub
                 TransportSettings = new ExtensionObject(new BrokerDataSetWriterTransportDataType
                 {
                     QueueName = "opcua/" + topic,
-                    MetaDataQueueName = "opcua/" + metaTopic
+                    MetaDataQueueName = "opcua/" + metaTopic,
+                    MetaDataUpdateTime = app.ActiveConfiguration.PubSubProviderConfig.MetaDataUpdateTime
                 })
             };
             // Create WriterGroup
@@ -415,7 +417,7 @@ namespace umatiGateway.Core.PubSub
             {
                 Name = "WriterGroup" + uniqueint,
                 Enabled = true,
-                PublishingInterval = 5000,
+                PublishingInterval = app.ActiveConfiguration.PubSubProviderConfig.PublishInterval,
                 MessageSettings = new ExtensionObject(new JsonWriterGroupMessageDataType
                 {
                     NetworkMessageContentMask = (uint)(

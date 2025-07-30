@@ -33,6 +33,10 @@
                 </label>
                 <span class="on">On</span>
             </div>
+            <label for="PublishInterval" class="settings-label">Publish Interval</label>
+            <input type="text" class="settings-input" id="PublishInterval" name="PublishInterval" value="@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.PublishInterval">
+            <label for="MetaDataUpdateTime" class="settings-label">MetaData Update Time</label>
+            <input type="text" class="settings-input" id="MetaDataUpdateTime" name="MetaDataUpdateTime" value="@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.MetaDataUpdateTime">         
             <div class="settings-button-container">
                 <button asp-page-handler="Connect" class="settings-button">Connect</button>
                 <button asp-page-handler="Disconnect" class="settings-button" style="margin-left:10px">Disconnect</button>
