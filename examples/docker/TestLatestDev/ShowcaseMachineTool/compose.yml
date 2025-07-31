@@ -1,3 +1,4 @@
+---
 services:
   umatigateway:
     image: ghcr.io/umati/umatigateway:develop
@@ -7,8 +8,8 @@ services:
     depends_on:
       - sampleserver
     ports:
-      - 8080:8080   # HostPort:ContainerPort
- 
+      - 8080:8080  # HostPort:ContainerPort
+
   sampleserver:
     image: ghcr.io/umati/sample-server:develop
     container_name: sampleserver
