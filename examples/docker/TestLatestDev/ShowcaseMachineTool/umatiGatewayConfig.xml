@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<umatiGatewayConfig version="2.0" logLevel="Debug">
+	<StartConfiguration startWebUI="False" startOPCConnection="True" startMqttProvider="True" startPubSubProvider="True"/>
+	<WebUI url="http://0.0.0.0:8080"></WebUI>
+	<!-- <OPCConnection serverendpoint="opc.tcp://opcua.umati.app:4840" authentication="None" user ="" password="" ReadExtraLibs="False"/> -->
+	<OPCConnection serverendpoint="opc.tcp://sampleserver:4840" authentication="None" user ="" password="" ReadExtraLibs="False"/>
+	<MqttProvider serverendpoint="mqtt://host.docker.internal:1883" user="" password="" clientId="company/client" prefix="umati/v2" includeStructuredComponents="False" upperCaseRange="False" publishInterval="5000">
+		<PublishedNodes>
+				 <PublishedNode type="Numeric" namespaceurl="http://example.com/ShowcaseMachineTool/" nodeId="66382" baseType="" />
+		</PublishedNodes>
+		<CustomEncodings>
+			<CustomEncoding name="GMSResultDataTypeEncoding" active="False" />
+			<CustomEncoding name="ProcessingCategoryDataTypeEncoding" active="False" />
+		</CustomEncodings>
+		<IgnoredPlaceholderTags>
+			<IgnoredPlaceholderTag name="&lt;ParameterIdentifier&gt;"/>
+		</IgnoredPlaceholderTags>
+	</MqttProvider>
+	<PubSubProvider serverendpoint="mqtt://host.docker.internal:1883" user="" password="" clientId="company/client" prefix="umati/v3" allowUntrustedCertificates="false" publishInterval="10000" metaDataUpdateTime="10000">
+		<PublishedNodes>
+			<PublishedNode type="Numeric" namespaceurl="http://example.com/ShowcaseMachineTool/" nodeId="66382" baseType="" />
+		</PublishedNodes>
+	</PubSubProvider>
+</umatiGatewayConfig>
