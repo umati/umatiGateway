@@ -56,6 +56,8 @@ namespace UmatiGateway.Pages
                     app.ActiveConfiguration.OPCConnection.UserName = local.User ?? "";
                     app.ActiveConfiguration.OPCConnection.Password = local.Password ?? "";
                     app.ActiveConfiguration.OPCConnection.ReadExtraLibs = Convert.ToBoolean(opcConnectionParams.UseInternalLibs);
+                    app.ActiveConfiguration.OPCConnection.CertificatePath = local.CertPath ?? "";
+                    app.ActiveConfiguration.OPCConnection.CertificatePassword = local.CertPwd ?? "";
                 }
                 IOpcUaClient client = app.OpcUaClient;
                 client.Connect();
@@ -97,6 +99,8 @@ namespace UmatiGateway.Pages
             jObj.Add("OpcUser", this.app.ActiveConfiguration.OPCConnection.UserName);
             jObj.Add("OpcPassword", this.app.ActiveConfiguration.OPCConnection.Password);
             jObj.Add("UseInternalLibs", this.app.ActiveConfiguration.OPCConnection.ReadExtraLibs);
+            jObj.Add("CertPath", this.app.ActiveConfiguration.OPCConnection.CertificatePath);
+            jObj.Add("CertPwd", this.app.ActiveConfiguration.OPCConnection.CertificatePassword);
             jObj.Add("ConnectionState", this.app.OpcUaClient.GetClientState().ConnectionState.ToString());
             jObj.Add("ConnectionDetails", this.app.OpcUaClient.GetClientState().Detail);
             jObj.Add("ConnectionStateHistory", jConnectionStateHistory);
@@ -112,5 +116,7 @@ namespace UmatiGateway.Pages
         public string? User { get; set; }
         public string? Password { get; set; }
         public string? UseInternalLibs { get; set; }
+        public string? CertPath { get; set; }
+        public string? CertPwd { get; set; }
     }
 }
