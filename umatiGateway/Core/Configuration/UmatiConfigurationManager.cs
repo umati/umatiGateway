@@ -33,6 +33,8 @@ namespace umatiGateway.Core.Configuration
         public const string AUTHENTICATION = "authentication";
         public const string USER = "user";
         public const string PASSWORD = "password";
+        public const string CERT_PATH = "certPath";
+        public const string CERT_PWD = "certPassword";
         public const string WEB_UI = "WebUI";
         public const string URL = "url";
         public const string MQTT_PROVIDER = "MqttProvider";
@@ -99,6 +101,8 @@ namespace umatiGateway.Core.Configuration
                             configuration.OPCConnection.Authentication = ReadAttribute(opcConnectionNode, AUTHENTICATION);
                             configuration.OPCConnection.UserName = ReadAttribute(opcConnectionNode, USER);
                             configuration.OPCConnection.Password = ReadAttribute(opcConnectionNode, PASSWORD);
+                            configuration.OPCConnection.CertificatePath = ReadAttribute(opcConnectionNode, CERT_PATH);
+                            configuration.OPCConnection.CertificatePassword = ReadAttribute(opcConnectionNode, CERT_PWD);
                             string readExtraLibs = ReadAttribute(opcConnectionNode, READ_EXTRA_LIBS);
                             configuration.OPCConnection.ReadExtraLibs = string.Equals(readExtraLibs, "true", StringComparison.OrdinalIgnoreCase) ? true : false;
                         }
@@ -268,11 +272,17 @@ namespace umatiGateway.Core.Configuration
             opcPassword.Value = configuration.OPCConnection.Password;
             XmlAttribute readExtraLibs = xmlDocument.CreateAttribute(READ_EXTRA_LIBS);
             readExtraLibs.Value = configuration.OPCConnection.ReadExtraLibs.ToString();
+            XmlAttribute certPath = xmlDocument.CreateAttribute(CERT_PATH);
+            certPath.Value = configuration.OPCConnection.CertificatePath.ToString();
+            XmlAttribute certPwd = xmlDocument.CreateAttribute(CERT_PWD);
+            certPwd.Value = configuration.OPCConnection.CertificatePassword.ToString();
             opcConnectionNode.Attributes.Append(opcServerEndpoint);
             opcConnectionNode.Attributes.Append(opcAuthentication);
             opcConnectionNode.Attributes.Append(opcUser);
             opcConnectionNode.Attributes.Append(opcPassword);
             opcConnectionNode.Attributes.Append(readExtraLibs);
+            opcConnectionNode.Attributes.Append(certPath);
+            opcConnectionNode.Attributes.Append(certPwd);
             XmlElement mqttConnectionNode = xmlDocument.CreateElement(MQTT_PROVIDER);
             XmlAttribute mqttServerEndpoint = xmlDocument.CreateAttribute(SERVERENDPOINT);
             mqttServerEndpoint.Value = configuration.MqttProviderConfig.ServerEndpoint;
