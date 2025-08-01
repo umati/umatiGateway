@@ -1,10 +1,11 @@
 ﻿// SPDX-License-Identifier: Apache-2.0
 // Copyright (c) 2025 FVA GmbH - interop4x. All rights reserved.
 
+using System.Reflection;
+using System.Security.Cryptography.X509Certificates;
 using NLog;
 using Opc.Ua;
 using Opc.Ua.Client;
-using System.Reflection;
 
 namespace umatiGateway.Core.OPC
 {
@@ -344,6 +345,16 @@ namespace umatiGateway.Core.OPC
                 {
                     userIdentity = new UserIdentity(this.app.ActiveConfiguration.OPCConnection.UserName, this.app.ActiveConfiguration.OPCConnection.Password);
                 }
+                if (!string.IsNullOrWhiteSpace(this.app.ActiveConfiguration.OPCConnection.CertificatePath))
+                {
+                    var pfx = new X509Certificate2(
+                        this.app.ActiveConfiguration.OPCConnection.CertificatePath,
+                        this.app.ActiveConfiguration.OPCConnection.CertificatePassword,
+                        X509KeyStorageFlags.Exportable | X509KeyStorageFlags.EphemeralKeySet
+                    );
+                    userIdentity = new UserIdentity(pfx);
+                }
+
 
                 // Create the session
                 Session session = await Session.Create(

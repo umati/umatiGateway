@@ -149,6 +149,8 @@ namespace umatiGateway.Core.Configuration
         public string Authentication { get; set; } = "NONE";
         public string UserName { get; set; } = "";
         public string Password { get; set; } = "";
+        public string CertificatePath { get; set; } = "";
+        public string CertificatePassword { get; set; } = "";
         public bool ReadExtraLibs { get; set; } = false;
         public override string ToString()
         {
