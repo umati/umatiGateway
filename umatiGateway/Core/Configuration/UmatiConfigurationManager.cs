@@ -40,6 +40,8 @@ namespace umatiGateway.Core.Configuration
         public const string MQTT_PROVIDER = "MqttProvider";
         public const string CLIENT_ID = "clientId";
         public const string PREFIX = "prefix";
+        public const string SERVER_CERTIFICATE_PATH = "serverCertificatePath";
+        public const string CUSTOM_CA_CERTIFICATE_PATH = "customCaCertificatePath";
         public const string UPPERCASE_RANGE = "upperCaseRange";
         public const string ALLOW_UNTRUSTED_CERTIFICATES = "allowUntrustedCertificates";
         public const string PUBLISHED_NODES = "PublishedNodes";
@@ -133,6 +135,8 @@ namespace umatiGateway.Core.Configuration
                             configuration.MqttProviderConfig.UpperCaseRange = string.Equals(uppercaseRange, "true", StringComparison.OrdinalIgnoreCase) ? true : false;
                             string publishInterval = ReadAttribute(mqttProviderNode, PUBLISH_INTERVAL);
                             configuration.MqttProviderConfig.PublishInterval = uint.Parse(publishInterval);
+                            configuration.MqttProviderConfig.ServerCertificatePath = ReadAttribute(mqttProviderNode, SERVER_CERTIFICATE_PATH);
+                            configuration.MqttProviderConfig.CustomCaCertificatePath = ReadAttribute(mqttProviderNode, CUSTOM_CA_CERTIFICATE_PATH);
                             XmlNode? publishedNodesNode = ReadNode(mqttProviderNode, PUBLISHED_NODES);
                             if (publishedNodesNode != null)
                             {
@@ -300,6 +304,10 @@ namespace umatiGateway.Core.Configuration
             publishInterval.Value = configuration.MqttProviderConfig.PublishInterval.ToString();
             XmlAttribute upperCaseRange = xmlDocument.CreateAttribute(UPPERCASE_RANGE);
             upperCaseRange.Value = configuration.MqttProviderConfig.UpperCaseRange.ToString();
+            XmlAttribute serverCertificatePath = xmlDocument.CreateAttribute(SERVER_CERTIFICATE_PATH);
+            serverCertificatePath.Value = configuration.MqttProviderConfig.ServerCertificatePath.ToString();
+            XmlAttribute customCaCertificatePath = xmlDocument.CreateAttribute(CUSTOM_CA_CERTIFICATE_PATH);
+            customCaCertificatePath.Value = configuration.MqttProviderConfig.CustomCaCertificatePath.ToString();
             XmlElement customEncodingsNode = xmlDocument.CreateElement(CUSTOM_ENCODINGS);
             foreach (CustomEncoding customEncoding in configuration.MqttProviderConfig.CustomEncodings)
             {
@@ -329,6 +337,8 @@ namespace umatiGateway.Core.Configuration
             mqttConnectionNode.Attributes.Append(includeStructuredComponents);
             mqttConnectionNode.Attributes.Append(upperCaseRange);
             mqttConnectionNode.Attributes.Append(publishInterval);
+            mqttConnectionNode.Attributes.Append(serverCertificatePath);
+            mqttConnectionNode.Attributes.Append(customCaCertificatePath);
             mqttConnectionNode.AppendChild(CreatePublishedNodesNode(xmlDocument, configuration.MqttProviderConfig.PublishedNodes));
             mqttConnectionNode.AppendChild(customEncodingsNode);
             mqttConnectionNode.AppendChild(IgnoredPlaceholderTagsNode);

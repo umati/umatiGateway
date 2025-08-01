@@ -64,11 +64,6 @@ namespace umatiGateway.Core.Mqtt
         private List<string> filteredPlaceholderTags = new List<string>();
         private string connectionType = WEBSOCKET;
 
-        // @Fixme: Move to config
-        private const string ServerCertificatePath = "broker_cert.pem";
-        private const string CustomCaCertificatePath = "custom_ca.crt";
-
-
         public MqttProvider(UmatiGatewayApp app)
         {
             this.app = app;
@@ -225,10 +220,10 @@ namespace umatiGateway.Core.Mqtt
                 Logger.Info($"Key Algorithm    : {serverCertificate.GetKeyAlgorithm()}");
 
                 // Zertifikat speichern, falls nicht vorhanden
-                if (!File.Exists(ServerCertificatePath))
+                if (!File.Exists(this.app.ActiveConfiguration.MqttProviderConfig.ServerCertificatePath))
                 {
                     Logger.Info("Saving server certificate to disk.");
-                    File.WriteAllBytes(ServerCertificatePath, serverCertificate.Export(X509ContentType.Cert));
+                    File.WriteAllBytes(this.app.ActiveConfiguration.MqttProviderConfig.ServerCertificatePath, serverCertificate.Export(X509ContentType.Cert));
                 }
 
                 // Schritt 1: Standardmäßige Zertifikatsvalidierung
@@ -256,9 +251,9 @@ namespace umatiGateway.Core.Mqtt
                 }
 
                 // Schritt 2: Validierung mit benutzerdefinierter CA (falls vorhanden)
-                if (File.Exists(CustomCaCertificatePath))
+                if (File.Exists(this.app.ActiveConfiguration.MqttProviderConfig.CustomCaCertificatePath))
                 {
-                    var customCaCertificate = new X509Certificate2(File.ReadAllBytes(CustomCaCertificatePath));
+                    var customCaCertificate = new X509Certificate2(File.ReadAllBytes(this.app.ActiveConfiguration.MqttProviderConfig.CustomCaCertificatePath));
                     using var customChain = new X509Chain();
                     customChain.ChainPolicy.ExtraStore.Add(customCaCertificate);
                     customChain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;

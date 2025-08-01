@@ -99,6 +99,10 @@
             <input type="text" class="settings-input" id="ClientId" name="MqttClientId" value="@Model.Configuration.MqttProviderConfig.ClientId" readonly>
             <label for="Prefix" class="settings-label">Prefix</label>
             <input type="text" class="settings-input" id="Prefix" name="MqttPrefix" value="@Model.Configuration.MqttProviderConfig.Prefix" readonly>
+            <label for="ServerCertificatePath" class="settings-label">Server Certificate Path</label>
+            <input type="text" class="settings-input" id="ServerCertificatePath" name="ServerCertificatePath" value="@Model.Configuration.MqttProviderConfig.ServerCertificatePath" readonly>
+            <label for="CustomCaCertificatePath" class="settings-label">Custom Ca Certificate Path</label>
+            <input type="text" class="settings-input" id="CustomCaCertificatePath" name="CustomCaCertificatePath" value="@Model.Configuration.MqttProviderConfig.CustomCaCertificatePath" readonly>
             <label for="IncludeStructuredComponents" class="settings-label">Include Structured Components</label>
             <div class="settings-on-off-label">
                 <span class="off">Off</span>

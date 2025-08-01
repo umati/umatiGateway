@@ -24,6 +24,10 @@
             <input type="text" class="settings-input" id="Prefix" name="MqttPrefix" value="@Model.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.Prefix">
             <label for="MqttConnection" class="settings-label">ConnectionUrl (typical = wss://umati.app/ws)</label>
             <input id="MqttConnection" class="settings-input" type="text" name="ConnectionUrl" value="@Model.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.ServerEndpoint">
+            <label for="ServerCertificatePath" class="settings-label">Server Certificate Path</label>
+            <input id="ServerCertificatePath" class="settings-input" type="text" name="ServerCertificatePath" value="@Model.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.ServerCertificatePath">
+            <label for="CustomCaCertificatePath" class="settings-label">Custom Ca CertificatePath</label>
+            <input id="CustomCaCertificatePath" class="settings-input" type="text" name="CustomCaCertificatePath" value="@Model.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.CustomCaCertificatePath">
             <div class="settings-button-container">
                 <button asp-page-handler="Connect" class="settings-button">Connect</button>
                 <button asp-page-handler="Disconnect" class="settings-button" style="margin-left:10px">Disconnect</button>

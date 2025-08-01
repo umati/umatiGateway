@@ -112,6 +112,9 @@ namespace umatiGateway.Core.Configuration
         public string Prefix { get; set; } = "";
         public bool IncludeStructuredComponents { get; set; } = false;
         public uint PublishInterval { get; set; } = 5000;
+
+        public string ServerCertificatePath { get; set; } = "";
+        public string CustomCaCertificatePath { get; set; } = "";
         public List<IgnoredPlaceholderTag> IgnoredPlaceholderTags { get; set; } = new List<IgnoredPlaceholderTag>();
         public List<CustomEncoding> CustomEncodings { get; set; } = new List<CustomEncoding>();
         public bool UpperCaseRange { get; set; } = false;

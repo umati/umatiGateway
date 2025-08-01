@@ -15,13 +15,16 @@ namespace UmatiGateway.Pages
             this.UmatiGatewayApp = ClientFactory.getClient();
         }
 
-        public IActionResult OnPostConnect(string ConnectionUrl, string MqttUser, string MqttPassword, string MqttClientId, string MqttPrefix)
+        public IActionResult OnPostConnect(string ConnectionUrl, string MqttUser, string MqttPassword, string MqttClientId, string MqttPrefix,
+            string ServerCertificatePath, string CustomCaCertificatePath)
         {
             this.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.ServerEndpoint = ConnectionUrl;
             this.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.UserName = MqttUser;
             this.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.Password = MqttPassword;
             this.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.ClientId = MqttClientId;
             this.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.Prefix = MqttPrefix;
+            this.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.ServerCertificatePath = ServerCertificatePath;
+            this.UmatiGatewayApp.ActiveConfiguration.MqttProviderConfig.CustomCaCertificatePath = CustomCaCertificatePath;
             this.UmatiGatewayApp.MqttProvider.Connect();
             return RedirectToPage();
         }
