@@ -78,7 +78,11 @@
                     <span class="settings-slider"></span>
                 </label>
                 <span class="on">On</span>
-            </div>   
+            </div>
+            <label for="CertPath" class="settings-label">Certificate Path</label>
+            <input id="CertPath" class="settings-input" type="text" name="CertPath" value="@Model.Configuration.OPCConnection.CertificatePath" readonly>
+            <label for="CertPassword" class="settings-label">Certificate Password</label>
+            <input id="CertPassword" class="settings-input" type="text" name="CertPassword" value="@Model.Configuration.OPCConnection.CertificatePassword" readonly>
         </div>
         <div class="column">
             <legend class="settings-legend">&nbsp</legend>

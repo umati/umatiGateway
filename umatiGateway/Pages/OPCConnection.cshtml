@@ -23,6 +23,10 @@
         <input id="OPCPassword" class="settings-input" type="text" name="OpcPassword" data-toggle-group="opc" value="@Model.app.ActiveConfiguration.OPCConnection.Password" @(Model.app.OpcUaClient.IsClientActive() ? "readonly" : "")>
         <label for="UseInternalLibs" class="settings-label">UseInternalLibs</label>
         <input id="UseInternalLibs" class="settings-input" type="text" name="UseInternalLibs" data-toggle-group="opc" value="@Model.app.ActiveConfiguration.OPCConnection.Password" @(Model.app.OpcUaClient.IsClientActive() ? "readonly" : "")>
+        <label for="CertPath" class="settings-label">Certificate Path</label>
+        <input id="CertPath" class="settings-input" type="text" name="CertPath" data-toggle-group="opc" value="@Model.app.ActiveConfiguration.OPCConnection.CertificatePath" @(Model.app.OpcUaClient.IsClientActive() ? "readonly" : "")>
+        <label for="CertPwd" class="settings-label">Certificate Password</label>
+        <input id="CertPwd" class="settings-input" type="text" name="CertPwd" data-toggle-group="opc" value="@Model.app.ActiveConfiguration.OPCConnection.CertificatePassword" @(Model.app.OpcUaClient.IsClientActive() ? "readonly" : "")>
         <div class="settings-button-container">
             <button id="DisconnectButton" onclick="disconnectOpc()" class="settings-button" data-toggle-group="opc">
                 <span id="DisconnectText" class="settings-text">Disconnect</span>
@@ -65,11 +69,9 @@
         const user = document.getElementById('OPCUser').value;
         const password = document.getElementById('OPCPassword').value;
         const useInternalLibs = document.getElementById('UseInternalLibs').value;
-        /*const text = document.getElementById("ConnectText");           
-        text.classList.add("animate-fill");
-        document.querySelectorAll('[data-toggle-group="opc"]').forEach(btn => {
-            btn.disabled = true;
-        });*/
+        const certPath = document.getElementById('CertPath').value;
+        const certPwd = document.getElementById('CertPwd').value;
+
         fetch("/OPCConnection?handler=Connect", {
             method: "POST",
             headers: {
@@ -79,7 +81,9 @@
                 ConnectionUrl: connectionUrl,
                 User: user,
                 Password: password,
-                UseInternalLibs: useInternalLibs
+                UseInternalLibs: useInternalLibs,
+                CertPath: certPath,
+                CertPwd: certPwd
             })
         })
         .then(response => response.json())
@@ -141,6 +145,8 @@
                 document.getElementById("OPCUser").value = data.OpcUser;
                 document.getElementById("OPCPassword").value = data.OpcPassword;
                 document.getElementById("UseInternalLibs").value = data.UseInternalLibs;
+                document.getElementById("CertPath").value = data.CertPath;
+                document.getElementById("CertPwd").value = data.CertPwd;
                 document.getElementById("ConnectionStatus").value = data.ConnectionState;
                 document.getElementById("OPCSessionName").value = data.OpcSessionName;
                 document.getElementById("OPCSessionId").value = data.OpcSessionId;
