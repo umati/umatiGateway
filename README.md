@@ -43,6 +43,10 @@ Web-based interface is accessible on port 8080 by default. There the connection 
 
 The interface will be then available at [http://localhost:7079](http://localhost:7079).
 
+### Developer Documentation
+
+The developer documentation can be found her [Developer Documentation](/docs/developer/developerdoc.md) .
+
 ## License
 
 This Software is licensed under Apache v2 license.
