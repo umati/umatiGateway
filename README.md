@@ -45,7 +45,7 @@ The interface will be then available at [http://localhost:7079](http://localhost
 
 ### Developer Documentation
 
-The developer documentation can be found her [Developer Documentation](/docs/developer/developerdoc.md) .
+The developer documentation can be found here [Developer Documentation](/docs/developer/developerdoc.md) .
 
 ## License
 
