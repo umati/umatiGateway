@@ -248,75 +248,76 @@ namespace Opc.Ua.PubSub.Transport
 
             try
             {
-                lock (Lock)
+                // Matthias Dornaus - Removed Lock maybe thing about a queue if necessary
+                // lock (Lock)
+                // {
+                if (m_publisherMqttClient != null && m_publisherMqttClient.IsConnected)
                 {
-                    if (m_publisherMqttClient != null && m_publisherMqttClient.IsConnected)
+                    // get the encoded bytes
+                    byte[] bytes = networkMessage.Encode(MessageContext);
+
+                    try
                     {
-                        // get the encoded bytes
-                        byte[] bytes = networkMessage.Encode(MessageContext);
+                        string queueName = null;
+                        BrokerTransportQualityOfService qos = BrokerTransportQualityOfService.AtLeastOnce;
 
-                        try
+                        // the network messages that have DataSetWriterId are either metaData messages or SingleDataSet messages and 
+                        if (networkMessage.DataSetWriterId != null)
                         {
-                            string queueName = null;
-                            BrokerTransportQualityOfService qos = BrokerTransportQualityOfService.AtLeastOnce;
+                            DataSetWriterDataType dataSetWriter = networkMessage.WriterGroupConfiguration.DataSetWriters
+                                .Find(x => x.DataSetWriterId == networkMessage.DataSetWriterId);
 
-                            // the network messages that have DataSetWriterId are either metaData messages or SingleDataSet messages and 
-                            if (networkMessage.DataSetWriterId != null)
+                            if (dataSetWriter != null)
                             {
-                                DataSetWriterDataType dataSetWriter = networkMessage.WriterGroupConfiguration.DataSetWriters
-                                    .Find(x => x.DataSetWriterId == networkMessage.DataSetWriterId);
-
-                                if (dataSetWriter != null)
+                                if (ExtensionObject
+                                    .ToEncodeable(dataSetWriter.TransportSettings) is BrokerDataSetWriterTransportDataType transportSettings)
                                 {
-                                    if (ExtensionObject
-                                        .ToEncodeable(dataSetWriter.TransportSettings) is BrokerDataSetWriterTransportDataType transportSettings)
-                                    {
-                                        qos = transportSettings.RequestedDeliveryGuarantee;
+                                    qos = transportSettings.RequestedDeliveryGuarantee;
 
-                                        queueName = networkMessage.IsMetaDataMessage ? transportSettings.MetaDataQueueName : transportSettings.QueueName;
-                                    }
+                                    queueName = networkMessage.IsMetaDataMessage ? transportSettings.MetaDataQueueName : transportSettings.QueueName;
                                 }
                             }
+                        }
 
-                            if (queueName == null || qos == BrokerTransportQualityOfService.NotSpecified)
+                        if (queueName == null || qos == BrokerTransportQualityOfService.NotSpecified)
+                        {
+                            if (ExtensionObject.ToEncodeable(
+                                networkMessage.WriterGroupConfiguration.TransportSettings) is BrokerWriterGroupTransportDataType transportSettings)
                             {
-                                if (ExtensionObject.ToEncodeable(
-                                    networkMessage.WriterGroupConfiguration.TransportSettings) is BrokerWriterGroupTransportDataType transportSettings)
+                                if (queueName == null)
                                 {
-                                    if (queueName == null)
-                                    {
-                                        queueName = transportSettings.QueueName;
-                                    }
-                                    // if the value is not specified and the value of the parent object shall be used
-                                    if (qos == BrokerTransportQualityOfService.NotSpecified)
-                                    {
-                                        qos = transportSettings.RequestedDeliveryGuarantee;
-                                    }
+                                    queueName = transportSettings.QueueName;
+                                }
+                                // if the value is not specified and the value of the parent object shall be used
+                                if (qos == BrokerTransportQualityOfService.NotSpecified)
+                                {
+                                    qos = transportSettings.RequestedDeliveryGuarantee;
                                 }
                             }
-
-                            if (!String.IsNullOrEmpty(queueName))
-                            {
-                                var message = new MqttApplicationMessage
-                                {
-                                    Topic = queueName,
-                                    PayloadSegment = new ArraySegment<byte>(bytes),
-                                    QualityOfServiceLevel = GetMqttQualityOfServiceLevel(qos),
-                                    Retain = networkMessage.IsMetaDataMessage
-                                };
-
-                                m_publisherMqttClient.PublishAsync(message).GetAwaiter().GetResult();
-                            }
                         }
-                        catch (Exception ex)
+
+                        if (!String.IsNullOrEmpty(queueName))
                         {
-                            Utils.Trace(ex, "MqttPubSubConnection.PublishNetworkMessage");
-                            return false;
-                        }
+                            var message = new MqttApplicationMessage
+                            {
+                                Topic = queueName,
+                                PayloadSegment = new ArraySegment<byte>(bytes),
+                                QualityOfServiceLevel = GetMqttQualityOfServiceLevel(qos),
+                                Retain = networkMessage.IsMetaDataMessage
+                            };
 
-                        return true;
+                            m_publisherMqttClient.PublishAsync(message).GetAwaiter().GetResult();
+                        }
                     }
+                    catch (Exception ex)
+                    {
+                        Utils.Trace(ex, "MqttPubSubConnection.PublishNetworkMessage");
+                        return false;
+                    }
+
+                    return true;
                 }
+                //}
             }
             catch (Exception ex)
             {
