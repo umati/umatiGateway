@@ -248,8 +248,9 @@ namespace Opc.Ua.PubSub.Transport
 
             try
             {
-                lock (Lock)
-                {
+                // Matthias Dornaus - Removed Lock maybe thing about a queue if necessary
+                // lock (Lock)
+                // {
                     if (m_publisherMqttClient != null && m_publisherMqttClient.IsConnected)
                     {
                         // get the encoded bytes
@@ -316,7 +317,7 @@ namespace Opc.Ua.PubSub.Transport
 
                         return true;
                     }
-                }
+                //}
             }
             catch (Exception ex)
             {

@@ -48,7 +48,7 @@ namespace umatiGateway.Core.PubSub
             client.SubscribeToDataChanges(subscriptionIds, updateDataValue);
             AddVirtualNodeIdsToStore();
             CreateApp();
-            AddVirtualNodeIdsToStore();
+            //AddVirtualNodeIdsToStore();
 
         }
 
@@ -513,7 +513,7 @@ namespace umatiGateway.Core.PubSub
             };
 
 
-            pubSubDataStore = new UaPubSubDataStore();
+            //pubSubDataStore = new UaPubSubDataStore();
 
             pubSubApp = UaPubSubApplication.Create(pubSubConfiguration, pubSubDataStore);
             pubSubApp.Start();
