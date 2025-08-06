@@ -101,6 +101,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="BsdFiles\Opc.Ua.Di.Types.bsd">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="BsdFiles\Opc.Ua.Types.bsd">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="umatiGatewayConfig.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="umatiGatewayConfigTest.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

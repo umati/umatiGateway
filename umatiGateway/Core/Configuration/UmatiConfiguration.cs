@@ -155,6 +155,7 @@ namespace umatiGateway.Core.Configuration
         public string CertificatePath { get; set; } = "";
         public string CertificatePassword { get; set; } = "";
         public bool ReadExtraLibs { get; set; } = false;
+        public bool ResolveBinariesOnly { get; set; } = false;
         public override string ToString()
         {
             return $"OPCConnection(Server={ServerEndpoint}, Auth={Authentication}, User={UserName}, Password={UmatiConfigurationUtils.MaskPassword(Password)}, ReadExtraLibs={ReadExtraLibs})";

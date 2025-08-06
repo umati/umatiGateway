@@ -81,6 +81,15 @@
                 </label>
                 <span class="on">On</span>
             </div>
+            <label for="ResolveBinariesOnly" class="settings-label">Resolve Binaries Only</label>
+            <div class="settings-on-off-label">
+                <span class="off">Off</span>
+                <label class="settings-switch">
+                    <input id="ResolveBinariesOnly" size="60" type="checkbox" name="ResolveBinariesOnly" value="true" @(Model.Configuration.OPCConnection.ResolveBinariesOnly ? "checked" : "")>
+                    <span class="settings-slider"></span>
+                </label>
+                <span class="on">On</span>
+            </div>
             <label for="CertPath" class="settings-label">Certificate Path</label>
             <input id="CertPath" class="settings-input" type="text" name="CertPath" value="@Model.Configuration.OPCConnection.CertificatePath" readonly>
             <label for="CertPassword" class="settings-label">Certificate Password</label>

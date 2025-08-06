@@ -3,7 +3,7 @@
 	<StartConfiguration startWebUI="True" startOPCConnection="False" startMqttProvider="False" startPubSubProvider="False"/>
 	<WebUI url="https://127.0.0.1:7079"></WebUI>
 	<!-- <OPCConnection serverendpoint="opc.tcp://opcua.umati.app:4840" authentication="None" user ="" password="" ReadExtraLibs="False"/> -->
-	<OPCConnection serverendpoint="opc.tcp://localhost:4840" authentication="None" user ="" password="" ReadExtraLibs="False" certPath="" certPassword=""/>
+	<OPCConnection serverendpoint="opc.tcp://localhost:4840" authentication="None" user ="" password="" ReadExtraLibs="False" resolveBinariesOnly="false" certPath="" certPassword=""/>
 	<MqttProvider serverendpoint="mqtt://localhost:1883" user="company/client" password="" clientId="company/client" prefix="umati/v2" includeStructuredComponents="False" upperCaseRange="False" publishInterval="5000"
 				  serverCertificatePath="broker_cert.pem" customCaCertificatePath="custom_ca.crt">
 		<PublishedNodes>

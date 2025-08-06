@@ -22,7 +22,9 @@
         <label for="OPCPassword" class="settings-label">OPC Password</label>
         <input id="OPCPassword" class="settings-input" type="text" name="OpcPassword" data-toggle-group="opc" value="@Model.app.ActiveConfiguration.OPCConnection.Password" @(Model.app.OpcUaClient.IsClientActive() ? "readonly" : "")>
         <label for="UseInternalLibs" class="settings-label">UseInternalLibs</label>
-        <input id="UseInternalLibs" class="settings-input" type="text" name="UseInternalLibs" data-toggle-group="opc" value="@Model.app.ActiveConfiguration.OPCConnection.Password" @(Model.app.OpcUaClient.IsClientActive() ? "readonly" : "")>
+        <input id="UseInternalLibs" class="settings-input" type="text" name="UseInternalLibs" data-toggle-group="opc" value="@Model.app.ActiveConfiguration.OPCConnection.ReadExtraLibs" @(Model.app.OpcUaClient.IsClientActive() ? "readonly" : "")>
+        <label for="ResolveBinariesOnly" class="settings-label">Resolve Binaries Only</label>
+        <input id="ResolveBinariesOnly" class="settings-input" type="text" name="ResolveBinariesOnly" data-toggle-group="opc" value="@Model.app.ActiveConfiguration.OPCConnection.ResolveBinariesOnly" @(Model.app.OpcUaClient.IsClientActive() ? "readonly" : "")>
         <label for="CertPath" class="settings-label">Certificate Path</label>
         <input id="CertPath" class="settings-input" type="text" name="CertPath" data-toggle-group="opc" value="@Model.app.ActiveConfiguration.OPCConnection.CertificatePath" @(Model.app.OpcUaClient.IsClientActive() ? "readonly" : "")>
         <label for="CertPwd" class="settings-label">Certificate Password</label>
@@ -69,6 +71,7 @@
         const user = document.getElementById('OPCUser').value;
         const password = document.getElementById('OPCPassword').value;
         const useInternalLibs = document.getElementById('UseInternalLibs').value;
+        const resolveBinariesOnly = document.getElementById('ResolveBinariesOnly').value;
         const certPath = document.getElementById('CertPath').value;
         const certPwd = document.getElementById('CertPwd').value;
 
@@ -82,6 +85,7 @@
                 User: user,
                 Password: password,
                 UseInternalLibs: useInternalLibs,
+                ResolveBinariesOnly: resolveBinariesOnly,
                 CertPath: certPath,
                 CertPwd: certPwd
             })
@@ -145,6 +149,7 @@
                 document.getElementById("OPCUser").value = data.OpcUser;
                 document.getElementById("OPCPassword").value = data.OpcPassword;
                 document.getElementById("UseInternalLibs").value = data.UseInternalLibs;
+                document.getElementById("ResolveBinariesOnly").value = data.ResolveBinariesOnly;
                 document.getElementById("CertPath").value = data.CertPath;
                 document.getElementById("CertPwd").value = data.CertPwd;
                 document.getElementById("ConnectionStatus").value = data.ConnectionState;
