@@ -26,6 +26,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Update="Pages\OPCSubscriptions2.cshtml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Update="Pages\PubSub.cshtml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

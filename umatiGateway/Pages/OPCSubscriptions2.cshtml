@@ -1,0 +1,322 @@
+﻿@* SPDX-License-Identifier: Apache-2.0 *@
+@* Copyright (c) 2025 FVA GmbH - interop4x. All rights reserved. *@
+
+@page
+@using umatiGateway.Core.OPC
+@model UmatiGateway.Pages.OPCSubscriptions2Model
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    ViewData["Title"] = "OPC Subscriptions";
+}
+<h1>OPC Subscriptions</h1>
+
+<p>Subscribe to elements you want to publish.</p>
+
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Address space</title>
+    <style>
+        body {
+            font-family: sans-serif;
+        }
+
+        ul {
+            list-style: none;
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        li {
+            user-select: none;
+        }
+
+        .label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 2px 4px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+            .label:hover {
+                background: #eee;
+            }
+
+        .selected .label {
+            background-color: #cce5ff;
+            color: black;
+        }
+
+        .icon {
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+            display: inline-block;
+        }
+
+        .arrow {
+            width: 10px;
+            flex-shrink: 0;
+            display: inline-block;
+            transition: transform 0.2s;
+        }
+
+        li ul {
+            display: none;
+        }
+
+        li.expanded > ul {
+            display: block;
+        }
+
+        li.expanded > .label .arrow {
+            transform: rotate(90deg);
+        }
+    </style>
+</head>
+<body>
+    <h2>Address Space</h2>
+    <div></div>
+    <fieldset class="tree; settings-fieldset" id="treeContainer" style="width: 60%; overflow-x: auto; overflow-y:auto; white-space: nowrap; float:left; height: 70vh; max-height: 70vh;">
+    </fieldset>
+    <fieldset class="settings-fieldset" style="width:39%; float:right">
+        <legend>Attribute</legend>
+        <table>
+            <tr>
+                <td><label>NodeId:</label></td>
+                <td><input id="NodeId" value="" readonly /></td>
+            </tr>
+            <tr>
+                <td><label>NodeClass:</label></td>
+                <td><input id="NodeClass"value="" readonly /></td>
+            </tr>
+            <tr>
+                <td><label>BrowseName:</label></td>
+                <td><input id="BrowseName" value="" readonly /></td>
+            </tr>
+            <tr>
+                <td><label>DisplayName:</label></td>
+                <td><input id="DisplayName" value="" readonly /></td>
+            </tr>
+            <tr>
+                <td><label>Description:</label></td>
+                <td><input id="Description" value="" readonly /></td>
+            </tr>
+            <tr>
+                <td><label>Value:</label></td>
+                <td><input id="Value" value="" readonly /></td>
+            </tr>
+            <tr>
+            <td align="right">
+                <button onclick="addNodeMqttConfig()" class="settings-button">Publish Mqtt</button>
+            </td>
+            <td align="right">
+                <button onclick="addNodePubSubConfig()" class="settings-button">Publish PubSub</button>
+            </td>
+            </tr>
+        </table>
+    </fieldset>
+    <script>
+        function addNodeMqttConfig()
+        {
+            let opcUaNode = {
+                displayName: "",
+                browseName: "",
+                description: "",
+                value: "",
+                nodeId: "ns=0;i=84",
+                typeId: "",
+                nodeClass: "" + document.getElementById("Value").value + "",
+                hierarchicalChildren: []
+            };
+            fetch("/OPCSubscriptions2?handler=AddNodeMqttConfig", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(opcUaNode)
+            })
+            .then(response => response.json())
+            .then(data => {})
+            .catch(error => { console.error(error); })
+            .finally(() => {});
+        }
+        function addNodePubSubConfig()
+        {
+            let opcUaNode = {
+                displayName: "",
+                browseName: "",
+                description: "",
+                value: "",
+                nodeId: "ns=0;i=84",
+                typeId: "",
+                nodeClass: "" + document.getElementById("Value").value + "",
+                hierarchicalChildren: []
+            };
+            fetch("/OPCSubscriptions2?handler=AddNodePubSubConfig", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(opcUaNode)
+            })
+            .then(response => response.json())
+            .then(data => {})
+            .catch(error => { console.error(error); })
+            .finally(() => {});
+        }
+        // Initial Root-Node
+        let root = {
+            displayName: "Root",
+            browseName: "0:Root",
+            description: "",
+            value: "",
+            nodeId: "ns=0;i=84",
+            typeId: "ns=0;i=61",
+            nodeClass: "Object",
+            hierarchicalChildren: []
+        };
+
+        // Merke geöffnete NodeIds
+        function collectExpandedNodes(node, path = "", expandedSet = new Set()) {
+            const currentPath = path + "/" + node.nodeId;
+            const li = document.querySelector(`li[data-nodeid="${node.nodeId}"]`);
+            if (li && li.classList.contains("expanded")) {
+                expandedSet.add(currentPath);
+            }
+
+            if (node.hierarchicalChildren) {
+                for (const child of node.hierarchicalChildren) {
+                    collectExpandedNodes(child, currentPath, expandedSet);
+                }
+            }
+            return expandedSet;
+        }
+
+        // Wende offene Knoten nach dem Neurendern wieder an
+        function applyExpandedNodes(node, path = "", expandedSet) {
+            const currentPath = path + "/" + node.nodeId;
+            node.__expanded = expandedSet.has(currentPath);
+            if (node.hierarchicalChildren) {
+                for (const child of node.hierarchicalChildren) {
+                    applyExpandedNodes(child, currentPath, expandedSet);
+                }
+            }
+        }
+
+        // Tree-Node erstellen
+        function createNode(node) {
+            const li = document.createElement("li");
+            li.setAttribute("data-nodeid", node.nodeId);
+
+            const label = document.createElement("div");
+            label.classList.add("label");
+            label.title = node.displayName;
+
+            const arrow = document.createElement("span");
+            arrow.classList.add("arrow");
+            arrow.textContent = "▶";
+            label.appendChild(arrow);
+
+            /*const icon = document.createElement("span");
+            icon.classList.add("icon");
+            icon.textContent = node.nodeClass === "Object" ? "📁" : "📄";
+            label.appendChild(icon);*/
+
+            const name = document.createElement("span");
+            name.textContent = node.displayName;
+            label.appendChild(name);
+
+            li.appendChild(label);
+
+            if (/*node.nodeClass === "Object" &&*/ node.hierarchicalChildren.length > 0) {
+                const ul = document.createElement("ul");
+                for (const child of node.hierarchicalChildren) {
+                    ul.appendChild(createNode(child));
+                }
+                li.appendChild(ul);
+
+                if (node.__expanded) {
+                    li.classList.add("expanded");
+                }
+
+                label.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    li.classList.toggle("expanded");
+                    node.__expanded = li.classList.contains("expanded");
+                    setSelected(label, node);
+                });
+            } else {
+                label.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    li.classList.toggle("expanded");
+                    setSelected(label, node);
+                });
+            }
+
+            return li;
+        }
+
+        // Node auswählen und erweitern lassen
+        function setSelected(label, node) {
+            document.querySelectorAll(".tree .selected").forEach(el =>
+                el.classList.remove("selected")
+            );
+            label.parentElement.classList.add("selected");
+            console.log("📄 Geklickt:", label.textContent.trim());
+
+            fetch("/OPCSubscriptions2?handler=BrowseTreeNode", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(node)
+            })
+            .then(response => response.json())
+            .then(data => {
+                    node.hierarchicalChildren = [];
+                if (Array.isArray(data)) {
+                    node.hierarchicalChildren.push(...data);
+                } else {
+                    node.hierarchicalChildren.push(data);
+                }
+                updateAttributeView(node);
+            })
+            .catch(error => { console.error(error); })
+            .finally(() => {
+                const expanded = collectExpandedNodes(root);
+                renderTree(expanded);
+            });
+        }
+        function updateAttributeView(node)
+        {
+            document.getElementById("NodeId").value = node.nodeId;
+            document.getElementById("DisplayName").value = node.displayName;
+            document.getElementById("BrowseName").value = node.browseName;
+            document.getElementById("NodeClass").value = node.nodeClass;
+            document.getElementById("Description").value = node.description;
+            document.getElementById("Value").value = node.value;
+        }
+
+        // Kompletten Tree anzeigen
+        function renderTree(expandedNodes = new Set()) {
+            applyExpandedNodes(root, "", expandedNodes);
+
+            const container = document.getElementById("treeContainer");
+            container.innerHTML = "";
+
+            const treeRoot = createNode(root);
+            const ul = document.createElement("ul");
+            ul.appendChild(treeRoot);
+            container.appendChild(ul);
+        }
+
+        renderTree();
+    </script>
+</body>
+</html>
+
+
+

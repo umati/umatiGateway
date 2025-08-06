@@ -213,6 +213,7 @@ namespace umatiGateway.Core.OPC
             nodeToBrowse.NodeClassMask = nodeClassMask;
             nodeToBrowse.ReferenceTypeId = referenceTypeIds;
             nodeToBrowse.IncludeSubtypes = includeSubTypes;
+            nodeToBrowse.ResultMask = (uint)BrowseResultMask.All;
             nodesToBrowse.Add(nodeToBrowse);
             try
             {
