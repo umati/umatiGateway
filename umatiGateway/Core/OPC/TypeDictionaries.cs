@@ -59,18 +59,62 @@ namespace umatiGateway.Core.OPC
         {
             List<NodeId> binaryTypeDictionaries = new List<NodeId>();
             IOpcUaClient client = app.OpcUaClient;
+            //Read Local Bsd Files First
+            string folderPath = "./BsdFiles";
+
+            if (Directory.Exists(folderPath))
+            {
+                string[] files = Directory.GetFiles(folderPath);
+
+                foreach (string file in files)
+                {
+                    Logger.Info($"Read Bsd File: {file}");
+
+                    byte[] binaryData = File.ReadAllBytes(file);
+                    string xmlString = Encoding.UTF8.GetString(binaryData);
+                    generateDataClasses(xmlString);
+                }
+            }
+            else
+            {
+                Logger.Error($"Unable to find Folder: {folderPath}");
+            }
+
+
             binaryTypeDictionaries = client.BrowseLocalNodeIdsWithTypeDefinition(ObjectIds.OPCBinarySchema_TypeSystem, BrowseDirection.Forward, (uint)NodeClass.Variable, ReferenceTypeIds.HasComponent, true, VariableTypeIds.DataTypeDictionaryType);
             foreach (NodeId binaryTypeDictionary in binaryTypeDictionaries)
             {
-                DataValue? dv = client.ReadValue(binaryTypeDictionary);
-                if (dv != null)
+                try
                 {
-                    string xmlString = Encoding.UTF8.GetString((byte[])dv.Value);
-                    generateDataClasses(xmlString);
+                    DataValue? dv = client.ReadValue(binaryTypeDictionary);
+                    if (dv != null)
+                    {
+                        string xmlString = Encoding.UTF8.GetString((byte[])dv.Value);
+                        bool skipReading = false;
+                        foreach (KeyValuePair<GeneratedDataTypeDefinition, GeneratedDataClass> generatedDataType in generatedDataTypes)
+                        {
+                            GeneratedDataTypeDefinition gtdd = generatedDataType.Key;
+                            if (xmlString.Contains($"TargetNamespace=\"{gtdd.nameSpace}\""))
+                            {
+                                Logger.Info($"Skipe reading BsdSchema from Server for NodeId: {binaryTypeDictionary} (Loaded Locally)");
+                                skipReading = true;
+                                break;
+                            }
+                        }
+                        if (!skipReading)
+                        {
+                            Logger.Info($"Reading BsdSchema from Server for NodeId: {binaryTypeDictionary} (Loaded From Server)");
+                            generateDataClasses(xmlString);
+                        }
+                    }
+                    else
+                    {
+                        Logger.Error($"Unable to read binaryTypeDictionary {binaryTypeDictionary}");
+                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    Logger.Error($"Unable to read binaryTypeDictionary {binaryTypeDictionary}");
+                    Logger.Error(e, $"Unable to read Value of Node: {binaryTypeDictionary}");
                 }
             }
             ;
@@ -121,7 +165,7 @@ namespace umatiGateway.Core.OPC
         }
         private void generateDataClasses(string xmlString)
         {
-            Logger.Debug(xmlString);
+            Logger.Trace(xmlString);
             XmlTextReader reader = new XmlTextReader(new StringReader(xmlString));
             GeneratedStructure generatedStructure = new GeneratedStructure();
             GeneratedEnumeratedType generatedEnumeratedType = new GeneratedEnumeratedType();

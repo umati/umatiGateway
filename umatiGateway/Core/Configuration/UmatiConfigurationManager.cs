@@ -63,6 +63,7 @@ namespace umatiGateway.Core.Configuration
         public const string INCLUDE_SUB_TYPES = "includeSubTypes";
         public const string IGNORED_PLACEHOLDER_TAGS = "IgnoredPlaceholderTags";
         public const string IGNORED_PLACEHOLDER_TAG = "IgnoredPlaceholderTag";
+        public const string RESOLVE_BINARIES_ONLY = "resolveBinariesOnly";
 
         public UmatiConfigurationManager() { }
 
@@ -107,6 +108,8 @@ namespace umatiGateway.Core.Configuration
                             configuration.OPCConnection.CertificatePassword = ReadAttribute(opcConnectionNode, CERT_PWD);
                             string readExtraLibs = ReadAttribute(opcConnectionNode, READ_EXTRA_LIBS);
                             configuration.OPCConnection.ReadExtraLibs = string.Equals(readExtraLibs, "true", StringComparison.OrdinalIgnoreCase) ? true : false;
+                            string resolveBinariesOnly = ReadAttribute(opcConnectionNode, RESOLVE_BINARIES_ONLY);
+                            configuration.OPCConnection.ResolveBinariesOnly = string.Equals(resolveBinariesOnly, "true", StringComparison.OrdinalIgnoreCase) ? true : false;
                         }
                         else
                         {
@@ -276,6 +279,8 @@ namespace umatiGateway.Core.Configuration
             opcPassword.Value = configuration.OPCConnection.Password;
             XmlAttribute readExtraLibs = xmlDocument.CreateAttribute(READ_EXTRA_LIBS);
             readExtraLibs.Value = configuration.OPCConnection.ReadExtraLibs.ToString();
+            XmlAttribute resolveBinariesOnly = xmlDocument.CreateAttribute(RESOLVE_BINARIES_ONLY);
+            resolveBinariesOnly.Value = configuration.OPCConnection.ResolveBinariesOnly.ToString();
             XmlAttribute certPath = xmlDocument.CreateAttribute(CERT_PATH);
             certPath.Value = configuration.OPCConnection.CertificatePath.ToString();
             XmlAttribute certPwd = xmlDocument.CreateAttribute(CERT_PWD);
@@ -285,6 +290,7 @@ namespace umatiGateway.Core.Configuration
             opcConnectionNode.Attributes.Append(opcUser);
             opcConnectionNode.Attributes.Append(opcPassword);
             opcConnectionNode.Attributes.Append(readExtraLibs);
+            opcConnectionNode.Attributes.Append(resolveBinariesOnly);
             opcConnectionNode.Attributes.Append(certPath);
             opcConnectionNode.Attributes.Append(certPwd);
             XmlElement mqttConnectionNode = xmlDocument.CreateElement(MQTT_PROVIDER);

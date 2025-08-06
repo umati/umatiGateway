@@ -388,35 +388,42 @@ namespace umatiGateway.Core.OPC
                     this.notifyOpcUaClientListeners();
                     Logger.Info("Read Binaries");
                     TypeDictionaries.ReadOpcBinary();
-                    this.ClientState.setState(OpcUaConnectionState.Connected, "Read DataTypes");
-                    this.ClientStateHistory.Add(this.ClientState.Copy());
-                    this.notifyOpcUaClientListeners();
-                    Logger.Info("Read DataTypes");
-                    TypeDictionaries.ReadDataTypes();
-                    this.ClientState.setState(OpcUaConnectionState.Connected, "Read EventTypes");
-                    this.ClientStateHistory.Add(this.ClientState.Copy());
-                    this.notifyOpcUaClientListeners();
-                    Logger.Info("Read EventTypes");
-                    TypeDictionaries.ReadEventTypes();
-                    this.ClientState.setState(OpcUaConnectionState.Connected, "Read InterfaceTypes");
-                    this.ClientStateHistory.Add(this.ClientState.Copy());
-                    this.notifyOpcUaClientListeners();
-                    Logger.Info("Read InterfaceTypes");
-                    TypeDictionaries.ReadInterfaceTypes();
-                    this.ClientState.setState(OpcUaConnectionState.Connected, "Read ObjectTypes");
-                    this.ClientStateHistory.Add(this.ClientState.Copy());
-                    this.notifyOpcUaClientListeners();
-                    Logger.Info("Read ObjectTypes");
-                    TypeDictionaries.ReadObjectTypes();
-                    this.ClientState.setState(OpcUaConnectionState.Connected, "Read ReferenceTypes");
-                    this.ClientStateHistory.Add(this.ClientState.Copy());
-                    Logger.Info("Read ReferenceTypes");
-                    TypeDictionaries.ReadReferenceTypes();
-                    this.ClientState.setState(OpcUaConnectionState.Connected, "Read VariableTypes");
-                    this.ClientStateHistory.Add(this.ClientState.Copy());
-                    this.notifyOpcUaClientListeners();
-                    Logger.Info("Read VariableTypes");
-                    TypeDictionaries.ReadVariableTypes();
+                    if (this.app.ActiveConfiguration.OPCConnection.ResolveBinariesOnly)
+                    {
+                        Logger.Info("Skip Reading Objects, ObjectTypes, Variables, VariableTypes, Interfaces and References");
+                    }
+                    else
+                    {
+                        this.ClientState.setState(OpcUaConnectionState.Connected, "Read DataTypes");
+                        this.ClientStateHistory.Add(this.ClientState.Copy());
+                        this.notifyOpcUaClientListeners();
+                        Logger.Info("Read DataTypes");
+                        TypeDictionaries.ReadDataTypes();
+                        this.ClientState.setState(OpcUaConnectionState.Connected, "Read EventTypes");
+                        this.ClientStateHistory.Add(this.ClientState.Copy());
+                        this.notifyOpcUaClientListeners();
+                        Logger.Info("Read EventTypes");
+                        TypeDictionaries.ReadEventTypes();
+                        this.ClientState.setState(OpcUaConnectionState.Connected, "Read InterfaceTypes");
+                        this.ClientStateHistory.Add(this.ClientState.Copy());
+                        this.notifyOpcUaClientListeners();
+                        Logger.Info("Read InterfaceTypes");
+                        TypeDictionaries.ReadInterfaceTypes();
+                        this.ClientState.setState(OpcUaConnectionState.Connected, "Read ObjectTypes");
+                        this.ClientStateHistory.Add(this.ClientState.Copy());
+                        this.notifyOpcUaClientListeners();
+                        Logger.Info("Read ObjectTypes");
+                        TypeDictionaries.ReadObjectTypes();
+                        this.ClientState.setState(OpcUaConnectionState.Connected, "Read ReferenceTypes");
+                        this.ClientStateHistory.Add(this.ClientState.Copy());
+                        Logger.Info("Read ReferenceTypes");
+                        TypeDictionaries.ReadReferenceTypes();
+                        this.ClientState.setState(OpcUaConnectionState.Connected, "Read VariableTypes");
+                        this.ClientStateHistory.Add(this.ClientState.Copy());
+                        this.notifyOpcUaClientListeners();
+                        Logger.Info("Read VariableTypes");
+                        TypeDictionaries.ReadVariableTypes();
+                    }
                     this.ClientState.setState(OpcUaConnectionState.Connected, "Read TypeDictionary finished");
                     this.ClientStateHistory.Add(this.ClientState.Copy());
                     this.notifyOpcUaClientListeners();
