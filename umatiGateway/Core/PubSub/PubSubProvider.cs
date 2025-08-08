@@ -46,6 +46,7 @@ namespace umatiGateway.Core.PubSub
             referenceDescriptionResolver = new ReferenceDescriptionResolver(client);
             CreateSubscriptions();
             client.SubscribeToDataChanges(subscriptionIds, updateDataValue);
+            this.AddStatusTopic();
             AddVirtualNodeIdsToStore();
             CreateApp();
             //AddVirtualNodeIdsToStore();
@@ -254,6 +255,104 @@ namespace umatiGateway.Core.PubSub
                     QueueName = "opcua/" + topic,
                     MetaDataQueueName = "opcua/" + metaTopic,
                     MetaDataUpdateTime = app.ActiveConfiguration.PubSubProviderConfig.MetaDataUpdateTime
+                }),
+            };
+            // Create WriterGroup
+            var writerGroup = new WriterGroupDataType
+            {
+                Name = "WriterGroup" + uniqueint,
+                Enabled = true,
+                PublishingInterval = app.ActiveConfiguration.PubSubProviderConfig.PublishInterval,
+                MessageSettings = new ExtensionObject(new JsonWriterGroupMessageDataType
+                {
+                    NetworkMessageContentMask = (uint)(
+                        JsonNetworkMessageContentMask.NetworkMessageHeader |
+                        JsonNetworkMessageContentMask.DataSetMessageHeader |
+                        JsonNetworkMessageContentMask.PublisherId
+                    )
+                }),
+                TransportSettings = new ExtensionObject(new BrokerWriterGroupTransportDataType()),
+                DataSetWriters = new DataSetWriterDataTypeCollection { dataSetWriter }
+            };
+            writerGroups.Add(writerGroup);
+            publishedDataSets.Add(publishedDataSet);
+        }
+        private void AddStatusTopic()
+        {
+            int uniqueint = ++counter;
+            UmatiConfiguration config = this.app.ActiveConfiguration;
+            string topic = $"{config.PubSubProviderConfig.Prefix}/json/status/{config.PubSubProviderConfig.ClientId}";
+            string dataSetName = "StatusDataSet";
+            PublishedVariableDataTypeCollection publishedVariableDataTypeCollection = new PublishedVariableDataTypeCollection();
+            FieldMetaDataCollection fields = new FieldMetaDataCollection();
+            PropertyState<PubSubState> state = new PropertyState<PubSubState>(null)
+            {
+                SymbolicName = "State",
+                ReferenceTypeId = ReferenceTypeIds.HasProperty,
+                TypeDefinitionId = VariableTypeIds.PropertyType,
+                DataType = DataTypeIds.PubSubState,
+                ValueRank = ValueRanks.Scalar,
+                BrowseName = new QualifiedName("State", 100),
+                DisplayName = new LocalizedText("State"),
+                Description = new LocalizedText("The state of the PubSubConnection"),
+                AccessLevel = AccessLevels.CurrentReadOrWrite,
+                UserAccessLevel = AccessLevels.CurrentRead,
+                Value = PubSubState.Operational, // or Disabled, etc.
+                StatusCode = Opc.Ua.StatusCodes.Good,
+                Timestamp = DateTime.UtcNow
+
+            };
+            publishedVariableDataTypeCollection.Add(
+                new PublishedVariableDataType
+                {
+                    PublishedVariable =state.NodeId,
+                    AttributeId = Attributes.Value
+                });
+            fields.Add(new FieldMetaData
+            {
+                Name = state.BrowseName.Name,
+                Description = state.Description,
+                DataType = state.DataType,
+                ValueRank = state.ValueRank,
+                DataSetFieldId = new Uuid(Guid.NewGuid())
+            });
+
+            var publishedDataItems = new PublishedDataItemsDataType
+            {
+                PublishedData = publishedVariableDataTypeCollection,
+            };
+
+            var publishedDataSet = new PublishedDataSetDataType
+            {
+                Name = dataSetName,
+                DataSetSource = new ExtensionObject(publishedDataItems),
+                DataSetMetaData = new DataSetMetaDataType
+                {
+                    Name = dataSetName,
+                    Fields = fields,
+                    ConfigurationVersion = new ConfigurationVersionDataType
+                    {
+                        MajorVersion = 1,
+                        MinorVersion = 0
+                    },
+                    Namespaces = client.GetNamespaceTable().ToArray(),
+                    Description = "MyDescription",
+                }
+            };
+
+            // Create DataSetWriter
+            var dataSetWriter = new DataSetWriterDataType
+            {
+                Name = "Writer" + uniqueint,
+                DataSetWriterId = (ushort)uniqueint,
+                DataSetFieldContentMask = (uint)DataSetFieldContentMask.RawData,
+                DataSetName = dataSetName,
+                KeyFrameCount = 1,
+                Enabled = true,
+                MessageSettings = new ExtensionObject(new JsonDataSetWriterMessageDataType()),
+                TransportSettings = new ExtensionObject(new BrokerDataSetWriterTransportDataType
+                {
+                    QueueName = "opcua/" + topic,
                 }),
             };
             // Create WriterGroup

@@ -20,7 +20,7 @@
         <label for="OPCUser" class="settings-label">OPC User</label>
          <input id="OPCUser" class="settings-input" type="text" name="OpcUser" data-toggle-group="opc" value="@Model.app.ActiveConfiguration.OPCConnection.UserName" @(Model.app.OpcUaClient.IsClientActive() ? "readonly" : "")>
         <label for="OPCPassword" class="settings-label">OPC Password</label>
-        <input id="OPCPassword" class="settings-input" type="text" name="OpcPassword" data-toggle-group="opc" value="@Model.app.ActiveConfiguration.OPCConnection.Password" @(Model.app.OpcUaClient.IsClientActive() ? "readonly" : "")>
+        <input id="OPCPassword" class="settings-input" type="password" name="OpcPassword" data-toggle-group="opc" value="@Model.app.ActiveConfiguration.OPCConnection.Password" @(Model.app.OpcUaClient.IsClientActive() ? "readonly" : "")>
         <label for="UseInternalLibs" class="settings-label">UseInternalLibs</label>
         <input id="UseInternalLibs" class="settings-input" type="text" name="UseInternalLibs" data-toggle-group="opc" value="@Model.app.ActiveConfiguration.OPCConnection.ReadExtraLibs" @(Model.app.OpcUaClient.IsClientActive() ? "readonly" : "")>
         <label for="ResolveBinariesOnly" class="settings-label">Resolve Binaries Only</label>
@@ -28,7 +28,7 @@
         <label for="CertPath" class="settings-label">Certificate Path</label>
         <input id="CertPath" class="settings-input" type="text" name="CertPath" data-toggle-group="opc" value="@Model.app.ActiveConfiguration.OPCConnection.CertificatePath" @(Model.app.OpcUaClient.IsClientActive() ? "readonly" : "")>
         <label for="CertPwd" class="settings-label">Certificate Password</label>
-        <input id="CertPwd" class="settings-input" type="text" name="CertPwd" data-toggle-group="opc" value="@Model.app.ActiveConfiguration.OPCConnection.CertificatePassword" @(Model.app.OpcUaClient.IsClientActive() ? "readonly" : "")>
+        <input id="CertPwd" class="settings-input" type="password" name="CertPwd" data-toggle-group="opc" value="@Model.app.ActiveConfiguration.OPCConnection.CertificatePassword" @(Model.app.OpcUaClient.IsClientActive() ? "readonly" : "")>
         <div class="settings-button-container">
             <button id="DisconnectButton" onclick="disconnectOpc()" class="settings-button" data-toggle-group="opc">
                 <span id="DisconnectText" class="settings-text">Disconnect</span>
