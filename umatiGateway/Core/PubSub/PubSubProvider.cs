@@ -47,9 +47,11 @@ namespace umatiGateway.Core.PubSub
             CreateSubscriptions();
             client.SubscribeToDataChanges(subscriptionIds, updateDataValue);
             this.AddStatusTopic();
+            this.PrepareConnection();
+            this.AddConnectionTopic();
             AddVirtualNodeIdsToStore();
             CreateApp();
-            //AddVirtualNodeIdsToStore();
+
 
         }
 
@@ -302,10 +304,13 @@ namespace umatiGateway.Core.PubSub
                 Timestamp = DateTime.UtcNow
 
             };
+            DataValue dataValue = new DataValue(state.Value.ToString());
+            VirtualId virtualId = new VirtualId(new NodeId("status", 100), dataValue);
+            virtualIds.Add(virtualId);
             publishedVariableDataTypeCollection.Add(
                 new PublishedVariableDataType
                 {
-                    PublishedVariable =state.NodeId,
+                    PublishedVariable = virtualId.nodeId,
                     AttributeId = Attributes.Value
                 });
             fields.Add(new FieldMetaData
@@ -314,6 +319,109 @@ namespace umatiGateway.Core.PubSub
                 Description = state.Description,
                 DataType = state.DataType,
                 ValueRank = state.ValueRank,
+                DataSetFieldId = new Uuid(Guid.NewGuid())
+            });
+
+            var publishedDataItems = new PublishedDataItemsDataType
+            {
+                PublishedData = publishedVariableDataTypeCollection,
+            };
+
+            var publishedDataSet = new PublishedDataSetDataType
+            {
+                Name = dataSetName,
+                DataSetSource = new ExtensionObject(publishedDataItems),
+                DataSetMetaData = new DataSetMetaDataType
+                {
+                    Name = dataSetName,
+                    Fields = fields,
+                    ConfigurationVersion = new ConfigurationVersionDataType
+                    {
+                        MajorVersion = 1,
+                        MinorVersion = 0
+                    },
+                    Namespaces = client.GetNamespaceTable().ToArray(),
+                    Description = "MyDescription",
+                }
+            };
+
+            // Create DataSetWriter
+            var dataSetWriter = new DataSetWriterDataType
+            {
+                Name = "Writer" + uniqueint,
+                DataSetWriterId = (ushort)uniqueint,
+                DataSetFieldContentMask = (uint)DataSetFieldContentMask.RawData,
+                DataSetName = dataSetName,
+                KeyFrameCount = 1,
+                Enabled = true,
+                MessageSettings = new ExtensionObject(new JsonDataSetWriterMessageDataType()),
+                TransportSettings = new ExtensionObject(new BrokerDataSetWriterTransportDataType
+                {
+                    QueueName = "opcua/" + topic,
+                }),
+            };
+            // Create WriterGroup
+            var writerGroup = new WriterGroupDataType
+            {
+                Name = "WriterGroup" + uniqueint,
+                Enabled = true,
+                PublishingInterval = app.ActiveConfiguration.PubSubProviderConfig.PublishInterval,
+                MessageSettings = new ExtensionObject(new JsonWriterGroupMessageDataType
+                {
+                    NetworkMessageContentMask = (uint)(
+                        JsonNetworkMessageContentMask.NetworkMessageHeader |
+                        JsonNetworkMessageContentMask.DataSetMessageHeader |
+                        JsonNetworkMessageContentMask.PublisherId
+                    )
+                }),
+                TransportSettings = new ExtensionObject(new BrokerWriterGroupTransportDataType()),
+                DataSetWriters = new DataSetWriterDataTypeCollection { dataSetWriter }
+            };
+            writerGroups.Add(writerGroup);
+            publishedDataSets.Add(publishedDataSet);
+        }
+
+        private void AddConnectionTopic()
+        {
+            int uniqueint = ++counter;
+            UmatiConfiguration config = this.app.ActiveConfiguration;
+            string topic = $"{config.PubSubProviderConfig.Prefix}/json/connection/{config.PubSubProviderConfig.ClientId}";
+            string dataSetName = "ConnectionDataSet";
+            PublishedVariableDataTypeCollection publishedVariableDataTypeCollection = new PublishedVariableDataTypeCollection();
+            FieldMetaDataCollection fields = new FieldMetaDataCollection();
+            PubSubConnectionDataType pubSubConnectionDataType = PubSubConnectionDataType;
+            PropertyState<PubSubConnectionDataType> connection = new PropertyState<PubSubConnectionDataType>(null)
+            {
+                SymbolicName = "Connection",
+                ReferenceTypeId = ReferenceTypeIds.HasProperty,
+                TypeDefinitionId = VariableTypeIds.PropertyType,
+                DataType = DataTypeIds.PubSubConnectionDataType,
+                ValueRank = ValueRanks.Scalar,
+                BrowseName = new QualifiedName("connection", 100),
+                DisplayName = new LocalizedText("connection"),
+                Description = new LocalizedText("The PubSubConnection"),
+                AccessLevel = AccessLevels.CurrentReadOrWrite,
+                UserAccessLevel = AccessLevels.CurrentRead,
+                Value = pubSubConnectionDataType, // or Disabled, etc.
+                StatusCode = Opc.Ua.StatusCodes.Good,
+                Timestamp = DateTime.UtcNow
+
+            };
+            DataValue dataValue = new DataValue(connection.WrappedValue);
+            VirtualId virtualId = new VirtualId(new NodeId("connection", 100), dataValue);
+            virtualIds.Add(virtualId);
+            publishedVariableDataTypeCollection.Add(
+                new PublishedVariableDataType
+                {
+                    PublishedVariable = virtualId.nodeId,
+                    AttributeId = Attributes.Value
+                });
+            fields.Add(new FieldMetaData
+            {
+                Name = connection.BrowseName.Name,
+                Description = connection.Description,
+                DataType = connection.DataType,
+                ValueRank = connection.ValueRank,
                 DataSetFieldId = new Uuid(Guid.NewGuid())
             });
 
@@ -547,7 +655,7 @@ namespace umatiGateway.Core.PubSub
                 default: Logger.Trace($"No DataSet created due to NodeClass: {nodeClass}"); break;
             }
         }
-        private void CreateApp()
+        private void PrepareConnection()
         {
             KeyValuePairCollection connectionProperties = new KeyValuePairCollection();
             if (!string.IsNullOrEmpty(this.app.ActiveConfiguration.PubSubProviderConfig.UserName))
@@ -592,9 +700,9 @@ namespace umatiGateway.Core.PubSub
                 };
                 connectionProperties.Add(tlsIgnoreRevocationListErrors);
             }
-            var pubSubConnection = new PubSubConnectionDataType
+            PubSubConnectionDataType = new PubSubConnectionDataType
             {
-                Name = "MQTTConnection",
+                Name = "umatiGatewayConnection",
                 Enabled = true,
                 PublisherId = (ushort)1,
                 TransportProfileUri = Profiles.PubSubMqttJsonTransport,
@@ -605,16 +713,15 @@ namespace umatiGateway.Core.PubSub
                 ConnectionProperties = connectionProperties,
                 WriterGroups = writerGroups
             };
-            var pubSubConfiguration = new PubSubConfigurationDataType
+            PubSubConfigurationDataType = new PubSubConfigurationDataType
             {
                 PublishedDataSets = publishedDataSets,
-                Connections = new PubSubConnectionDataTypeCollection { pubSubConnection }
+                Connections = new PubSubConnectionDataTypeCollection { PubSubConnectionDataType }
             };
-
-
-            //pubSubDataStore = new UaPubSubDataStore();
-
-            pubSubApp = UaPubSubApplication.Create(pubSubConfiguration, pubSubDataStore);
+        }
+        private void CreateApp()
+        {
+            pubSubApp = UaPubSubApplication.Create(PubSubConfigurationDataType, pubSubDataStore);
             pubSubApp.Start();
         }
 
