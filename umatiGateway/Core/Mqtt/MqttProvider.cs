@@ -218,9 +218,11 @@ namespace umatiGateway.Core.Mqtt
                 Logger.Info($"Valid From       : {serverCertificate.NotBefore}");
                 Logger.Info($"Valid Until      : {serverCertificate.NotAfter}");
                 Logger.Info($"Key Algorithm    : {serverCertificate.GetKeyAlgorithm()}");
+                string servercertificatePath = this.app.ActiveConfiguration.MqttProviderConfig.ServerCertificatePath;
+                string customCertificatePath = this.app.ActiveConfiguration.MqttProviderConfig.CustomCaCertificatePath;
 
                 // Zertifikat speichern, falls nicht vorhanden
-                if (!File.Exists(this.app.ActiveConfiguration.MqttProviderConfig.ServerCertificatePath))
+                if (servercertificatePath != null && !File.Exists(servercertificatePath))
                 {
                     Logger.Info("Saving server certificate to disk.");
                     File.WriteAllBytes(this.app.ActiveConfiguration.MqttProviderConfig.ServerCertificatePath, serverCertificate.Export(X509ContentType.Cert));
@@ -251,7 +253,7 @@ namespace umatiGateway.Core.Mqtt
                 }
 
                 // Schritt 2: Validierung mit benutzerdefinierter CA (falls vorhanden)
-                if (File.Exists(this.app.ActiveConfiguration.MqttProviderConfig.CustomCaCertificatePath))
+                if (customCertificatePath != null && File.Exists(customCertificatePath))
                 {
                     var customCaCertificate = new X509Certificate2(File.ReadAllBytes(this.app.ActiveConfiguration.MqttProviderConfig.CustomCaCertificatePath));
                     using var customChain = new X509Chain();
