@@ -27,8 +27,7 @@ RUN dotnet publish "./umatiGateway.csproj" -c $BUILD_CONFIGURATION -o /app/publi
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-
-ENTRYPOINT ["dotnet", "umatiGateway.dll"]
+ENTRYPOINT ["/app/umatiGateway"]
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
   CMD curl --fail http://localhost:8080 || exit 1

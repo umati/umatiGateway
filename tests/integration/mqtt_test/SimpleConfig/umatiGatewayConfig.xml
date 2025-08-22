@@ -16,7 +16,7 @@
 			<IgnoredPlaceholderTag name="&lt;ParameterIdentifier&gt;"/>
 		</IgnoredPlaceholderTags>
 	</MqttProvider>
-	<PubSubProvider serverendpoint="mqtt://localhost:1883" user="" password="" clientId="company/client" prefix="umati/v3">
+	<PubSubProvider serverendpoint="mqtt://localhost:1883" user="" password="" clientId="company/client" prefix="umati/v3" allowUntrustedCertificates="" publishInterval="1000">
 		<PublishedNodes>
 			<PublishedNode type="Numeric" namespaceurl="http://example.com/FullMachineTool/" nodeId="66382" baseType=""/>
 			<PublishedNode type="Numeric" namespaceurl="http://example.com/BasicMachineTool/" nodeId="66382" baseType=""/>
