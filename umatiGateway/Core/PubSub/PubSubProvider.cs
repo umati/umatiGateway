@@ -4,6 +4,7 @@ using NLog;
 using Opc.Ua;
 using Opc.Ua.Client;
 using Opc.Ua.PubSub;
+
 using umatiGateway.Core.Configuration;
 using umatiGateway.Core.Mqtt;
 using umatiGateway.Core.OPC;
@@ -43,6 +44,10 @@ namespace umatiGateway.Core.PubSub
         }
         public void Connect()
         {
+            Session session = this.client.CheckSession();
+            Console.WriteLine("FetchTypeTree start");
+            session.FetchTypeTree(ObjectTypeIds.BaseObjectType);
+            Console.WriteLine("FetchTypeTree end");
             referenceDescriptionResolver = new ReferenceDescriptionResolver(client);
             CreateSubscriptions();
             client.SubscribeToDataChanges(subscriptionIds, updateDataValue);
@@ -507,22 +512,119 @@ namespace umatiGateway.Core.PubSub
             structureDescription.StructureDefinition = structureDefinition;
             return structureDescriptionCollection;
         }
-        private EnumDescriptionCollection GetEnumDescriptions(HierarchicalNode hierarchicalNode)
+        private EnumDescriptionCollection GetEnumDescriptions(HierarchicalNode hierarchicalNode, bool includeDirectChilds = true)
         {
             EnumDescriptionCollection enumDescriptionCollection = new EnumDescriptionCollection();
-            EnumDescription enumDescription = new EnumDescription();
-            EnumDefinition enumDefinition = new EnumDefinition();
-            EnumFieldCollection enumFieldCollection = new EnumFieldCollection();
-            EnumField enumField = new EnumField();
-            enumField.Name = "asd";
-            enumField.Description = "Description";
-            enumField.Value = 1;
-            enumFieldCollection.Add(enumField);
-            enumDefinition.Fields = enumFieldCollection;
-            enumDescription.EnumDefinition = enumDefinition;
-            enumDescriptionCollection.Add(enumDescription);
+            FieldMetaData? fieldMetaData = hierarchicalNode.fieldMetaData;
+            if (fieldMetaData != null)
+            {
+                if (fieldMetaData != null && fieldMetaData.BuiltInType == (byte)BuiltInType.Enumeration)
+                {
+                    NodeId dataType = fieldMetaData.DataType;
+                    if (dataType != null)
+                    {
+                        DataTypeNode? dataTypeNode = this.client.ReadNode(dataType) as DataTypeNode;
+                        if (dataTypeNode != null)
+                        {
+
+                            EnumFieldCollection enumFieldCollection = new EnumFieldCollection();
+                            BrowseResultCollection browseResultCollection = this.client.BrowseNode(dataType, BrowseDirection.Forward, (int)NodeClass.Variable, ReferenceTypeIds.HasProperty, true);
+                            foreach (BrowseResult browseResult in browseResultCollection)
+                            {
+                                ReferenceDescriptionCollection referenceDescriptionCollection = browseResult.References;
+                                foreach (ReferenceDescription referenceDescription in referenceDescriptionCollection)
+                                {
+                                    if (referenceDescription.BrowseName == BrowseNames.EnumValues)
+                                    {
+                                        EnumValueType[] enumValues = new EnumValueType[0];
+                                        ExpandedNodeId enumValuesNodeIdExp = referenceDescription.NodeId;
+                                        NodeId enumValuesNodeId = new NodeId(enumValuesNodeIdExp.Identifier, enumValuesNodeIdExp.NamespaceIndex);
+                                        DataValue? dv = this.client.ReadValue(enumValuesNodeId);
+                                        if (dv != null)
+                                        {
+                                            if (dv.Value is ExtensionObject[] exArr)
+                                            {
+                                                enumValues = new EnumValueType[exArr.Length];
+                                                for (int i = 0; i < exArr.Length; i++)
+                                                    enumValues[i] = (EnumValueType)exArr[i].Body;
+                                            }
+                                            else if (dv.Value is EnumValueType[] direct)
+                                            {
+                                                enumValues = direct;
+                                            }
+                                            else
+                                            {
+                                                throw new InvalidOperationException($"Unerwarteter Typ für EnumValues: {dv.Value?.GetType().FullName}");
+                                            }
+                                        }
+                                        foreach (EnumValueType ev in enumValues)
+                                        {
+                                            enumFieldCollection.Add(new EnumField
+                                            {
+                                                Name = ev.DisplayName?.Text ?? $"V_{ev.Value}",
+                                                Value = ev.Value,
+                                                Description = ev.Description ?? LocalizedText.Null
+                                            });
+                                        }
+                                    }
+                                    else if (referenceDescription.BrowseName == BrowseNames.EnumStrings)
+                                    {
+                                        ExpandedNodeId enumStringsNodeIdExp = referenceDescription.NodeId;
+                                        NodeId enumStringsNodeId = new NodeId(enumStringsNodeIdExp.Identifier, enumStringsNodeIdExp.NamespaceIndex);
+
+                                        DataValue? dv = this.client.ReadValue(enumStringsNodeId);
+                                        if (dv != null)
+                                        {
+                                            LocalizedText[] ltArr = Array.Empty<LocalizedText>();
+
+                                            if (dv.Value is LocalizedText[] localizedTexts)
+                                            {
+                                                ltArr = localizedTexts;
+                                            }
+                                            else if (dv.Value is string[] strArr)
+                                            {
+                                                ltArr = strArr.Select(s => new LocalizedText(s)).ToArray();
+                                            }
+                                            else
+                                            {
+                                                throw new InvalidOperationException($"Unerwarteter Typ für EnumStrings: {dv.Value?.GetType().FullName}");
+                                            }
+
+                                            for (int i = 0; i < ltArr.Length; i++)
+                                            {
+                                                enumFieldCollection.Add(new EnumField
+                                                {
+                                                    Name = ltArr[i].Text ?? $"V_{i}",
+                                                    Value = (long)i,
+                                                    Description = LocalizedText.Null
+                                                });
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            EnumDefinition enumDefinition = new EnumDefinition { Fields = enumFieldCollection };
+                            EnumDescription enumDescription = new EnumDescription
+                            {
+                                DataTypeId = dataType,
+                                Name = dataTypeNode.BrowseName,
+                                EnumDefinition = enumDefinition
+                            };
+                            enumDescriptionCollection.Add(enumDescription);
+                        }
+                    }
+                }
+            }
+            if (includeDirectChilds)
+            {
+                foreach (KeyValuePair<NodeId, HierarchicalNode> childEntry in hierarchicalNode.hierarchicalChilds)
+                {
+                    enumDescriptionCollection.AddRange(GetEnumDescriptions(childEntry.Value, false));
+                }
+            }
             return enumDescriptionCollection;
         }
+
         private SimpleTypeDescriptionCollection GetSimpleTypeDescriptionCollection(HierarchicalNode hierarchicalNode)
         {
             return new SimpleTypeDescriptionCollection();
@@ -608,7 +710,7 @@ namespace umatiGateway.Core.PubSub
                 Name = "Writer" + uniqueint,
                 DataSetWriterId = (ushort)uniqueint,
                 DataSetFieldContentMask = (uint)DataSetFieldContentMask.RawData,
-                DataSetName = "DataSet" + uniqueint,
+                DataSetName = dataSetName,
                 KeyFrameCount = 1,
                 Enabled = true,
                 MessageSettings = new ExtensionObject(new JsonDataSetWriterMessageDataType()),
@@ -808,11 +910,12 @@ namespace umatiGateway.Core.PubSub
                 }
                 if (node is VariableNode variableNode)
                 {
+                    Session session = app.OpcUaClient.CheckSession();
                     FieldMetaData meta = new FieldMetaData
                     {
                         Name = variableNode.BrowseName.Name,
                         Description = variableNode.Description,
-                        //BuiltInType = (byte)TypeInfo.GetBuiltInType(variableNode.DataType, session.TypeTree),
+                        BuiltInType = (byte)TypeInfo.GetBuiltInType(variableNode.DataType, session.TypeTree),
                         DataType = variableNode.DataType,
                         ValueRank = variableNode.ValueRank,
                         DataSetFieldId = new Uuid(Guid.NewGuid())
