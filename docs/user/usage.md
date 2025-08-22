@@ -2,7 +2,7 @@
 
 ## Running the software
 
-### Running the umatiGateway as docker container with default configuration
+### Running the umatiGateway as container with default configuration
 
 Start the container directly with the default configuration:
 
@@ -12,7 +12,7 @@ docker run -it ghcr.io/umati/umatigateway:develop
 
 You can use the default configuration to reach the configuration section via the Web GUI and adapt and download your configuration.
 
-#### Running the umatiGateway as container with mounted Configuration Files
+### Running the umatiGateway as container with mounted configuration files
 
 Command line:
 
@@ -44,26 +44,26 @@ docker run -it -p 1883:1883 eclipse-mosquitto:2.0.15 mosquitto -c /mosquitto-no-
 or extend the `compose.yaml` with this block
 
 ```yaml
-  broker:
-    image: eclipse-mosquitto:2.0
-    container_name: mosquitto
-    ports:
-      - "1883:1883"
-    # make a comment if using volume mounts
-    command: "/usr/sbin/mosquitto -c /mosquitto-no-auth.conf"
-    # uncomment to use volume mounts and persist configuration and storage
-    #volumes:
-    #  - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
-    #  - ./mosquitto:/mosquitto/data
-    #  - ./mosquitto/log:/mosquitto/log
+broker:
+  image: eclipse-mosquitto:2.0
+  container_name: mosquitto
+  ports:
+    - "1883:1883"
+  # make a comment if using volume mounts
+  command: "/usr/sbin/mosquitto -c /mosquitto-no-auth.conf"
+  # uncomment to use volume mounts and persist configuration and storage
+  #volumes:
+  #  - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
+  #  - ./mosquitto:/mosquitto/data
+  #  - ./mosquitto/log:/mosquitto/log
 ```
 
 ## Configuration
 
 ### Configuration via config files
 
-The umatiGateway app has one Configuration File called umatiGatewayConfig.xml that is located in the root directory of the umatiGateway application.
-The defaul configuration file looks like:
+The umatiGateway app has one configuration file called `umatiGatewayConfig.xml` that is located in the root directory of the umatiGateway application.
+The default configuration file looks like:
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -96,61 +96,62 @@ The defaul configuration file looks like:
 </umatiGatewayConfig>
 ```
 
-| Tag/Attribute                              | Description                                                                                          | Possible Values                                           |
-|--------------------------------------------|------------------------------------------------------------------------------------------------------|-----------------------------------------------------------|
-| **umatiGatewayConfig**                     | Root Tag of the configuration file for umatiGateway.                                                 | -                                                         |
-| →version                                   | Version of the configuration format.                                                                 | `2.0`                                                     |
-| →logLevel                                  | Determines the global Log level the application runs with.                                           | `Debug`                                                   |
-| →**StartConfiguration**                    | Tag configuring the start up behaviour of the gateway.                                               | -                                                         |
-| →→startWebUi                               | Indicates if the WebUi should be started when gateway starts.                                        | True \| False                                             |
-| →→startOPCConnection                       | Indicates if the OPC Connection should be started when gateway starts.                               | True \| False                                             |
-| →→startMqttProvider                        | Indicates if the MQTT Provider should be started when gateway starts.                                | True \| False                                             |
-| →→startPubSubProvider                      | Indicates if the PubSub Provider should be started when gateway starts.                              | True \| False                                             |
-| →**WebUI**                                 | Tag configuring the Web Ui of the gateway.                                                           | -                                                         |
-| →→`url`                                    | Sets the URL for the Web Ui.                                                                         | e.g., `http:localhost:8080` or `https:127.0.0.1:80`       |
-| →**OPCConnection**                         | Tag Configuring the connection to the OPC Server.                                                    | -                                                         |
-| →→serverendpoint                           | Host address of the OPC Ua Server.                                                                   | e.g., `opc.tcp://localhost:4840`                          |
-| →→authentication                           | Reserved for future use.                                                                             | None                                                      |
-| →→user                                     | User for basic User/Password authentication.                                                         | e.g., admin                                               |
-| →→password                                 | Password for basic User/Password authentication.                                                     | e.g., password1                                           |
-| →→readExtraLibs                            | Experimental. Reads Certain BSD files locally instead from the server.                               | True \| False                                             |
-| →**MqttProvider**                          | Tag that configures the MQTT Provider that publishes in umati/v2 format.                             | -                                                         |
-| →→serverendpoint                           | Host address of the MQTT Broker.                                                                     | e.g., `mqtt://localhost:1883` or `wss://umati.app/ws` for umati.app |
-| →→user                                     | User for basic User/Password authentication.                                                         | e.g., admin                                               |
-| →→password                                 | Password for basic User/Password authentication.                                                     | e.g., password1                                           |
-| →→clientId                                 | Client id that is used to construct the MQTT topics.                                                 | e.g., company/client                                      |
-| →→prefix                                   | Prefix that is used to construct the MQTT topics.                                                    | e.g., umati/v2                                            |
-| →→includeStructuredComponents              | Indicates if StructuredCompnents should be included in resulting JSON.                               | True \| False                                             |
-| →→publishInterval                          | Determines the interval in ms in which the MQTT topics are published.                                | e.g., 5000                                                |
-| →→**PublishedNodes**                       | Tag that holds a list of the Nodes that are published.                                               | -                                                         |
-| →→→**PublishedNode**                       | Tag that holds the configuration for one published node.                                             | -                                                         |
-| →→→→type                                   | Defines the type of the NodeId of the PublishedNode.                                                 | Numeric \| String                                         |
-| →→→→namespaceurl                           | Defines the nsu of the PublishedNode.                                                                | e.g., `http://example.com/BasicMachineTool/`              |
-| →→→→nodeId                                 | Defines the id of the PublishedNode.                                                                 | e.g., 61982 or MyMachine (Numeric or String)              |
-| →→→→baseType                               | Alias name for the Typedefintion that is used in the resulting JSON.                                 | e.g., MachineToolType Empty if no alias should be used.   |
-| →→**CustomEncodings**                      | Tag that holds possible CustomEncodings for certain DataStructures.                                  | -                                                         |
-| →→→GmsResultDataTypeEncoding               | Custom Encoding for the _GmsResultDataType_.                                                         | True \| False                                             |
-| →→→ProcessingCategorytDataTypeEncoding     | Custom Encoding for the _GmsResultDataType_.                                                         | True \| False                                             |
-| →→**IgnoredPlaceHolderTags**               | Tag that holds PlaceholderTags that should be ignored in the Resutling Json.                         | -                                                         |
-| →→→**IgnoredPlaceHolderTag**               | Tag that configures the Placeholder that should be ignored.                                          | -                                                         |
-| →→→→name                                   | The name of the PlaceholderTag that should be ignored. <> have to be escaped.                        | e.g., &lt;ParameterIdentifier&gt;                         |
-| →**PubSubProvider**                        | Tag that configures the PubSub Provider that publishes in umati/v3 format.                           | -                                                         |
-| →→serverendpoint                           | Host address of the MQTT Broker.                                                                     | e.g., `mqtt://localhost:1883` or `wss://umati.app/ws` for umati.app |
-| →→user                                     | User for basic User/Password authentication.                                                         | e.g., `admin` or                                          |
-| →→password                                 | Password for basic User/Password authentication.                                                     | e.g., `password1`                                         |
-| →→clientId                                 | Client id that is used to construct the MQTT topics.                                                 | e.g., `company/client`                                    |
-| →→prefix                                   | Prefix that is used to construct the MQTT topics.                                                    | e.g., `umati/v2`                                          |
-| →→allowUntrustedCertificates               | Allows to disable the certificate check during connection initiation.                                | e.g., `false`                                             |
-| →→**PublishedNodes**                       | Tag that holds a list of the Nodes that are published.                                               | -                                                         |
-| →→→**PublishedNode**                       | Tag that holds the configuration for one published node.                                             | -                                                         |
-| →→→→type                                   | Defines the type of the NodeId of the PublishedNode.                                                 | Numeric \| String                                         |
-| →→→→namespaceurl                           | Defines the nsu of the PublishedNode.                                                                | e.g., `http://example.com/BasicMachineTool/`              |
-| →→→→nodeId                                 | Defines the id of the PublishedNode.                                                                 | e.g., `61982` or `MyMachine` (`Numeric` or `String`)      |
-| →→→→baseType                               | Alias name for the entry node _TypeDefintion_ that is used in the resulting Json.                    | e.g., `MachineToolType` or empty if no alias should be used. |
+| Tag/Attribute                          | Description                                                                       | Possible Values                                                     |
+| -------------------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| **umatiGatewayConfig**                 | Root Tag of the configuration file for umatiGateway.                              | -                                                                   |
+| →version                               | Version of the configuration format.                                              | `2.0`                                                               |
+| →logLevel                              | Determines the global Log level the application runs with.                        | `Debug`                                                             |
+| →**StartConfiguration**                | Tag configuring the start up behaviour of the gateway.                            | -                                                                   |
+| →→startWebUi                           | Indicates if the WebUi should be started when gateway starts.                     | True \| False                                                       |
+| →→startOPCConnection                   | Indicates if the OPC Connection should be started when gateway starts.            | True \| False                                                       |
+| →→startMqttProvider                    | Indicates if the MQTT Provider should be started when gateway starts.             | True \| False                                                       |
+| →→startPubSubProvider                  | Indicates if the PubSub Provider should be started when gateway starts.           | True \| False                                                       |
+| →**WebUI**                             | Tag configuring the Web Ui of the gateway.                                        | -                                                                   |
+| →→`url`                                | Sets the URL for the Web Ui.                                                      | e.g., `http:localhost:8080` or `https:127.0.0.1:80`                 |
+| →**OPCConnection**                     | Tag Configuring the connection to the OPC Server.                                 | -                                                                   |
+| →→serverendpoint                       | Host address of the OPC Ua Server.                                                | e.g., `opc.tcp://localhost:4840`                                    |
+| →→authentication                       | Reserved for future use.                                                          | None                                                                |
+| →→user                                 | User for basic User/Password authentication.                                      | e.g., admin                                                         |
+| →→password                             | Password for basic User/Password authentication.                                  | e.g., password1                                                     |
+| →→readExtraLibs                        | Experimental. Reads Certain BSD files locally instead from the server.            | True \| False                                                       |
+| →**MqttProvider**                      | Tag that configures the MQTT Provider that publishes in umati/v2 format.          | -                                                                   |
+| →→serverendpoint                       | Host address of the MQTT Broker.                                                  | e.g., `mqtt://localhost:1883` or `wss://umati.app/ws` for umati.app |
+| →→user                                 | User for basic User/Password authentication.                                      | e.g., admin                                                         |
+| →→password                             | Password for basic User/Password authentication.                                  | e.g., password1                                                     |
+| →→clientId                             | Client id that is used to construct the MQTT topics.                              | e.g., company/client                                                |
+| →→prefix                               | Prefix that is used to construct the MQTT topics.                                 | e.g., umati/v2                                                      |
+| →→includeStructuredComponents          | Indicates if StructuredCompnents should be included in resulting JSON.            | True \| False                                                       |
+| →→publishInterval                      | Determines the interval in ms in which the MQTT topics are published.             | e.g., 5000                                                          |
+| →→**PublishedNodes**                   | Tag that holds a list of the Nodes that are published.                            | -                                                                   |
+| →→→**PublishedNode**                   | Tag that holds the configuration for one published node.                          | -                                                                   |
+| →→→→type                               | Defines the type of the NodeId of the PublishedNode.                              | Numeric \| String                                                   |
+| →→→→namespaceurl                       | Defines the nsu of the PublishedNode.                                             | e.g., `http://example.com/BasicMachineTool/`                        |
+| →→→→nodeId                             | Defines the id of the PublishedNode.                                              | e.g., 61982 or MyMachine (Numeric or String)                        |
+| →→→→baseType                           | Alias name for the Typedefintion that is used in the resulting JSON.              | e.g., MachineToolType Empty if no alias should be used.             |
+| →→**CustomEncodings**                  | Tag that holds possible CustomEncodings for certain DataStructures.               | -                                                                   |
+| →→→GmsResultDataTypeEncoding           | Custom Encoding for the _GmsResultDataType_.                                      | True \| False                                                       |
+| →→→ProcessingCategorytDataTypeEncoding | Custom Encoding for the _GmsResultDataType_.                                      | True \| False                                                       |
+| →→**IgnoredPlaceHolderTags**           | Tag that holds PlaceholderTags that should be ignored in the Resulting JSON.      | -                                                                   |
+| →→→**IgnoredPlaceHolderTag**           | Tag that configures the Placeholder that should be ignored.                       | -                                                                   |
+| →→→→name                               | The name of the PlaceholderTag that should be ignored. <> have to be escaped.     | e.g., &lt;ParameterIdentifier&gt;                                   |
+| →**PubSubProvider**                    | Tag that configures the PubSub Provider that publishes in umati/v3 format.        | -                                                                   |
+| →→serverendpoint                       | Host address of the MQTT Broker.                                                  | e.g., `mqtt://localhost:1883` or `wss://umati.app/ws` for umati.app |
+| →→user                                 | User for basic User/Password authentication.                                      | e.g., `admin` or                                                    |
+| →→password                             | Password for basic User/Password authentication.                                  | e.g., `password1`                                                   |
+| →→clientId                             | Client id that is used to construct the MQTT topics.                              | e.g., `company/client`                                              |
+| →→prefix                               | Prefix that is used to construct the MQTT topics.                                 | e.g., `umati/v2`                                                    |
+| →→allowUntrustedCertificates           | Allows to disable the certificate check during connection initiation.             | e.g., `false`                                                       |
+| →→**PublishedNodes**                   | Tag that holds a list of the Nodes that are published.                            | -                                                                   |
+| →→→**PublishedNode**                   | Tag that holds the configuration for one published node.                          | -                                                                   |
+| →→→→type                               | Defines the type of the NodeId of the PublishedNode.                              | Numeric \| String                                                   |
+| →→→→namespaceurl                       | Defines the nsu of the PublishedNode.                                             | e.g., `http://example.com/BasicMachineTool/`                        |
+| →→→→nodeId                             | Defines the id of the PublishedNode.                                              | e.g., `61982` or `MyMachine` (`Numeric` or `String`)                |
+| →→→→baseType                           | Alias name for the entry node _TypeDefintion_ that is used in the resulting JSON. | e.g., `MachineToolType` or empty if no alias should be used.        |
 
 ### Configuration via Web UI
 
-The Web UI is accessible after starting the umatiGateway via `http://localhost:8080` . The address can be configured via an application.json file in the applications root directory. An example is statet in the FAQs.
+The Web UI is accessible after starting the umatiGateway via `http://localhost:8080` . The address can be configured via an `application.json` file in the applications root directory. An example is shown in the FAQs.
+
 The Web UI consists of 4 different tabs:
 
 1. The **OPC Connection Tab** which deals with the OPC Connection
@@ -190,7 +191,7 @@ In the Configuration Tab you can see all currently set configuration settings. Y
 
 The port for the Web UI can be changed by editing the `application.json` file in the root directory of the application in the follwoing way:
 
-``` json
+```json
 {
   "Logging": {
     "LogLevel": {
@@ -214,7 +215,7 @@ The port for the Web UI can be changed by editing the `application.json` file in
 You can change the port by using the ASPNETCore Environment Variable
 
 ```shell
-# Windows(temporary): 
+# Windows(temporary):
 set ASPNETCORE_URLS=http://localhost:8080
 
 # Windows(permanent):
@@ -262,7 +263,7 @@ In some corporate networks, TLS inspection replaces the broker's certificate wit
 
 Common error:
 
-```The remote certificate is invalid according to the validation procedure.```
+`The remote certificate is invalid according to the validation procedure.`
 
 #### Solution 1: Install Company Root CA (Recommended)
 
