@@ -10,6 +10,8 @@ on:
     branches: [main, develop]
   merge_group:
 
+permissions: read-all
+
 jobs:
   build-linux:
     permissions:

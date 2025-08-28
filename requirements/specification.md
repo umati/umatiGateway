@@ -178,9 +178,9 @@ If two nodes have the same _BrowsePath_ an iterator (".Number") can be send to a
 
 The metadata of the object is written to the Properties.
 
-| Key          | DataType               | ModellingRule | Description                |
-| ------------ | ---------------------- | ------------- | -------------------------- |
-| Reference    | ReferenceDescription[] | Optional      | References of the object |
+| Key       | DataType               | ModellingRule | Description              |
+| --------- | ---------------------- | ------------- | ------------------------ |
+| Reference | ReferenceDescription[] | Optional      | References of the object |
 
 Reference_No (e.g., Reference_1, Reference_23) should be counted to that each reference has a different key.
 The following Reference must be set, other Reference can be send:
