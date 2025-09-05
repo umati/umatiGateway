@@ -121,10 +121,14 @@ namespace umatiGateway.Core.OPC
             {
                 return session.ReadNode(nodeId);
             }
-            catch (Exception ex)
+            catch (ServiceResultException ex) when (ex.StatusCode == Opc.Ua.StatusCodes.BadNodeIdUnknown)
             {
                 Logger.Warn(ex, "Failed to read Node with NodeId: {nodeId}", nodeId);
                 return null;
+            }
+            catch (Exception ex)
+            {
+                throw new OpcUaException($"Failed to read Node with NodeId: {nodeId}", ex);
             }
         }
         public void ConnectEvents(OpcUaEventListener opcUaEventListener)
