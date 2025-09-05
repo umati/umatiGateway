@@ -6,7 +6,6 @@ using System.Security.Cryptography.X509Certificates;
 using NLog;
 using Opc.Ua;
 using Opc.Ua.Client;
-using LogLevel = NLog.LogLevel;
 
 namespace umatiGateway.Core.OPC
 {
@@ -124,7 +123,7 @@ namespace umatiGateway.Core.OPC
             }
             catch (Exception ex)
             {
-                Logger.Log(LogLevel.Warn, ex, "Failed to read Node with NodeId: {nodeId}", nodeId);
+                Logger.Warn(ex, "Failed to read Node with NodeId: {nodeId}", nodeId);
                 return null;
             }
         }
