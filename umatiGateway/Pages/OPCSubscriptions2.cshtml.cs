@@ -81,7 +81,14 @@ namespace UmatiGateway.Pages
                             Node? node = this.app.OpcUaClient.ReadNode(childNodeId);
                             if (node != null)
                             {
-                                childNode.Description = node.Description.ToString();
+                                if (node.Description != null)
+                                {
+                                    childNode.Description = node.Description.ToString();
+                                }
+                                else
+                                {
+                                    childNode.Description = "";
+                                }
                             }
                             try
                             {
