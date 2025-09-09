@@ -243,7 +243,7 @@ namespace umatiGateway.Core.PubSub
                     StructureDataTypes = GetStructureDescriptions(hierarchicalNode),
                     EnumDataTypes = GetEnumDescriptions(hierarchicalNode),
                     SimpleDataTypes = GetSimpleTypeDescriptionCollection(hierarchicalNode),
-                    Description = "MyDescription",
+                    Description = hierarchicalNode.Description,
                 }
             };
 
@@ -701,7 +701,7 @@ namespace umatiGateway.Core.PubSub
                     StructureDataTypes = GetStructureDescriptions(hierarchicalNode),
                     EnumDataTypes = GetEnumDescriptions(hierarchicalNode),
                     SimpleDataTypes = GetSimpleTypeDescriptionCollection(hierarchicalNode),
-                    Description = "MyDescription",
+                    Description = hierarchicalNode.Description,
                 }
             };
             // Create DataSetWriter
