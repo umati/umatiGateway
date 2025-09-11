@@ -4,7 +4,7 @@ using NLog;
 using Opc.Ua;
 using Opc.Ua.Client;
 using Opc.Ua.PubSub;
-
+using System.Collections.Concurrent;
 using umatiGateway.Core.Configuration;
 using umatiGateway.Core.Mqtt;
 using umatiGateway.Core.OPC;
@@ -34,6 +34,7 @@ namespace umatiGateway.Core.PubSub
         private readonly System.Timers.Timer pubTestTimer = new System.Timers.Timer(5000);
         private ReferenceDescriptionResolver referenceDescriptionResolver;
         private bool alwaysIncludeBrowsePathIndex = false;
+        private readonly BlockingCollection<(MonitoredItem, MonitoredItemNotificationEventArgs)> notificationqueue = new BlockingCollection<(MonitoredItem, MonitoredItemNotificationEventArgs)>();
         public List<MachineNode> MachineNodes { get; set; } = new List<MachineNode>();
 
         public PubSubProvider(UmatiGatewayApp app)
@@ -41,6 +42,7 @@ namespace umatiGateway.Core.PubSub
             this.app = app;
             this.client = app.OpcUaClient;
             this.referenceDescriptionResolver = new ReferenceDescriptionResolver(client);
+            this.StartWorker();
         }
         public void Connect()
         {
@@ -829,16 +831,26 @@ namespace umatiGateway.Core.PubSub
 
         private void updateDataValue(MonitoredItem monitoredItem, MonitoredItemNotificationEventArgs monitoredItemsArgs)
         {
-            if (monitoredItemsArgs.NotificationValue is MonitoredItemNotification valueNotification)
+            this.notificationqueue.Add((monitoredItem, monitoredItemsArgs));
+        }
+        public void StartWorker()
+        {
+            Task.Run(() =>
             {
-                DataValue dv = valueNotification.Value;
-                pubSubDataStore.WritePublishedDataItem(monitoredItem.ResolvedNodeId, Attributes.Value, dv);
-                Logger.Info($"Updated Value in PubSub DataStore: {monitoredItem.ResolvedNodeId} \t {dv}");
-            }
-            else
-            {
-                Logger.Info($"Unexpected Notification type: {monitoredItemsArgs.NotificationValue}");
-            }
+                foreach (var (monitoredItem, args) in this.notificationqueue.GetConsumingEnumerable())
+                {
+                    if (args.NotificationValue is MonitoredItemNotification valueNotification)
+                    {
+                        DataValue dv = valueNotification.Value;
+                        pubSubDataStore.WritePublishedDataItem(monitoredItem.ResolvedNodeId, Attributes.Value, dv);
+                        Logger.Info($"Updated Value in PubSub DataStore: {monitoredItem.ResolvedNodeId}\t {dv}");
+                    }
+                    else
+                    {
+                        Logger.Info($"Unexpected Notification type: {args.NotificationValue}");
+                    }
+                }
+            });
         }
 
         private HierarchicalNode? ReadNodeIdAsHierarchicalNode(HierarchicalNode? parent, NodeId nodeId)
