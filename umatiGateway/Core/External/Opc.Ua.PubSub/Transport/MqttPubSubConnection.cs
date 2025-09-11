@@ -34,6 +34,7 @@ using Opc.Ua.PubSub.Encoding;
 using Opc.Ua.PubSub.PublishedData;
 using System;
 using System.Buffers;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Net;
@@ -67,6 +68,7 @@ namespace Opc.Ua.PubSub.Transport
         private MqttClientOptions m_publisherMqttClientOptions;
         private MqttClientOptions m_subscriberMqttClientOptions;
         private readonly List<MqttMetadataPublisher> m_metaDataPublishers = new List<MqttMetadataPublisher>();
+        private readonly BlockingCollection<MqttApplicationMessage> messageQueue = new BlockingCollection<MqttApplicationMessage>();
         #endregion
 
         #region Public Properties
@@ -182,6 +184,7 @@ namespace Opc.Ua.PubSub.Transport
             m_subscriberMqttClientOptions = GetMqttClientOptions();
 
             Utils.Trace("MqttPubSubConnection with name '{0}' was created.", pubSubConnectionDataType.Name);
+            this.StartWorker();
         }
         #endregion
 
@@ -305,8 +308,7 @@ namespace Opc.Ua.PubSub.Transport
                                     QualityOfServiceLevel = GetMqttQualityOfServiceLevel(qos),
                                     Retain = networkMessage.IsMetaDataMessage
                                 };
-
-                                m_publisherMqttClient.PublishAsync(message).GetAwaiter().GetResult();
+                                this.messageQueue.Add(message);
                             }
                         }
                         catch (Exception ex)
@@ -326,6 +328,26 @@ namespace Opc.Ua.PubSub.Transport
             }
 
             return false;
+        }
+        public void StartWorker()
+        {
+            Task.Run(() =>
+            {
+                foreach (MqttApplicationMessage message in this.messageQueue.GetConsumingEnumerable())
+                {
+                    if (m_publisherMqttClient != null && m_publisherMqttClient.IsConnected)
+                    {
+                        try
+                        {
+                            this.m_publisherMqttClient.PublishAsync(message).GetAwaiter().GetResult();
+                        }
+                        catch (Exception ex)
+                        {
+                            Utils.Trace(ex, "Exception on Sending Mqtt Message");
+                        }
+                    }
+                }
+            });
         }
 
         /// <summary>
