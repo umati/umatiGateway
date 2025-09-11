@@ -831,7 +831,10 @@ namespace umatiGateway.Core.PubSub
 
         private void updateDataValue(MonitoredItem monitoredItem, MonitoredItemNotificationEventArgs monitoredItemsArgs)
         {
-            this.notificationqueue.Add((monitoredItem, monitoredItemsArgs));
+            if (!this.notificationqueue.TryAdd((monitoredItem, monitoredItemsArgs), 0))
+            {
+                Logger.Error("Notification dropped, queue full");
+            }
         }
         public void StartWorker()
         {
@@ -841,9 +844,16 @@ namespace umatiGateway.Core.PubSub
                 {
                     if (args.NotificationValue is MonitoredItemNotification valueNotification)
                     {
-                        DataValue dv = valueNotification.Value;
-                        pubSubDataStore.WritePublishedDataItem(monitoredItem.ResolvedNodeId, Attributes.Value, dv);
-                        Logger.Info($"Updated Value in PubSub DataStore: {monitoredItem.ResolvedNodeId}\t {dv}");
+                        try
+                        {
+                            DataValue dv = valueNotification.Value;
+                            pubSubDataStore.WritePublishedDataItem(monitoredItem.ResolvedNodeId, Attributes.Value, dv);
+                            Logger.Info($"Updated Value in PubSub DataStore: {monitoredItem.ResolvedNodeId}\t {dv}");
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Error(ex, "Exception handling notification.");
+                        }
                     }
                     else
                     {
