@@ -835,6 +835,7 @@ namespace umatiGateway.Core.PubSub
             {
                 Logger.Error("Notification dropped, queue full");
             }
+
         }
         public void StartWorker()
         {
@@ -854,6 +855,7 @@ namespace umatiGateway.Core.PubSub
                         {
                             Logger.Error(ex, "Exception handling notification.");
                         }
+
                     }
                     else
                     {
