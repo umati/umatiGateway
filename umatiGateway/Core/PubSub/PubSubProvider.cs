@@ -34,7 +34,7 @@ namespace umatiGateway.Core.PubSub
         private readonly System.Timers.Timer pubTestTimer = new System.Timers.Timer(5000);
         private ReferenceDescriptionResolver referenceDescriptionResolver;
         private bool alwaysIncludeBrowsePathIndex = false;
-        private readonly BlockingCollection<(MonitoredItem, MonitoredItemNotificationEventArgs)> notificationqueue= new BlockingCollection<(MonitoredItem, MonitoredItemNotificationEventArgs)>();
+        private readonly BlockingCollection<(MonitoredItem, MonitoredItemNotificationEventArgs)> notificationqueue = new BlockingCollection<(MonitoredItem, MonitoredItemNotificationEventArgs)>();
         public List<MachineNode> MachineNodes { get; set; } = new List<MachineNode>();
 
         public PubSubProvider(UmatiGatewayApp app)
