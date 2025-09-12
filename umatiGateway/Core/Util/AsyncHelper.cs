@@ -13,7 +13,7 @@ namespace umatiGateway.Core.Util
     {
         private static readonly TaskFactory _taskFactory = new
             TaskFactory(CancellationToken.None,
-                        TaskCreationOptions.None,
+                        TaskCreationOptions.DenyChildAttach,
                         TaskContinuationOptions.None,
                         TaskScheduler.Default);
 

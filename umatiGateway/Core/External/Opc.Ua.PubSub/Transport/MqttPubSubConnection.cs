@@ -41,6 +41,7 @@ using System.Net;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
+using umatiGateway.Core.Util;
 using DataSet = Opc.Ua.PubSub.PublishedData.DataSet;
 using JsonDataSetMessage = Opc.Ua.PubSub.Encoding.JsonDataSetMessage;
 using JsonNetworkMessage = Opc.Ua.PubSub.Encoding.JsonNetworkMessage;
@@ -335,17 +336,16 @@ namespace Opc.Ua.PubSub.Transport
             {
                 foreach (MqttApplicationMessage message in this.messageQueue.GetConsumingEnumerable())
                 {
-                    if (m_publisherMqttClient != null && m_publisherMqttClient.IsConnected)
+                    Utils.LogInfo("Messages in Queue" + this.messageQueue.Count);
+                    try
                     {
-                        try
-                        {
-                            _ = this.m_publisherMqttClient.PublishAsync(message);
-                        }
-                        catch (Exception ex)
-                        {
-                            Utils.Trace(ex, "Exception on Sending Mqtt Message");
-                        }
+                        AsyncHelper.RunSync(() => m_publisherMqttClient!.PublishAsync(message));
                     }
+                    catch (Exception ex)
+                    {
+                        Utils.Trace(ex, "Exception on Sending Mqtt Message");
+                    }
+
                 }
             });
         }
