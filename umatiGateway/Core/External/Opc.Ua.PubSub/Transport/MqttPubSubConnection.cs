@@ -339,7 +339,7 @@ namespace Opc.Ua.PubSub.Transport
                     {
                         try
                         {
-                            this.m_publisherMqttClient.PublishAsync(message).GetAwaiter().GetResult();
+                            _ = this.m_publisherMqttClient.PublishAsync(message);
                         }
                         catch (Exception ex)
                         {
