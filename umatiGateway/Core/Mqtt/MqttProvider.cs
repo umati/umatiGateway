@@ -1093,35 +1093,34 @@ namespace umatiGateway.Core.Mqtt
                     if (machineNode != null && machineNode.ResolvedNodeId != null)
                     {
                         {
-                            List<NodeId> identificationNodes = client.BrowseNodeIds(new BrowseDescriptionCollection { BrowseUtils.GetHierarchicalChildren(machineNode.ResolvedNodeId, (int)NodeClass.Object) });
-                            //List<NodeId> identificationNodes = client.BrowseLocalNodeIds(machineNode.ResolvedNodeId, BrowseDirection.Forward, (int)NodeClass.Object, ReferenceTypeIds.HierarchicalReferences, true);
-                            foreach (NodeId child in identificationNodes)
+                            JObject data = new JObject();
+                            JObject ident = new JObject();
+                            ident = JObject.Parse(@"{
+                          ""<GroupIdentifier>"": {},
+                          ""SerialNumber"": ""37731"",
+                          ""ProductInstanceUri"": ""http://herding.de"",
+                          ""Model"" : ""Herding FLEXPRO 1500-24-2-3_SB"",
+                          ""Manufacturer"": {
+                            ""locale"": """",
+                            ""text"": ""Herding GmbH Filtertechnik""
+                          }
+                        }");
+                            data.Add("Data", ident);
+                            data.Add("MachineId", machineNode.InstanceNamespace);
+                            data.Add("ParentId", "nsu=http:_2F_2Fopcfoundation.org_2FUA_2FMachinery_2F;i=1001");
+                            if (string.IsNullOrEmpty(machineNode.BaseType))
                             {
-                                Node? childNode = client.ReadNode(child);
-                                if (childNode != null)
-                                {
-                                    if (childNode.BrowseName.Name == "Identification")
-                                    {
-                                        JObject data = new JObject();
-                                        JObject ident = new JObject();
-                                        createJSON(ident, child, machineNode, null, false);
-                                        data.Add("Data", ident);
-                                        data.Add("MachineId", machineNode.InstanceNamespace);
-                                        data.Add("ParentId", "nsu=http:_2F_2Fopcfoundation.org_2FUA_2FMachinery_2F;i=1001");
-                                        if (string.IsNullOrEmpty(machineNode.BaseType))
-                                        {
-                                            data.Add("Topic", config.Prefix + "/" + config.ClientId + "/" + machineNode.TypeBrowseName + "/" + machineNode.InstanceNamespace);
-                                            data.Add("TypeDefinition", machineNode.TypeBrowseName);
-                                        }
-                                        else
-                                        {
-                                            data.Add("Topic", config.Prefix + "/" + config.ClientId + "/" + machineNode.BaseType + "/" + machineNode.InstanceNamespace);
-                                            data.Add("TypeDefinition", machineNode.BaseType);
-                                        }
-                                        identificationArray.Add(data);
-                                    }
-                                }
+                                data.Add("Topic", config.Prefix + "/" + config.ClientId + "/" + machineNode.TypeBrowseName + "/" + machineNode.InstanceNamespace);
+                                data.Add("TypeDefinition", machineNode.TypeBrowseName);
                             }
+                            else
+                            {
+                                data.Add("Topic", config.Prefix + "/" + config.ClientId + "/" + machineNode.BaseType + "/" + machineNode.InstanceNamespace);
+                                data.Add("TypeDefinition", machineNode.BaseType);
+                            }
+                            identificationArray.Add(data);
+
+
                             if (string.IsNullOrEmpty(machineNode.BaseType))
                             {
                                 WriteIdentification(identificationArray, machineNode.InstanceNamespace, machineNode.TypeBrowseName);
