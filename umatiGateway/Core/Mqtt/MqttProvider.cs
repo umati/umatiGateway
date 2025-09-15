@@ -90,6 +90,20 @@ namespace umatiGateway.Core.Mqtt
 
         public void Connect()
         {
+            foreach (Configuration.CustomEncoding customEncoding in this.app.ActiveConfiguration.MqttProviderConfig.CustomEncodings)
+            {
+                if (customEncoding.Name == "GMSResultDataTypeEncoding" && customEncoding.Active == true)
+                {
+                    if (customEncoding.Active == true)
+                    {
+                        useGMSResultEncoding = true;
+                    }
+                    else
+                    {
+                        useGMSResultEncoding = false;
+                    }
+                }
+            }
             MqttProviderConfig config = this.app.ActiveConfiguration.MqttProviderConfig;
             this.jsonConverter = new JSONConverter(config.UpperCaseRange);
             Logger.Info("MQTT Connect");
