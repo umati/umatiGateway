@@ -4,6 +4,7 @@ using NLog;
 using Opc.Ua;
 using Opc.Ua.Client;
 using Opc.Ua.PubSub;
+using System;
 using System.Collections.Concurrent;
 using umatiGateway.Core.Configuration;
 using umatiGateway.Core.Mqtt;
@@ -397,6 +398,9 @@ namespace umatiGateway.Core.PubSub
             PublishedVariableDataTypeCollection publishedVariableDataTypeCollection = new PublishedVariableDataTypeCollection();
             FieldMetaDataCollection fields = new FieldMetaDataCollection();
             PubSubConnectionDataType pubSubConnectionDataType = PubSubConnectionDataType;
+            PubSubConnectionDataType pubSubConnectionDataTypeWithoutPassword = (PubSubConnectionDataType)pubSubConnectionDataType.Clone();
+            this.RemoveConnectionProperty(pubSubConnectionDataTypeWithoutPassword, new QualifiedName("UserName"));
+            this.RemoveConnectionProperty(pubSubConnectionDataTypeWithoutPassword, new QualifiedName("Password"));
             PropertyState<PubSubConnectionDataType> connection = new PropertyState<PubSubConnectionDataType>(null)
             {
                 SymbolicName = "Connection",
@@ -409,7 +413,7 @@ namespace umatiGateway.Core.PubSub
                 Description = new LocalizedText("The PubSubConnection"),
                 AccessLevel = AccessLevels.CurrentReadOrWrite,
                 UserAccessLevel = AccessLevels.CurrentRead,
-                Value = pubSubConnectionDataType, // or Disabled, etc.
+                Value = pubSubConnectionDataTypeWithoutPassword,
                 StatusCode = Opc.Ua.StatusCodes.Good,
                 Timestamp = DateTime.UtcNow
 
@@ -489,6 +493,18 @@ namespace umatiGateway.Core.PubSub
             };
             writerGroups.Add(writerGroup);
             publishedDataSets.Add(publishedDataSet);
+        }
+        // remove one specific key
+        void RemoveConnectionProperty(PubSubConnectionDataType conn, QualifiedName keyToRemove)
+        {
+            KeyValuePairCollection kvpc = conn.ConnectionProperties;
+            for (int i = 0; i < kvpc.Count; i++)
+            {
+                if (kvpc[i].Key.Equals(keyToRemove))
+                {
+                    kvpc.RemoveAt(i);
+                }
+            }
         }
 
         private KeyValuePairCollection GetRealationsAsKeyValuePair(HierarchicalNode hierarchicalNode)
