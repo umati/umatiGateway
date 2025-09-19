@@ -1,5 +1,6 @@
 ﻿// SPDX-License-Identifier: Apache-2.0
 // Copyright (c) 2025 FVA GmbH - interop4x. All rights reserved.
+using MQTTnet.Packets;
 using NLog;
 using Opc.Ua;
 using Opc.Ua.Client;
@@ -35,6 +36,10 @@ namespace umatiGateway.Core.PubSub
         private readonly System.Timers.Timer pubTestTimer = new System.Timers.Timer(5000);
         private ReferenceDescriptionResolver referenceDescriptionResolver;
         private bool alwaysIncludeBrowsePathIndex = false;
+        private Dictionary<string, string> metaTopics = new Dictionary<string, string>();
+        private Dictionary<string, string> topics = new Dictionary<string, string>();
+        private List<Replacement> topicReplacements = new List<Replacement>();
+        private List<Replacement> metaTopicReplacements = new List<Replacement>();
         private readonly BlockingCollection<(MonitoredItem, MonitoredItemNotificationEventArgs)> notificationqueue = new BlockingCollection<(MonitoredItem, MonitoredItemNotificationEventArgs)>();
         public List<MachineNode> MachineNodes { get; set; } = new List<MachineNode>();
 
@@ -47,10 +52,12 @@ namespace umatiGateway.Core.PubSub
         }
         public void Connect()
         {
+            this.metaTopics.Clear();
+            this.topics.Clear();
+            this.metaTopicReplacements.Clear();
+            this.topicReplacements.Clear();
             Session session = this.client.CheckSession();
-            Console.WriteLine("FetchTypeTree start");
             session.FetchTypeTree(ObjectTypeIds.BaseObjectType);
-            Console.WriteLine("FetchTypeTree end");
             referenceDescriptionResolver = new ReferenceDescriptionResolver(client);
             CreateSubscriptions();
             client.SubscribeToDataChanges(subscriptionIds, updateDataValue);
@@ -132,25 +139,62 @@ namespace umatiGateway.Core.PubSub
         public void Subscribe(HierarchicalNode hierarchicalNode)
         {
             PreSubscribe(hierarchicalNode.NodeId);
+            createDataSetAndWritersNew(hierarchicalNode);
             foreach (HierarchicalNode hierarchicalChildNode in hierarchicalNode.hierarchicalChilds.Values)
             {
                 Subscribe(hierarchicalChildNode);
             }
-            createDataSetAndWritersNew(hierarchicalNode);
+            //createDataSetAndWritersNew(hierarchicalNode);
         }
         public string CreateTopic(HierarchicalNode hierarchicalProperty)
         {
             UmatiConfiguration config = app.ActiveConfiguration;
+            string nstopic = $"{config.PubSubProviderConfig.Prefix}/json/data/{config.PubSubProviderConfig.ClientId}/{GetBrowsePath(hierarchicalProperty, true)}";
             string topic = $"{config.PubSubProviderConfig.Prefix}/json/data/{config.PubSubProviderConfig.ClientId}/{GetBrowsePath(hierarchicalProperty)}";
+            foreach (KeyValuePair<string, string> knownTopic in this.topics)
+            {
+                if (topic == knownTopic.Value)
+                {
+                    this.topicReplacements.Add(new Replacement(nstopic, topic, $"{config.PubSubProviderConfig.Prefix}/json/data/{config.PubSubProviderConfig.ClientId}/{GetBrowsePath(hierarchicalProperty, true, true)}"));
+                }
+            }
+            topics.TryAdd(nstopic, topic);
+            for (int i = this.topicReplacements.Count - 1; i >= 0; i--)
+            {
+                Replacement replacement = this.topicReplacements[i];
+                if (nstopic.StartsWith(replacement.nsTopic))
+                {
+                    topic = topic.Substring(replacement.topic.Length);
+                    topic = replacement.replaceTopic + topic;
+                }
+            }
             return topic;
         }
         public string CreateMetaTopic(HierarchicalNode hierarchicalProperty)
         {
             UmatiConfiguration config = app.ActiveConfiguration;
-            string topic = $"{config.PubSubProviderConfig.Prefix}/json/metadata/{config.PubSubProviderConfig.ClientId}/{GetBrowsePath(hierarchicalProperty)}";
-            return topic;
+            string nsMetaTopic = $"{config.PubSubProviderConfig.Prefix}/json/metadata/{config.PubSubProviderConfig.ClientId}/{GetBrowsePath(hierarchicalProperty, true)}";
+            string metaTopic = $"{config.PubSubProviderConfig.Prefix}/json/metadata/{config.PubSubProviderConfig.ClientId}/{GetBrowsePath(hierarchicalProperty)}";
+            foreach (KeyValuePair<string, string> knownMetaTopic in this.metaTopics)
+            {
+                if (metaTopic == knownMetaTopic.Value)
+                {
+                    this.metaTopicReplacements.Add(new Replacement(nsMetaTopic, metaTopic, $"{config.PubSubProviderConfig.Prefix}/json/metadata/{config.PubSubProviderConfig.ClientId}/{GetBrowsePath(hierarchicalProperty, true, true)}"));
+                }
+            }
+            this.metaTopics.TryAdd(nsMetaTopic, metaTopic);
+            for (int i = this.metaTopicReplacements.Count - 1; i >= 0; i--)
+            {
+                Replacement replacement = this.metaTopicReplacements[i];
+                if (nsMetaTopic.StartsWith(replacement.nsTopic))
+                {
+                    metaTopic = metaTopic.Substring(replacement.topic.Length);
+                    metaTopic = replacement.replaceTopic + metaTopic;
+                }
+            }
+            return metaTopic;
         }
-        public string GetBrowsePath(HierarchicalNode hierarchicalNode, bool includeNamespaceIndex = false, string delimeter = "/")
+        public string GetBrowsePath(HierarchicalNode hierarchicalNode, bool includeNamespaceIndex = false, bool onlyIndexCurrentNode = false, string delimeter = "/")
         {
             string browsePath = "";
             if (includeNamespaceIndex || alwaysIncludeBrowsePathIndex)
@@ -164,7 +208,7 @@ namespace umatiGateway.Core.PubSub
             HierarchicalNode? parentNode = hierarchicalNode.Parent;
             while (parentNode != null)
             {
-                if (includeNamespaceIndex || alwaysIncludeBrowsePathIndex)
+                if ((includeNamespaceIndex && !onlyIndexCurrentNode) || alwaysIncludeBrowsePathIndex)
                 {
                     browsePath = parentNode.BrowseName.ToString() + delimeter + browsePath;
                 }
@@ -202,7 +246,7 @@ namespace umatiGateway.Core.PubSub
                 }
             }
             //Add a Virtaul Id
-            DataValue dataValue = new DataValue(GetBrowsePath(hierarchicalNode, true, "."));
+            DataValue dataValue = new DataValue(GetBrowsePath(hierarchicalNode, true, false, "."));
             VirtualId virtualId = new VirtualId(new NodeId("virtualId_" + uniqueint, 1), dataValue);
             virtualIds.Add(virtualId);
             KeyValuePairCollection keyValuePairs = GetRealationsAsKeyValuePair(hierarchicalNode);
@@ -673,10 +717,9 @@ namespace umatiGateway.Core.PubSub
                 return;
             }
             int uniqueint = ++counter;
-            topic = CreateTopic(hierarchicalNode);
             string dataSetName = new ExpandedNodeId(hierarchicalNode.NodeId).ToString();
             //Add a Virtaul Id
-            DataValue dataValue = new DataValue(GetBrowsePath(hierarchicalNode, true, "."));
+            DataValue dataValue = new DataValue(GetBrowsePath(hierarchicalNode, true, false, "."));
             VirtualId virtualId = new VirtualId(new NodeId("virtualId_" + uniqueint, 1), dataValue);
             virtualIds.Add(virtualId);
             KeyValuePairCollection keyValuePairs = GetRealationsAsKeyValuePair(hierarchicalNode);
@@ -968,6 +1011,18 @@ namespace umatiGateway.Core.PubSub
                 Logger.Error($"Unable to read Node for NodeId {nodeId}");
             }
             return hierarchicalNode;
+        }
+    }
+    public class Replacement
+    {
+        public string nsTopic = "";
+        public string topic = "";
+        public string replaceTopic = "";
+        public Replacement(string nsTopic, string topic, string replaceTopic)
+        {
+            this.nsTopic = nsTopic;
+            this.topic = topic;
+            this.replaceTopic = replaceTopic;
         }
     }
 }
