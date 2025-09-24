@@ -150,7 +150,7 @@ The default configuration file looks like:
 
 ### Configuration via Web UI
 
-The Web UI is accessible after starting the umatiGateway via `https://localhost:8080` . The address can be configured via the 'url' attribute of the 'WebUI' tag in the 'umatiGatewayConfig.xml' file.
+The Web UI is accessible after starting the umatiGateway via `https://localhost:8080` . The address can be configured via the `url` attribute of the `WebUI` tag in the `umatiGatewayConfig.xml` file.
 
 The Web UI consists of 5 different tabs:
 
@@ -164,7 +164,7 @@ The Web UI consists of 5 different tabs:
 
 In the OPC Connection Tab you can configure the OPC Connection parameters and connect or disconnet to/from an OPC Server.
 
-![OPC Connection](/docs/user/images/OpcConnection.png)
+![OPC Connection](/docs/user/images/OPC_Connection_Tab.png)
 
 #### OPC Subscription Tab
 
