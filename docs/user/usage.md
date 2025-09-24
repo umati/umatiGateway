@@ -150,14 +150,15 @@ The default configuration file looks like:
 
 ### Configuration via Web UI
 
-The Web UI is accessible after starting the umatiGateway via `http://localhost:8080` . The address can be configured via an `application.json` file in the applications root directory. An example is shown in the FAQs.
+The Web UI is accessible after starting the umatiGateway via `https://localhost:8080` . The address can be configured via the 'url' attribute of the 'WebUI' tag in the 'umatiGatewayConfig.xml' file.
 
-The Web UI consists of 4 different tabs:
+The Web UI consists of 5 different tabs:
 
-1. The **OPC Connection Tab** which deals with the OPC Connection
+1. The **OPC Connection Tab** which configures the OPC Connection.
 2. The **OPC Subscription Tab** where you can define the nodes you want to subscribe to.
-3. The **MQTT Configuration Tab** which deals with the MQTT Connection.
-4. The **Configuration Tab** that holds the curretn configuration an allows to download the configuration files.
+3. The **MQTT Configuration Tab** which configures the machines via the v2 format.
+4. The **PubSub Tab** which configures the publishing of machines via the v3 format.
+5. The **Configuration Tab** that holds the curretn configuration an allows to download the configuration files.
 
 #### OPC Connection Tab
 
