@@ -33,10 +33,12 @@ jobs:
           persist-credentials: false
 
       - name: Super-linter
-        uses: super-linter/super-linter@v8.1.0
+        uses: super-linter/super-linter@v8.2.0
         env:
           # To report GitHub Actions status checks
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VALIDATE_ALL_CODEBASE: false
           VALIDATE_GITHUB_ACTIONS_ZIZMOR: false
+          VALIDATE_BIOME_FORMAT: false
+          VALIDATE_BIOME_LINT: false
           FILTER_REGEX_EXCLUDE: .*umatiGateway/wwwroot/.*|.*umatiGateway/Pages/.*
