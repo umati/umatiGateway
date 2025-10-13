@@ -8,6 +8,7 @@ using Opc.Ua.PubSub;
 using System;
 using System.Collections.Concurrent;
 using umatiGateway.Core.Configuration;
+using umatiGateway.Core.External.Opc.Ua.PubSub.Encoding;
 using umatiGateway.Core.Mqtt;
 using umatiGateway.Core.OPC;
 
@@ -56,6 +57,31 @@ namespace umatiGateway.Core.PubSub
             this.topics.Clear();
             this.metaTopicReplacements.Clear();
             this.topicReplacements.Clear();
+            JsonEncoding jsonEncoding = this.app.ActiveConfiguration.PubSubProviderConfig.JsonEncoding;
+            switch (jsonEncoding)
+            {
+                case JsonEncoding.REVERSIBLE:
+                    JsonEncodingConfiguration.UseCustomizedEncoding = true;
+                    JsonEncodingConfiguration.jsonEncodingType = JsonEncodingType.Reversible;
+                    break;
+                case JsonEncoding.NON_REVERSIBLE:
+                    JsonEncodingConfiguration.UseCustomizedEncoding = true;
+                    JsonEncodingConfiguration.jsonEncodingType = JsonEncodingType.NonReversible;
+                    break;
+                case JsonEncoding.COMPACT:
+                    JsonEncodingConfiguration.UseCustomizedEncoding = true;
+                    JsonEncodingConfiguration.jsonEncodingType = JsonEncodingType.Compact;
+                    break;
+                case JsonEncoding.VERBOSE:
+                    JsonEncodingConfiguration.UseCustomizedEncoding = true;
+                    JsonEncodingConfiguration.jsonEncodingType = JsonEncodingType.Verbose;
+                    break;
+                case JsonEncoding.LEGACY:
+                default:
+                    JsonEncodingConfiguration.UseCustomizedEncoding = false;
+                    JsonEncodingConfiguration.jsonEncodingType = JsonEncodingType.Compact;
+                    break;
+            }
             Session session = this.client.CheckSession();
             session.FetchTypeTree(ObjectTypeIds.BaseObjectType);
             referenceDescriptionResolver = new ReferenceDescriptionResolver(client);

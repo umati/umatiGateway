@@ -31,6 +31,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Opc.Ua.PubSub.PublishedData;
+using umatiGateway.Core.External.Opc.Ua.PubSub.Encoding;
 
 namespace Opc.Ua.PubSub.Encoding
 {
@@ -467,59 +468,120 @@ namespace Opc.Ua.PubSub.Encoding
             }
 
 #pragma warning disable CS0618 // Type or member is obsolete
-            switch (m_fieldTypeEncoding)
+            if (!JsonEncodingConfiguration.UseCustomizedEncoding)
             {
-                case FieldTypeEncodingMask.Variant:
-                    // If the DataSetFieldContentMask results in a Variant representation,
-                    // the field value is encoded as a Variant encoded using the reversible OPC UA JSON Data Encoding
-                    // defined in OPC 10000-6.
-                    encoder.ForceNamespaceUri = false;
-                    encoder.UsingReversibleEncoding(encoder.WriteVariant, fieldName, valueToEncode, true);
-                    break;
+                switch (m_fieldTypeEncoding)
+                {
+                    case FieldTypeEncodingMask.Variant:
+                        // If the DataSetFieldContentMask results in a Variant representation,
+                        // the field value is encoded as a Variant encoded using the reversible OPC UA JSON Data Encoding
+                        // defined in OPC 10000-6.
+                        encoder.ForceNamespaceUri = false;
+                        encoder.UsingReversibleEncoding(encoder.WriteVariant, fieldName, valueToEncode, true);
+                        break;
 
-                case FieldTypeEncodingMask.RawData:
-                    // If the DataSetFieldContentMask results in a RawData representation,
-                    // the field value is a Variant encoded using the non-reversible OPC UA JSON Data Encoding
-                    // defined in OPC 10000-6
-                    encoder.ForceNamespaceUri = true;
-                    encoder.UsingReversibleEncoding(encoder.WriteVariant, fieldName, valueToEncode, false);
-                    break;
+                    case FieldTypeEncodingMask.RawData:
+                        // If the DataSetFieldContentMask results in a RawData representation,
+                        // the field value is a Variant encoded using the non-reversible OPC UA JSON Data Encoding
+                        // defined in OPC 10000-6
+                        encoder.ForceNamespaceUri = true;
+                        encoder.UsingReversibleEncoding(encoder.WriteVariant, fieldName, valueToEncode, false);
+                        break;
 
-                case FieldTypeEncodingMask.DataValue:
-                    DataValue dataValue = new DataValue();
+                    case FieldTypeEncodingMask.DataValue:
+                        DataValue dataValue = new DataValue();
 
-                    dataValue.WrappedValue = valueToEncode;
+                        dataValue.WrappedValue = valueToEncode;
 
-                    if ((FieldContentMask & DataSetFieldContentMask.StatusCode) != 0)
-                    {
-                        dataValue.StatusCode = field.Value.StatusCode;
-                    }
+                        if ((FieldContentMask & DataSetFieldContentMask.StatusCode) != 0)
+                        {
+                            dataValue.StatusCode = field.Value.StatusCode;
+                        }
 
-                    if ((FieldContentMask & DataSetFieldContentMask.SourceTimestamp) != 0)
-                    {
-                        dataValue.SourceTimestamp = field.Value.SourceTimestamp;
-                    }
+                        if ((FieldContentMask & DataSetFieldContentMask.SourceTimestamp) != 0)
+                        {
+                            dataValue.SourceTimestamp = field.Value.SourceTimestamp;
+                        }
 
-                    if ((FieldContentMask & DataSetFieldContentMask.SourcePicoSeconds) != 0)
-                    {
-                        dataValue.SourcePicoseconds = field.Value.SourcePicoseconds;
-                    }
+                        if ((FieldContentMask & DataSetFieldContentMask.SourcePicoSeconds) != 0)
+                        {
+                            dataValue.SourcePicoseconds = field.Value.SourcePicoseconds;
+                        }
 
-                    if ((FieldContentMask & DataSetFieldContentMask.ServerTimestamp) != 0)
-                    {
-                        dataValue.ServerTimestamp = field.Value.ServerTimestamp;
-                    }
+                        if ((FieldContentMask & DataSetFieldContentMask.ServerTimestamp) != 0)
+                        {
+                            dataValue.ServerTimestamp = field.Value.ServerTimestamp;
+                        }
 
-                    if ((FieldContentMask & DataSetFieldContentMask.ServerPicoSeconds) != 0)
-                    {
-                        dataValue.ServerPicoseconds = field.Value.ServerPicoseconds;
-                    }
+                        if ((FieldContentMask & DataSetFieldContentMask.ServerPicoSeconds) != 0)
+                        {
+                            dataValue.ServerPicoseconds = field.Value.ServerPicoseconds;
+                        }
 
-                    // If the DataSetFieldContentMask results in a DataValue representation,
-                    // the field value is a DataValue encoded using the non-reversible OPC UA JSON Data Encoding
-                    encoder.ForceNamespaceUri = true;
-                    encoder.UsingReversibleEncoding(encoder.WriteDataValue, fieldName, dataValue, false);
-                    break;
+                        // If the DataSetFieldContentMask results in a DataValue representation,
+                        // the field value is a DataValue encoded using the non-reversible OPC UA JSON Data Encoding
+                        encoder.ForceNamespaceUri = true;
+                        encoder.UsingReversibleEncoding(encoder.WriteDataValue, fieldName, dataValue, false);
+                        break;
+                }
+            }
+            else
+            {
+                JsonEncodingType jsonEncodingType = JsonEncodingConfiguration.jsonEncodingType;
+                switch (m_fieldTypeEncoding)
+                {
+                    case FieldTypeEncodingMask.Variant:
+                        // If the DataSetFieldContentMask results in a Variant representation,
+                        // the field value is encoded as a Variant encoded using the reversible OPC UA JSON Data Encoding
+                        // defined in OPC 10000-6.
+                        encoder.ForceNamespaceUri = false;
+                        encoder.UsingAlternateEncoding(encoder.WriteVariant, fieldName, valueToEncode, jsonEncodingType);
+                        break;
+
+                    case FieldTypeEncodingMask.RawData:
+                        // If the DataSetFieldContentMask results in a RawData representation,
+                        // the field value is a Variant encoded using the non-reversible OPC UA JSON Data Encoding
+                        // defined in OPC 10000-6
+                        encoder.ForceNamespaceUri = true;
+                        encoder.UsingAlternateEncoding(encoder.WriteVariant, fieldName, valueToEncode, jsonEncodingType);
+                        break;
+
+                    case FieldTypeEncodingMask.DataValue:
+                        DataValue dataValue = new DataValue();
+
+                        dataValue.WrappedValue = valueToEncode;
+
+                        if ((FieldContentMask & DataSetFieldContentMask.StatusCode) != 0)
+                        {
+                            dataValue.StatusCode = field.Value.StatusCode;
+                        }
+
+                        if ((FieldContentMask & DataSetFieldContentMask.SourceTimestamp) != 0)
+                        {
+                            dataValue.SourceTimestamp = field.Value.SourceTimestamp;
+                        }
+
+                        if ((FieldContentMask & DataSetFieldContentMask.SourcePicoSeconds) != 0)
+                        {
+                            dataValue.SourcePicoseconds = field.Value.SourcePicoseconds;
+                        }
+
+                        if ((FieldContentMask & DataSetFieldContentMask.ServerTimestamp) != 0)
+                        {
+                            dataValue.ServerTimestamp = field.Value.ServerTimestamp;
+                        }
+
+                        if ((FieldContentMask & DataSetFieldContentMask.ServerPicoSeconds) != 0)
+                        {
+                            dataValue.ServerPicoseconds = field.Value.ServerPicoseconds;
+                        }
+
+                        // If the DataSetFieldContentMask results in a DataValue representation,
+                        // the field value is a DataValue encoded using the non-reversible OPC UA JSON Data Encoding
+                        encoder.ForceNamespaceUri = true;
+                        encoder.UsingAlternateEncoding(encoder.WriteDataValue, fieldName, dataValue, jsonEncodingType);
+                        break;
+                }
             }
 #pragma warning restore CS0618 // Type or member is obsolete
         }

@@ -139,6 +139,7 @@ namespace umatiGateway.Core.Configuration
         public double PublishInterval { get; set; } = 10000;
         public bool AllowUntrustedCertificates { get; set; } = false;
         public List<PublishedNode> PublishedNodes { get; set; } = new List<PublishedNode>();
+        public JsonEncoding JsonEncoding { get; set; } = JsonEncoding.LEGACY;
         public override string ToString()
         {
             var nodes = string.Join(", ", PublishedNodes.Select(n => n.ToString()));
@@ -160,6 +161,14 @@ namespace umatiGateway.Core.Configuration
         {
             return $"OPCConnection(Server={ServerEndpoint}, Auth={Authentication}, User={UserName}, Password={UmatiConfigurationUtils.MaskPassword(Password)}, ReadExtraLibs={ReadExtraLibs})";
         }
+    }
+    public enum JsonEncoding
+    {
+        LEGACY,
+        REVERSIBLE,
+        NON_REVERSIBLE,
+        COMPACT,
+        VERBOSE
     }
     public class StartConfiguration
     {
