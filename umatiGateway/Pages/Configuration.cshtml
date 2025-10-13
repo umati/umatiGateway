@@ -234,6 +234,15 @@
             <input type="text" class="settings-input" id="PublishInterval" name="PublishInterval" value="@Model.Configuration.PubSubProviderConfig.PublishInterval" readonly>
             <label for="MetaDataUpdateTime" class="settings-label">MetaData Update Time</label>
             <input type="text" class="settings-input" id="MetaDataUpdateTime" name="MetaDataUpdateTime" value="@Model.Configuration.PubSubProviderConfig.MetaDataUpdateTime" readonly>
+            @removeTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.SelectTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers
+            @removeTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.OptionTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers
+            <select class="settings-input" id="JsonEncodingType" name="JsonEncodingType" readonly>
+                <option value="LEGACY" @(Model.Configuration.PubSubProviderConfig.JsonEncoding.ToString() == "LEGACY" ? "selected" : "")>LEGACY</option>
+                <option value="REVERSIBLE" @(Model.Configuration.PubSubProviderConfig.JsonEncoding.ToString() == "REVERSIBLE" ? "selected" : "")>REVERSIBLE</option>
+                <option value="NON_REVERSIBLE" @(Model.Configuration.PubSubProviderConfig.JsonEncoding.ToString() == "NON_REVERSIBLE" ? "selected" : "")>NON_REVERSIBLE</option>
+                <option value="COMPACT" @(Model.Configuration.PubSubProviderConfig.JsonEncoding.ToString() == "COMPACT" ? "selected" : "")>COMPACT</option>
+                <option value="VERBOSE" @(Model.Configuration.PubSubProviderConfig.JsonEncoding.ToString() == "VERBOSE" ? "selected" : "")>VERBOSE</option>
+            </select>
             <label for="PubSubNodes" class="settings-label">PubSub Nodes</label>
             <table id="PubSub" class="nodetable">
                 <thead>
