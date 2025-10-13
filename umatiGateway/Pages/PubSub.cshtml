@@ -36,7 +36,17 @@
             <label for="PublishInterval" class="settings-label">Publish Interval</label>
             <input type="text" class="settings-input" id="PublishInterval" name="PublishInterval" value="@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.PublishInterval">
             <label for="MetaDataUpdateTime" class="settings-label">MetaData Update Time</label>
-            <input type="text" class="settings-input" id="MetaDataUpdateTime" name="MetaDataUpdateTime" value="@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.MetaDataUpdateTime">         
+            <input type="text" class="settings-input" id="MetaDataUpdateTime" name="MetaDataUpdateTime" value="@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.MetaDataUpdateTime">
+            <label for="JsonEncodingType" class="settings-label">Json Encoding Type</label>
+            @removeTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.SelectTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers
+            @removeTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.OptionTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers
+            <select class="settings-input" id="JsonEncodingType" name="JsonEncodingType" readonly>
+                <option value="LEGACY" @(Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.JsonEncoding.ToString() == "LEGACY" ? "selected" : "")>LEGACY</option>
+                <option value="REVERSIBLE" @(Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.JsonEncoding.ToString() == "REVERSIBLE" ? "selected" : "")>REVERSIBLE</option>
+                <option value="NON_REVERSIBLE" @(Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.JsonEncoding.ToString() == "NON_REVERSIBLE" ? "selected" : "")>NON_REVERSIBLE</option>
+                <option value="COMPACT" @(Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.JsonEncoding.ToString() == "COMPACT" ? "selected" : "")>COMPACT</option>
+                <option value="VERBOSE" @(Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.JsonEncoding.ToString() == "VERBOSE" ? "selected" : "")>VERBOSE</option>
+            </select>
             <div class="settings-button-container">
                 <button asp-page-handler="Connect" class="settings-button">Connect</button>
                 <button asp-page-handler="Disconnect" class="settings-button" style="margin-left:10px">Disconnect</button>
@@ -77,7 +87,7 @@
                                 <td>@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.PublishedNodes[i].NodeId</td>
                                 <td>@Model.UmatiGatewayApp.ActiveConfiguration.PubSubProviderConfig.PublishedNodes[i].BaseType</td>
                                 <td>
-                                    <Button asp-page-handler="RemoveNodeMqttConfig" asp-route-index=@i
+                                    <Button asp-page-handler="RemovePubSubNode" asp-route-index=@i
                                             class="settings-button">
                                         <img src="~/css/delete.png" />
                                     </Button>

@@ -64,6 +64,7 @@ namespace umatiGateway.Core.Configuration
         public const string IGNORED_PLACEHOLDER_TAGS = "IgnoredPlaceholderTags";
         public const string IGNORED_PLACEHOLDER_TAG = "IgnoredPlaceholderTag";
         public const string RESOLVE_BINARIES_ONLY = "resolveBinariesOnly";
+        public const string JSON_ENCODING = "jsonEncoding";
 
         public UmatiConfigurationManager() { }
 
@@ -209,6 +210,26 @@ namespace umatiGateway.Core.Configuration
                             string metaDataUpdateTime = ReadAttribute(pubSubProviderNode, META_DATA_UPDATE_TIME);
                             configuration.PubSubProviderConfig.MetaDataUpdateTime = double.Parse(metaDataUpdateTime);
                             configuration.PubSubProviderConfig.AllowUntrustedCertificates = string.Equals(allowUntrustedCertificates, "true", StringComparison.OrdinalIgnoreCase) ? true : false;
+                            string jsonEncodingString = ReadAttribute(pubSubProviderNode, JSON_ENCODING);
+                            switch (jsonEncodingString)
+                            {
+                                case "REVERSIBLE":
+                                    configuration.PubSubProviderConfig.JsonEncoding = JsonEncoding.REVERSIBLE;
+                                    break;
+                                case "NON_REVERSIBLE":
+                                    configuration.PubSubProviderConfig.JsonEncoding = JsonEncoding.NON_REVERSIBLE;
+                                    break;
+                                case "COMPACT":
+                                    configuration.PubSubProviderConfig.JsonEncoding = JsonEncoding.COMPACT;
+                                    break;
+                                case "VERBOSE":
+                                    configuration.PubSubProviderConfig.JsonEncoding = JsonEncoding.VERBOSE;
+                                    break;
+                                case "LEGACY":
+                                default:
+                                    configuration.PubSubProviderConfig.JsonEncoding = JsonEncoding.LEGACY;
+                                    break;
+                            }
                             XmlNode? publishedNodesNode = ReadNode(pubSubProviderNode, PUBLISHED_NODES);
                             if (publishedNodesNode != null)
                             {
@@ -365,6 +386,8 @@ namespace umatiGateway.Core.Configuration
             pubSubPublishInterval.Value = configuration.PubSubProviderConfig.PublishInterval.ToString();
             XmlAttribute pubSubMetaDataUpdateTime = xmlDocument.CreateAttribute(META_DATA_UPDATE_TIME);
             pubSubMetaDataUpdateTime.Value = configuration.PubSubProviderConfig.MetaDataUpdateTime.ToString();
+            XmlAttribute pubSubJsonEncoding = xmlDocument.CreateAttribute(JSON_ENCODING);
+            pubSubJsonEncoding.Value = configuration.PubSubProviderConfig.JsonEncoding.ToString();
             pubSubNode.Attributes.Append(pubSubServerEndpoint);
             pubSubNode.Attributes.Append(pubSubUser);
             pubSubNode.Attributes.Append(pubSubPassword);
@@ -373,6 +396,7 @@ namespace umatiGateway.Core.Configuration
             pubSubNode.Attributes.Append(pubSubAllowUntrustedCertificates);
             pubSubNode.Attributes.Append(pubSubPublishInterval);
             pubSubNode.Attributes.Append(pubSubMetaDataUpdateTime);
+            pubSubNode.Attributes.Append(pubSubJsonEncoding);
             pubSubNode.AppendChild(CreatePublishedNodesNode(xmlDocument, configuration.PubSubProviderConfig.PublishedNodes));
             configurationNode.AppendChild(startConfigurationNode);
             configurationNode.AppendChild(webUiNode);
