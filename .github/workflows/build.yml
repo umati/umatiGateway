@@ -53,7 +53,7 @@ jobs:
           dotnet deb --configuration ${{ matrix.build_type }} --output ../umati-gateway.deb
 
       - name: Upload Debian Package
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: umatiGateway-${{ matrix.os }}-${{ matrix.build_type }}
           path: umatiGateway/umati-gateway.deb
@@ -93,7 +93,7 @@ jobs:
         run: dotnet publish umatiGateway.sln --self-contained true --configuration ${{ matrix.build_type }} --output ./publish
 
       - name: Upload Published Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: umatiGateway-${{ matrix.os }}-${{ matrix.build_type }}
           path: ./publish
