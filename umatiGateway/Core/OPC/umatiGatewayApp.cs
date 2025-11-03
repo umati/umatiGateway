@@ -41,7 +41,7 @@ namespace umatiGateway.Core.OPC
             {
                 Layout = "${uppercase:${level}} ${message}"
             };
-            string logfilePath = Path.Combine(AppContext.BaseDirectory, "umatiGateway.log");
+            string logfilePath = Path.Combine(AppContext.BaseDirectory, "logs/umatiGateway.log");
             if (File.Exists(logfilePath))
             {
                 File.Delete(logfilePath);
@@ -50,6 +50,11 @@ namespace umatiGateway.Core.OPC
             {
                 FileName = logfilePath,
                 Layout = "${uppercase:${level}} ${message}",
+                ArchiveAboveSize = 10L * 1024 * 1024, // 10 MB
+                MaxArchiveFiles = 5, // max. 5 alte Files
+                ArchiveFileName = "${basedir}/logs/umatiGateway.{#}.log",
+                ArchiveSuffixFormat = "{#}",
+                CreateDirs = true
             };
 
             string logLevelstring = ActiveConfiguration.LogLevel ?? "";
