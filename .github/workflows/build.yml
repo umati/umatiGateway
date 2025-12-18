@@ -38,12 +38,13 @@ jobs:
       - name: Restore dependencies
         run: |
           cd umatiGateway
+          dotnet --list-sdks
           dotnet restore
 
       - name: Install deb packaging tool
         run: |
           cd umatiGateway/umatiGateway
-          dotnet tool install --global dotnet-deb
+          dotnet tool install --framework net10.0 --global dotnet-deb
           export PATH="$PATH:/home/runner/.dotnet/tools"
           dotnet deb install
 
