@@ -1,14 +1,14 @@
 # umati Gateway
 
-Gateway connecting OPC UA servers implementing umati endorsed Companion Specifications with the umati Dashboard
+Gateway connecting OPC UA servers implementing umati endorsed Companion Specifications with the [umati.app](https://umati.app) Dashboard
 
 ## Description
 
-umati Gateway connects to an OPC UA server, subscribes to values from one or more machine instances and publishes them via MQTT in JSON format used by [umati Dashboard](https://umati.app).
+_umatiGateway_ connects to an OPC UA server, subscribes to values from one or more machine instances and publishes them via MQTT in JSON format.
 
 ## Getting Started
 
-For a more detailed description about the umatiGateway please take a look at the [User Manual](/docs/user/usage.md) .
+For a more detailed description about the _umatiGateway_ please take a look at the [User Manual](./docs/user/usage.md).
 
 ### Running in container
 
@@ -20,7 +20,7 @@ Start the container directly with the configuration files mounted:
 
 `docker run -it -v ./umatiGatewayConfig.xml:/app/umatiGatewayConfig.xml ghcr.io/umati/umatigateway:develop`
 
-or via Compose with this config:
+or via `compose` with this config:
 
 ```yaml
 services:
@@ -35,7 +35,7 @@ services:
 
 ### GUI
 
-Web-based interface is accessible on port 8080 by default. There the connection settings can be modified and applied on the fly, making it useful for initial setup and debugging.
+Web-based interface is accessible on port `8080` by default. There the connection settings can be modified and applied on the fly, making it useful for initial setup and debugging.
 
 > When running the gateway on a remote machine you can create a tunnel to it via SSH:
 >
@@ -45,4 +45,4 @@ The interface will be then available at [http://localhost:7079](http://localhost
 
 ## License
 
-This Software is licensed under Apache v2 license.
+This Software is licensed under [Apache License 2.0](LICENSE).
