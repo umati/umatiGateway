@@ -3,6 +3,7 @@
 
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using NLog;
 using Opc.Ua;
 using Opc.Ua.Client;
@@ -349,7 +350,10 @@ namespace umatiGateway.Core.OPC
                 UserIdentity userIdentity = new UserIdentity();
                 if (!string.IsNullOrWhiteSpace(this.app.ActiveConfiguration.OPCConnection.UserName))
                 {
-                    userIdentity = new UserIdentity(this.app.ActiveConfiguration.OPCConnection.UserName, this.app.ActiveConfiguration.OPCConnection.Password);
+                    var username = this.app.ActiveConfiguration.OPCConnection.UserName;
+                    var passwordBytes = Encoding.UTF8.GetBytes(this.app.ActiveConfiguration.OPCConnection.Password ?? string.Empty);
+
+                    userIdentity = new UserIdentity(username, passwordBytes);
                 }
                 if (!string.IsNullOrWhiteSpace(this.app.ActiveConfiguration.OPCConnection.CertificatePath))
                 {
@@ -468,7 +472,10 @@ namespace umatiGateway.Core.OPC
                     UserIdentity userIdentity = new UserIdentity();
                     if (!string.IsNullOrWhiteSpace(this.app.ActiveConfiguration.OPCConnection.UserName))
                     {
-                        userIdentity = new UserIdentity(this.app.ActiveConfiguration.OPCConnection.UserName, this.app.ActiveConfiguration.OPCConnection.Password);
+                        var username = this.app.ActiveConfiguration.OPCConnection.UserName;
+                        var passwordBytes = Encoding.UTF8.GetBytes(this.app.ActiveConfiguration.OPCConnection.Password ?? string.Empty);
+
+                        userIdentity = new UserIdentity(username, passwordBytes);
                     }
 
                     // Create the session
