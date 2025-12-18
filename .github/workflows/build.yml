@@ -33,7 +33,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: "8.0"
+          dotnet-version: "10.0"
 
       - name: Restore dependencies
         run: |
@@ -78,7 +78,7 @@ jobs:
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: "8.0"
+          dotnet-version: "10.0"
 
       - name: Restore Dependencies
         run: dotnet restore umatiGateway.sln
