@@ -185,7 +185,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Download artifacts
-        uses: dawidd6/action-download-artifact@v11
+        uses: dawidd6/action-download-artifact@v12
         with:
           github_token: ${{secrets.GITHUB_TOKEN}}
           workflow: build.yml
