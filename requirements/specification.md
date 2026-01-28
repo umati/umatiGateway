@@ -86,6 +86,113 @@ The properties _Name_, _NumberInList_ are fields of one _DataSet_ (ActiceProgram
 
 A field can also contain properties but no other variables, even though the _AddressSpace_ can contain more hierarchies. Properties of objects also cannot be mapped to the properties of a field. Therefore, a uniform mapping is used for objects and variables so that access is always consistent.
 
+## Mapping of Method (OPC UA Actions)
+
+The umati Gateway uses an additional PubSub message type to call OPC UA methods through the broker.
+Actions are request/response messages and are always correlated using a `RequestId`.
+
+### Action Topics
+
+Actions follow the same topic structure as data and metadata. The `<MqttMessageType>` is `action` and is extended with a direction segment:
+
+`<Prefix>/<Encoding>/action/<Direction>/<PublisherId>/[<UNS>]/[<WriterGroup>[/<DataSetWriter>]]`
+
+| Key           | Description                                                |
+| ------------- | ---------------------------------------------------------- |
+| `<Direction>` | `request` for method calls, `response` for method results. |
+
+The `[<WriterGroup>[/<DataSetWriter>]]` portion uses the same `PathToTheNode` rules as in the data topic structure.
+The topic shall point to the target object (owning the method) and the method identifiers are provided in the payload.
+
+### Action Request Payload
+
+An action request calls a method on the target object.
+
+Required fields:
+
+- `ActionTargetId` (ExpandedNodeId string of the target object).
+- `RequestId` (string, GUID) for correlating request/response.
+- `Timestamp` (ISO 8601 string).
+- `Payload` (array of input argument values, ordered as in the method definition).
+- `ActionState` (UInt32, initial state for the request).
+
+Example:
+
+```json
+{
+  "ActionTargetId": "nsu=http://opcfoundation.org/UA/Machinery/;i=1001",
+  "RequestId": "3c6f5c8e-2b5a-4c49-98dd-0df6d9e1a0a1",
+  "Timestamp": "2023-08-22T10:15:30.000Z",
+  "Payload": ["Reset"],
+  "ActionState": 0
+}
+```
+
+### Action Response Payload
+
+The response message returns the status of the method call.
+
+Required fields:
+
+- `ActionTargetId` (ExpandedNodeId string of the target object).
+- `RequestId` (string, GUID) to correlate with the request.
+- `Timestamp` (ISO 8601 string).
+- `StatusCode` (UInt32 as in OPC UA).
+- `ActionState` (UInt32, final state of the action).
+
+Optional fields:
+
+- `Payload` (array of output argument values, ordered as in the method definition).
+
+Example:
+
+```json
+{
+  "ActionTargetId": "nsu=http://opcfoundation.org/UA/Machinery/;i=1001",
+  "RequestId": "3c6f5c8e-2b5a-4c49-98dd-0df6d9e1a0a1",
+  "Timestamp": "2023-08-22T10:15:30.250Z",
+  "StatusCode": 0,
+  "ActionState": 2,
+  "Payload": []
+}
+```
+
+### Action MetaData
+
+Action MetaData describes the available actions (methods) and their signatures.
+It uses the same `PathToTheNode` rules as data topics and points to the target object.
+
+Topic format:
+
+`<Prefix>/<Encoding>/action/metadata/<PublisherId>/[<UNS>]/[<WriterGroup>[/<DataSetWriter>]]`
+
+Required fields:
+
+- `ActionTargetId` (ExpandedNodeId string of the target object).
+- `MethodId` (ExpandedNodeId string of the method).
+- `InputArguments` (array of argument definitions with name, data type, and value rank).
+- `OutputArguments` (array of argument definitions with name, data type, and value rank).
+
+Optional fields:
+None.
+
+Example:
+
+```json
+{
+  "ActionTargetId": "nsu=http://opcfoundation.org/UA/Machinery/;i=1001",
+  "MethodId": "nsu=http://opcfoundation.org/UA/Machinery/;i=7001",
+  "InputArguments": [
+    {
+      "Name": "Command",
+      "DataType": "String",
+      "ValueRank": -1
+    }
+  ],
+  "OutputArguments": []
+}
+```
+
 ## Mapping of Events
 
 _Events_ are also mapped to a _DataSet_. Because _Events_ may have no _BrowsePath_, the _BrowsePath_ of the _SourceName_ and the _EventName_ is used. The mapping itself is analogous to the mapping of objects.
