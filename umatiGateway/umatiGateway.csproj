@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Pages\Ressource.resx" />
+    <Resource Include="Pages\Resource.resx" />
   </ItemGroup>
 
   <ItemGroup>

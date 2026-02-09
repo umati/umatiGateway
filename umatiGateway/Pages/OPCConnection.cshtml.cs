@@ -40,7 +40,7 @@ namespace UmatiGateway.Pages
         {
             this.app = ClientFactory.getClient();
             this.signalHub = signalHub;
-            ResourceManager rm = new ResourceManager("UmatiGateway.Pages.Ressource", Assembly.GetExecutingAssembly());
+            ResourceManager rm = new ResourceManager("UmatiGateway.Pages.Resource", Assembly.GetExecutingAssembly());
             string? Label_ConnectionUrl_Translated = rm.GetString("TestPage_Label_ConnectionUrl");
             if (Label_ConnectionUrl_Translated != null) { this.LabelConnectionUrl = Label_ConnectionUrl_Translated; }
         }
