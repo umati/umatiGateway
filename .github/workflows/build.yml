@@ -3,9 +3,9 @@ name: build
 
 on:
   push:
-    branches: [main, develop]
+    # branches: [main, develop]
     # Publish semver tags as releases.
-    tags: ["v*.*.*"]
+    # tags: ["v*.*.*"]
   pull_request:
     branches: [main, develop]
   merge_group:
@@ -13,7 +13,102 @@ on:
 permissions: read-all
 
 jobs:
-  build-linux:
+  build-packages:
+    if: false # Don't run.
+    permissions:
+      packages: write
+      contents: read
+    strategy:
+      matrix:
+        os: [ubuntu-24.04]
+        build_type: [Debug, Release]
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          path: umatiGateway
+          persist-credentials: false
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: "8.0"
+      - name: Restore dependencies
+        run: |
+          cd umatiGateway
+          dotnet restore
+      - name: Build application
+        run: |
+          cd umatiGateway
+          dotnet build umatiGateway.sln --configuration ${{ matrix.build_type }}
+      - name: Run tests
+        run: |
+          cd umatiGateway
+          dotnet test umatiGateway.sln --configuration ${{ matrix.build_type }}
+      - name: Install packaging tools
+        run: |
+          cd umatiGateway/umatiGateway
+          dotnet tool install --global dotnet-deb
+          dotnet tool install --global dotnet-rpm
+          dotnet tool install --global dotnet-zip
+          export PATH="$PATH:/root/.dotnet/tools"
+          dotnet deb install
+          dotnet rpm install
+          dotnet zip install
+      - name: Build packages
+        run: |
+          mkdir umatiGateway/releases
+          cd umatiGateway/umatiGateway
+          export PATH="$PATH:/root/.dotnet/tools"
+          # Linux
+          dotnet deb --configuration ${{ matrix.build_type }} --runtime linux-x64 --output ../releases
+          dotnet rpm --configuration ${{ matrix.build_type }} --runtime linux-x64 --output ../releases
+          dotnet zip --configuration ${{ matrix.build_type }} --runtime linux-x64 --output ../releases
+          dotnet deb --configuration ${{ matrix.build_type }} --runtime linux-arm64 --output ../releases
+          dotnet rpm --configuration ${{ matrix.build_type }} --runtime linux-arm64 --output ../releases
+          dotnet zip --configuration ${{ matrix.build_type }} --runtime linux-arm64 --output ../releases
+          # Windows
+          dotnet zip --configuration ${{ matrix.build_type }} --runtime win-x64 --output ../releases
+          dotnet zip --configuration ${{ matrix.build_type }} --runtime win-arm64 --output ../releases
+      - name: Upload DEB packages as artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: umatiGateway-${{ matrix.os }}-${{ matrix.build_type }}-DEB
+          path: umatiGateway/releases/*.deb
+      - name: Upload RPM packages as artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: umatiGateway-${{ matrix.os }}-${{ matrix.build_type }}-RPM
+          path: umatiGateway/releases/*.rpm
+      - name: Upload Linux ZIP archives as artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: umatiGateway-${{ matrix.os }}-linux-${{ matrix.build_type }}-ZIP
+          path: umatiGateway/releases/*-linux-*.zip
+      - name: Upload Windows ZIP archives as artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: umatiGateway-${{ matrix.os }}-win-${{ matrix.build_type }}-ZIP
+          path: umatiGateway/releases/*-win-*.zip
+      - name: List files in the releases directory
+        run: ls -lh umatiGateway/releases/
+      - name: Publish a Codeberg release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: https://code.forgejo.org/actions/forgejo-release@v2.11.0
+        with:
+          direction: upload
+          url: https://codeberg.org
+          repo: ${{ forge.repository }}
+          tag: ${{ forge.ref_name }}
+          token: ${{ secrets.RELEASE_TOKEN }}
+          release-dir: umatiGateway/releases
+          release-notes: "Automated release of umatiGateway packages."
+
+  build-multi:
+    if: false
+    container:
+      image: mcr.microsoft.com/dotnet/sdk:10.0
     permissions:
       packages: write
       contents: read
@@ -21,84 +116,40 @@ jobs:
       matrix:
         os: [docker]
         build_type: [Debug, Release]
+        runtime: [linux-x64, linux-arm64, win-x64, win-arm64]
       fail-fast: false
     runs-on: ${{ matrix.os }}
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v6
-        with:
-          path: umatiGateway
-          persist-credentials: false
+      - name: Install Node.js
+        run: apt update && apt install nodejs -y
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: "8.0"
-
-      - name: Restore dependencies
-        run: |
-          cd umatiGateway
-          dotnet restore
-
-      - name: Install deb packaging tool
-        run: |
-          cd umatiGateway/umatiGateway
-          dotnet tool install --global dotnet-deb
-          export PATH="$PATH:/home/runner/.dotnet/tools"
-          dotnet deb install
-
-      - name: build and package
-        run: |
-          cd umatiGateway/umatiGateway
-          dotnet deb --configuration ${{ matrix.build_type }} --output ../umati-gateway.deb
-
-      - name: Upload Debian Package
-        uses: actions/upload-artifact@v7
-        with:
-          name: umatiGateway-${{ matrix.os }}-${{ matrix.build_type }}
-          path: umatiGateway/umati-gateway.deb
-
-  build-windows:
-    permissions:
-      packages: write
-      contents: read
-    strategy:
-      matrix:
-        os: [windows-2022, windows-2025]
-        build_type: [Debug, Release]
-      fail-fast: false
-    runs-on: ${{ matrix.os }}
-    steps:
-      - name: Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: "8.0"
-
-      - name: Restore Dependencies
+      - name: Restore dependencies
         run: dotnet restore umatiGateway.sln
 
-      - name: Build Application
+      - name: Build application
         run: dotnet build umatiGateway.sln --configuration ${{ matrix.build_type }}
 
-      - name: Run Tests
+      - name: Run tests
         run: dotnet test umatiGateway.sln --configuration ${{ matrix.build_type }}
 
-      - name: Publish Application
-        run: dotnet publish umatiGateway.sln --self-contained true --configuration ${{ matrix.build_type }} --output ./publish
+      - name: Publish application
+        run: dotnet publish umatiGateway.sln --self-contained true --configuration ${{ matrix.build_type }} -r ${{ matrix.runtime }} --output ./publish
+
+      - run: ls -l ./publish
 
       - name: Upload Published Artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: umatiGateway-${{ matrix.os }}-${{ matrix.build_type }}
+          name: umatiGateway-${{ matrix.os }}-${{ matrix.runtime }}-${{ matrix.build_type }}
           path: ./publish
 
-  docker:
+  build-docker:
     permissions:
       packages: write
       contents: read
@@ -108,52 +159,71 @@ jobs:
         image: registry:3
         ports:
           - 5000:5000
-    env:
-      # Use docker.io for Docker Hub if empty
-      REGISTRY: ghcr.io
-      # github.repository as <account>/<repo>
-      IMAGE_NAME: ${{ github.repository }}
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v6
+      - name: Verify workspace
+        run: |
+          pwd
+          echo "Hello from Job Container (current directory)" > sync-test.txt
+          echo "Hello from Job Container (/workspace directory)" > /workspace/sync-test.txt
+          ls -l .
+          ls -l /workspace/
+      - name: Set registry
+        run: |
+          #!/bin/bash
+          echo IMAGE_REPOSITORY="$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_ENV"
+          if [ "${{ github.server_url }}" = "https://codeberg.org" ]; then
+            echo "REGISTRY=codeberg.org" >> "$GITHUB_ENV"
+            echo "REGISTRY_TOKEN=${{ secrets.REGISTRY_TOKEN }}" >> "$GITHUB_ENV"
+          else
+            echo "REGISTRY=ghcr.io" >> "$GITHUB_ENV"
+            echo "REGISTRY_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> "$GITHUB_ENV"
+          fi
+      - name: Login to container registry
+        if: ${{ github.event_name != 'pull_request' }}
+        uses: docker/login-action@v3.7.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.repository_owner }}
+          password: ${{ env.REGISTRY_TOKEN }}
+      - name: Checkout code
+        uses: actions/checkout@v6.0.2
         with:
           path: umatiGateway
           persist-credentials: false
-
-      - name: Login to registry ${{ env.REGISTRY }}
-        uses: docker/login-action@v4.2.0
-        #if: github.event_name != 'pull_request'
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      # Extract metadata (tags, labels) for Docker
-      # https://github.com/docker/metadata-action
+      - name: Verify code
+        run: |
+          pwd
+          ls -l ./umatiGateway
       - name: Extract Docker metadata
         id: meta
         uses: docker/metadata-action@v6.1.0
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}
+          flavor: |
+            latest=true
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
+            type=ref,event=pr
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v4.1.0
-
+        uses: docker/setup-qemu-action@v3.7.0
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4.1.0
+        uses: docker/setup-buildx-action@v3.12.0
         with:
           driver-opts: network=host
-
-      - name: Build and Push container image to ${{ env.REGISTRY }}
-        uses: docker/build-push-action@v7.2.0
+      - name: Build and push container image to ${{ env.REGISTRY }}
+        uses: docker/build-push-action@v6.18.0
         #if: github.event_name != 'pull_request'
         with:
           context: ./umatiGateway
           file: "./umatiGateway/umatiGateway/Dockerfile"
           platforms: linux/amd64,linux/arm64
-          push: true
+          push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            VERSION=${{ steps.docker_meta.outputs.version }}
           provenance: false
-
       - name: Build and Push container image to local registry
         uses: docker/build-push-action@v7.2.0
         if: github.event_name == 'pull_request'
@@ -164,13 +234,29 @@ jobs:
           push: true
           tags: localhost:5000/umati/umatigateway:${{ steps.meta.outputs.version }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            VERSION=${{ steps.docker_meta.outputs.version }}
           provenance: false
-
       - name: Run integration test mqtt
-        if: github.event_name == 'pull_request'
+        # if: github.event_name == 'pull_request'
         run: |
           #!/bin/bash
           cd ./umatiGateway/tests/integration/mqtt_test || exit
+          TARGET="./SimpleConfig/umatiGatewayConfig.xml"
+          echo "─── File Info ---"
+          ls -ld $TARGET
+          echo "--- 8< ---"
+          cat $TARGET ; echo
+          echo "--- 8< ---"
+          echo "--- Is it a directory? ---"
+          [ -d "$TARGET" ] && echo "YES, it is a directory" || echo "NO, it is not a directory"
+          echo "--- Is it a file? ---"
+          [ -f "$TARGET" ] && echo "YES, it is a file" || echo "NO, it is not a file"
+          echo "--- Who am I? ---"
+          id
+          pwd
+          ls -la
+
           docker compose up -d
           python -m pip install --upgrade pip
           pip install -r requirements.txt
@@ -181,8 +267,9 @@ jobs:
     permissions:
       contents: write
     runs-on: ubuntu-24.04
-    needs: [build-linux, build-windows, docker]
-    if: startsWith(github.ref, 'refs/tags/')
+    needs: [build-packages, build-docker]
+    if: false
+    # if: startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Download artifacts
         uses: dawidd6/action-download-artifact@v21
@@ -191,7 +278,7 @@ jobs:
           workflow: build.yml
           workflow_conclusion: success
           repo: ${{ github.repository }}
-          commit: ${{github.event.pull_request.head.sha}}
+          commit: ${{ github.event.pull_request.head.sha }}
           if_no_artifact_found: fail
           skip_unpack: true
       - name: Checksum
