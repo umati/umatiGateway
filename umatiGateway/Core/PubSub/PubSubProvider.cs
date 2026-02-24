@@ -223,7 +223,7 @@ namespace umatiGateway.Core.PubSub
             }
             return metaTopic;
         }
-        public string GetBrowsePath(HierarchicalNode hierarchicalNode, bool includeNamespaceIndex = false, bool onlyIndexCurrentNode = false, string delimeter = "/")
+        public string GetBrowsePath(HierarchicalNode hierarchicalNode, bool includeNamespaceIndex = false, bool onlyIndexCurrentNode = false, string delimiter = "/")
         {
             string browsePath = "";
             if (includeNamespaceIndex || alwaysIncludeBrowsePathIndex)
@@ -239,11 +239,11 @@ namespace umatiGateway.Core.PubSub
             {
                 if ((includeNamespaceIndex && !onlyIndexCurrentNode) || alwaysIncludeBrowsePathIndex)
                 {
-                    browsePath = parentNode.BrowseName.ToString() + delimeter + browsePath;
+                    browsePath = parentNode.BrowseName.ToString() + delimiter + browsePath;
                 }
                 else
                 {
-                    browsePath = parentNode.BrowseName.Name.ToString() + delimeter + browsePath;
+                    browsePath = parentNode.BrowseName.Name.ToString() + delimiter + browsePath;
                 }
                 parentNode = parentNode.Parent;
             }
@@ -274,7 +274,7 @@ namespace umatiGateway.Core.PubSub
                     }
                 }
             }
-            //Add a Virtaul Id
+            //Add a Virtual Id
             DataValue dataValue = new DataValue(GetBrowsePath(hierarchicalNode, true, false, "."));
             VirtualId virtualId = new VirtualId(new NodeId("virtualId_" + uniqueint, 1), dataValue);
             virtualIds.Add(virtualId);
@@ -747,7 +747,7 @@ namespace umatiGateway.Core.PubSub
             }
             int uniqueint = ++counter;
             string dataSetName = new ExpandedNodeId(hierarchicalNode.NodeId).ToString();
-            //Add a Virtaul Id
+            //Add a Virtual Id
             DataValue dataValue = new DataValue(GetBrowsePath(hierarchicalNode, true, false, "."));
             VirtualId virtualId = new VirtualId(new NodeId("virtualId_" + uniqueint, 1), dataValue);
             virtualIds.Add(virtualId);
