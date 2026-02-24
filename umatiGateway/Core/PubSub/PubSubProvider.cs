@@ -83,7 +83,10 @@ namespace umatiGateway.Core.PubSub
                     break;
             }
             Session session = this.client.CheckSession();
+            session.FetchTypeTree(DataTypeIds.BaseDataType);
             session.FetchTypeTree(ObjectTypeIds.BaseObjectType);
+            var typeSystem = new Opc.Ua.Client.ComplexTypes.ComplexTypeSystem(session);
+            typeSystem.LoadAsync().ConfigureAwait(false).GetAwaiter().GetResult();
             referenceDescriptionResolver = new ReferenceDescriptionResolver(client);
             CreateSubscriptions();
             client.SubscribeToDataChanges(subscriptionIds, updateDataValue);
