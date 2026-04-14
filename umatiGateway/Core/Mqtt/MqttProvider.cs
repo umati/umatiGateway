@@ -1323,6 +1323,10 @@ namespace umatiGateway.Core.Mqtt
             {
                 return (string)obj;
             }
+            if (obj is double)
+            {
+                return (double)obj;
+            }
             else if (obj is ExtensionObject)
             {
                 return decode((ExtensionObject)obj);
