@@ -703,7 +703,7 @@ namespace umatiGateway.Core.Mqtt
                     Logger.Trace($"Placeholder Type: {placeholder} ");
                 }
             }
-            Logger.Trace("Valid Placeholder Childs are:");
+            Logger.Trace("Valid Placeholder Children are:");
             foreach (PlaceholderNode possiblePlaceHolderNode in possiblePlaceholdernodes)
             {
                 possiblePlaceHolderNode.printPlaceholderNode(this.app);
@@ -1196,11 +1196,11 @@ namespace umatiGateway.Core.Mqtt
                     case XmlElement xmlElementValue: return jsonConverter.Convert(xmlElementValue);
                     case ExtensionObject extensionObjectValue:
                         JObject jobject = new JObject();
-                        ExtensionObject eto = (ExtensionObject)value;
-                        ExtensionObjectEncoding encoding = eto.Encoding;
+                        ExtensionObject extObject = (ExtensionObject)value;
+                        ExtensionObjectEncoding encoding = extObject.Encoding;
                         if (encoding == ExtensionObjectEncoding.Binary)
                         {
-                            jobject = decode(eto);
+                            jobject = decode(extObject);
                         }
                         else if (encoding == ExtensionObjectEncoding.Json)
                         {
@@ -1212,7 +1212,7 @@ namespace umatiGateway.Core.Mqtt
                         }
                         else if (encoding == ExtensionObjectEncoding.EncodeableObject)
                         {
-                            return decodeEncodeable(eto, nodeId);
+                            return decodeEncodeable(extObject, nodeId);
                         }
                         return jobject;
                     case ExtensionObject[] extensionObjects:
@@ -1286,7 +1286,7 @@ namespace umatiGateway.Core.Mqtt
         /// <summary>
         /// Adds an error to the Error List.
         /// </summary>
-        /// <param name="nodeId">The nodeId on that the Error occured.</param>
+        /// <param name="nodeId">The nodeId on that the Error occurred.</param>
         /// <param name="message">The message related to the error.</param>
         private void AddError(NodeId? nodeId, string message)
         {
@@ -1329,21 +1329,21 @@ namespace umatiGateway.Core.Mqtt
             }
             return jObject;
         }
-        public JObject decode(ExtensionObject eto)
+        public JObject decode(ExtensionObject extensionObject)
         {
-            ICustomEncoding? customEncoding = customEncodingManager.GetActiveEncodingForNodeId(eto.TypeId);
+            ICustomEncoding? customEncoding = customEncodingManager.GetActiveEncodingForNodeId(extensionObject.TypeId);
             if (customEncoding != null)
             {
 
-                JObject? decoded = customEncoding.decode(eto);
+                JObject? decoded = customEncoding.decode(extensionObject);
                 if (decoded != null) return decoded;
                 else return new JObject();
 
             }
             JObject jObject = new JObject();
-            Logger.Trace($"Eto Expanded NodeId: {eto.TypeId}");
-            NodeId etoId = ExpandedNodeId.ToNodeId(eto.TypeId, client.GetNamespaceTable());
-            Logger.Trace($"Eto NodeId: {etoId}");
+            Logger.Trace($"ExtensionObject Expanded NodeId: {extensionObject.TypeId}");
+            NodeId etoId = ExpandedNodeId.ToNodeId(extensionObject.TypeId, client.GetNamespaceTable());
+            Logger.Trace($"ExtensionObject NodeId: {etoId}");
             NodeId? dataType = client.BrowseLocalNodeId(etoId, BrowseDirection.Inverse, (uint)NodeClass.DataType, ReferenceTypeIds.HasEncoding, true);
             if (dataType != null)
             {
@@ -1375,7 +1375,7 @@ namespace umatiGateway.Core.Mqtt
                     ExtensionObject dtd = dtn.DataTypeDefinition;
                     if (gdc != null)
                     {
-                        BinaryDecoder BinaryDecoder = new BinaryDecoder((byte[])eto.Body, ServiceMessageContext.GlobalContext);
+                        BinaryDecoder BinaryDecoder = new BinaryDecoder((byte[])extensionObject.Body, ServiceMessageContext.GlobalContext);
                         jObject = decode(BinaryDecoder, gdc);
                     }
                 }
@@ -1918,9 +1918,9 @@ namespace umatiGateway.Core.Mqtt
                             Logger.Info("Publish Client Online");
                             publishClientOnline();
                             Logger.Info("Publish Client Online finish.");
-                            Logger.Info("Publish Maschine");
+                            Logger.Info("Publish Machine");
                             publishNodeMachineNodes();
-                            Logger.Info("Publish Maschine finished.");
+                            Logger.Info("Publish Machine finished.");
                             publishNodeAfterSubscriptionMachineNodes();
                             Logger.Info("Publish Online Machines Machine Node");
                             publishOnlineMachinesMachineNode();
@@ -1948,7 +1948,7 @@ namespace umatiGateway.Core.Mqtt
                         _ = client.ReadNode(ObjectIds.Server);
                         Logger.Info("Publish BadList Machine Nodes");
                         PublishBadListMachineNodes();
-                        Logger.Info("Publish Bad List Maschine Nodes finish.");
+                        Logger.Info("Publish Bad List Machine Nodes finish.");
                         Logger.Info("Publish Client Online");
                         publishClientOnline();
                         Logger.Info("Publish Client Online finish.");
@@ -1958,9 +1958,9 @@ namespace umatiGateway.Core.Mqtt
                         Logger.Info("Publish Identification Object");
                         publishIdentificationMachineNodes();
                         Logger.Info("Publish Identification Object");
-                        Logger.Info("Publish Maschine Object Machine Nodes");
+                        Logger.Info("Publish Machine Object Machine Nodes");
                         publishNodeAfterSubscriptionMachineNodes();
-                        Logger.Info("Publish Maschine Object Machine Nodes finished.");
+                        Logger.Info("Publish Machine Object Machine Nodes finished.");
                     }
 
                 }
@@ -2212,7 +2212,7 @@ namespace umatiGateway.Core.Mqtt
             return sortedJsonObj;
         }
 
-        // Methode, um die Sortierung je nach Token-Typ (JObject, JArray oder JValue) rekursiv anzuwenden
+        // Method, um die Sortierung je nach Token-Typ (JObject, JArray or JValue) rekursiv anzuwenden
         public JToken SortToken(JToken token)
         {
             if (token is JObject)
@@ -2222,7 +2222,7 @@ namespace umatiGateway.Core.Mqtt
             }
             else if (token is JArray)
             {
-                // F�r Arrays: �berpr�fe, ob die einzelnen Elemente sortiert werden m�ssen
+                // Check if elements have to be sorted
                 var array = (JArray)token;
                 return new JArray(array.Select(SortToken));
             }
@@ -2264,7 +2264,7 @@ namespace umatiGateway.Core.Mqtt
         }
         void OpcUaEventListener.ResultReadyEvent()
         {
-            Logger.Trace("ResultReadyEvent reveived.");
+            Logger.Trace("ResultReadyEvent received.");
             if (resultFolder != null)
             {
                 Logger.Trace($"Update Resultfolder: {resultFolder}");
