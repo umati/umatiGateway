@@ -1475,6 +1475,20 @@ namespace umatiGateway.Core.Mqtt
                                     }
                                     jObject.Add(field.Name, array);
                                 }
+                                else if (field.TypeName == "ua:LocalizedText")
+                                {
+                                    JArray array = new JArray();
+                                    for (int i = 0; i < previousInt32; i++)
+                                    {
+                                        LocalizedText localizedTextValue = BinaryDecoder.ReadLocalizedText(field.Name);
+                                        Logger.Info($"Value: {localizedTextValue}");
+                                        JObject localizedTextObject = new JObject();
+                                        localizedTextObject.Add("locale", localizedTextValue.Locale);
+                                        localizedTextObject.Add("text", localizedTextValue.Text);
+                                        array.Add(localizedTextObject);
+                                    }
+                                    jObject.Add(field.Name, array);
+                                }
                                 else if (field.TypeName.StartsWith("ua:"))
                                 {
                                     JArray array = new JArray();
