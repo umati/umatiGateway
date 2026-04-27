@@ -1319,7 +1319,7 @@ namespace umatiGateway.Core.Mqtt
         {
             JObject jObject = new JObject();
             object obj = variant.Value;
-            switch(obj)
+            switch (obj)
             {
                 case bool boolValue: return this.jsonConverter.Convert(boolValue);
                 case sbyte sByteValue: return this.jsonConverter.Convert(sByteValue);
