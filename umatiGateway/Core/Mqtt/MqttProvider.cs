@@ -1319,19 +1319,34 @@ namespace umatiGateway.Core.Mqtt
         {
             JObject jObject = new JObject();
             object obj = variant.Value;
-            if (obj is string)
+            switch (obj)
             {
-                return (string)obj;
+                case bool boolValue: return this.jsonConverter.Convert(boolValue);
+                case sbyte sByteValue: return this.jsonConverter.Convert(sByteValue);
+                case byte byteValue: return this.jsonConverter.Convert(byteValue);
+                case short shortValue: return this.jsonConverter.Convert(shortValue);
+                case ushort ushortValue: return this.jsonConverter.Convert(ushortValue);
+                case int intValue: return this.jsonConverter.Convert(intValue);
+                case uint uintValue: return this.jsonConverter.Convert(uintValue);
+                case long longValue: return this.jsonConverter.Convert(longValue);
+                case ulong ulongValue: return this.jsonConverter.Convert(ulongValue);
+                case float floatValue: return this.jsonConverter.Convert(floatValue);
+                case double doubleValue: return this.jsonConverter.Convert(doubleValue);
+                case string stringValue: return this.jsonConverter.Convert(stringValue);
+                case DateTime dateTimeValue: return this.jsonConverter.Convert(dateTimeValue);
+                case Guid guidValue: return this.jsonConverter.Convert(guidValue);
+                case byte[] byteStringValue: return this.jsonConverter.Convert(byteStringValue);
+                case XmlElement xmlElementValue: return this.jsonConverter.Convert(xmlElementValue);
+                case NodeId nodeIdValue: return this.jsonConverter.Convert(nodeIdValue);
+                case ExpandedNodeId expandedNodeIdValue: return this.jsonConverter.Convert(expandedNodeIdValue);
+                case StatusCode statusCodeValue: return this.jsonConverter.Convert(statusCodeValue);
+                case QualifiedName qualifiedNameValue: return this.jsonConverter.Convert(qualifiedNameValue);
+                case LocalizedText localizedTextValue: return this.jsonConverter.Convert(localizedTextValue);
+                case ExtensionObject extensionObject: return decode(extensionObject);
+                case DataValue dataValue: return this.jsonConverter.Convert(dataValue, this.decode((Variant)dataValue.Value));
+                case DiagnosticInfo diagnosticInfo: return this.jsonConverter.Convert(diagnosticInfo);
+                default: return jObject;
             }
-            if (obj is double)
-            {
-                return (double)obj;
-            }
-            else if (obj is ExtensionObject)
-            {
-                return decode((ExtensionObject)obj);
-            }
-            return jObject;
         }
         public JObject decode(ExtensionObject extensionObject)
         {
@@ -1678,9 +1693,9 @@ namespace umatiGateway.Core.Mqtt
                                     {
                                         jObject.Add(field.Name, (string)value);
                                     }
-                                    else if (value is JObject)
+                                    else if (value is JToken)
                                     {
-                                        jObject.Add(field.Name, (JObject)value);
+                                        jObject.Add(field.Name, (JToken)value);
                                     }
                                 }
                                 else if (field.TypeName.StartsWith("ua:") && field.TypeName != "ua:LocalizedText" && field.TypeName != "ua:Variant")

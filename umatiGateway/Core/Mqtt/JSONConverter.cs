@@ -27,6 +27,7 @@ namespace umatiGateway.Core.Mqtt
         {
             return value != null ? new JValue(value) : GetDefaultNullValue();
         }
+
         public JToken Convert(byte? value)
         {
             return value != null ? new JValue(value) : GetDefaultNullValue();
@@ -212,6 +213,33 @@ namespace umatiGateway.Core.Mqtt
             jObject.Add("Value", enumValueType.Value);
             jObject.Add("DisplayName", enumValueType.DisplayName.ToString());
             jObject.Add("Description", enumValueType.Description.ToString());
+            return jObject;
+        }
+        public JToken Convert(DataValue dataValue, object value)
+        {
+            if (dataValue == null) return GetDefaultNullValue();
+            JObject jObject = new JObject();
+            jObject.Add("StatusCode", this.Convert(dataValue.StatusCode));
+            if (dataValue.ServerTimestamp != DateTime.MinValue)
+            {
+                jObject.Add("SourceTimeStamp", this.Convert(dataValue.SourceTimestamp));
+            }
+            if (dataValue.SourceTimestamp != DateTime.MinValue)
+            {
+                jObject.Add("ServerTimeStamp", this.Convert(dataValue.ServerTimestamp));
+            }
+            if (dataValue.ServerPicoseconds != 0)
+            {
+                jObject.Add("ServerPicoseconds", this.Convert(dataValue.ServerPicoseconds));
+            }
+            if (dataValue.SourcePicoseconds != 0)
+            {
+                jObject.Add("SourcePicoseconds", this.Convert(dataValue.SourcePicoseconds));
+            }
+            if (value is JToken valueToken)
+            {
+                jObject.Add("Value", valueToken);
+            }
             return jObject;
         }
         /// <summary>
