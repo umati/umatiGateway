@@ -140,11 +140,10 @@ namespace umatiGateway.Core.Mqtt
             {
                 this.connectionType = connectionType;
                 Logger.Info("=== MQTT Connection Configuration ===");
-                Logger.Info($"Connection String : {config.ServerEndpoint}");
-                Logger.Info($"Connection Type   : {this.connectionType}");
-                Logger.Info($"Connection Port   : 4321");
-                Logger.Info($"Username          : {(string.IsNullOrEmpty(config.UserName) ? "<empty>" : config.UserName)}");
-                Logger.Info($"Password Length   : {(string.IsNullOrEmpty(config.Password) ? 0 : config.Password.Length)}");
+                Logger.Info("Connection String : {ServerEndpoint}", config.ServerEndpoint);
+                Logger.Info("Connection Type   : {ConnectionType}", this.connectionType);
+                Logger.Info("Username          : {UserName}",(string.IsNullOrEmpty(config.UserName) ? "<empty>" : config.UserName));
+                Logger.Info("Password Length   : {PasswordLength}", (string.IsNullOrEmpty(config.Password) ? 0 : config.Password.Length));
 
                 if (this.connectionType == TCP)
                 {
@@ -169,7 +168,7 @@ namespace umatiGateway.Core.Mqtt
             }
             catch (Exception e)
             {
-                Logger.Error($"Exception on connecting to MQTT broker. {e}");
+                Logger.Error("Exception on connecting to MQTT broker. {Exception}", e);
                 connected = false;
             }
         }
@@ -224,14 +223,14 @@ namespace umatiGateway.Core.Mqtt
 
                 // Zertifikatsinformationen loggen
                 Logger.Info("=== Server Certificate Details ===");
-                Logger.Info($"Thumbprint       : {serverCertificate.Thumbprint}");
-                Logger.Info($"Subject          : {serverCertificate.Subject}");
-                Logger.Info($"Subject Name     : {serverCertificate.SubjectName.Name}");
-                Logger.Info($"Issuer           : {serverCertificate.Issuer}");
-                Logger.Info($"Issuer Name      : {serverCertificate.IssuerName.Name}");
-                Logger.Info($"Valid From       : {serverCertificate.NotBefore}");
-                Logger.Info($"Valid Until      : {serverCertificate.NotAfter}");
-                Logger.Info($"Key Algorithm    : {serverCertificate.GetKeyAlgorithm()}");
+                Logger.Info("Thumbprint       : {Thumbprint}", serverCertificate.Thumbprint);
+                Logger.Info("Subject          : {Subject}", serverCertificate.Subject);
+                Logger.Info("Subject Name     : {SubjectName}", serverCertificate.SubjectName.Name);
+                Logger.Info("Issuer           : {Issuer}", serverCertificate.Issuer);
+                Logger.Info("Issuer Name      : {IssuerName}", serverCertificate.IssuerName.Name);
+                Logger.Info("Valid From       : {ValidFrom}", serverCertificate.NotBefore);
+                Logger.Info("Valid Until      : {ValidUntil}", serverCertificate.NotAfter);
+                Logger.Info("Key Algorithm    : {Key Algorithm}", serverCertificate.GetKeyAlgorithm());
                 string servercertificatePath = this.app.ActiveConfiguration.MqttProviderConfig.ServerCertificatePath;
                 string customCertificatePath = this.app.ActiveConfiguration.MqttProviderConfig.CustomCaCertificatePath;
 
@@ -261,7 +260,7 @@ namespace umatiGateway.Core.Mqtt
                         Logger.Warn("Standard certificate validation failed. Attempting fallback to custom CA.");
                         foreach (var status in chain.ChainStatus)
                         {
-                            Logger.Info($" - Status: {status.Status}, Info: {status.StatusInformation?.Trim()}");
+                            Logger.Info(" - Status: {Status}, Info: {StatusInformation}", status.Status, status.StatusInformation?.Trim());
                         }
                     }
                 }
@@ -289,7 +288,7 @@ namespace umatiGateway.Core.Mqtt
                         Logger.Warn("Custom CA validation failed.");
                         foreach (var status in customChain.ChainStatus)
                         {
-                            Logger.Info($" - Status: {status.Status}, Info: {status.StatusInformation?.Trim()}");
+                            Logger.Info(" - Status: {Status}, Info: {StatusInformation}", status.Status, status.StatusInformation?.Trim());
                         }
                     }
                 }
@@ -302,7 +301,7 @@ namespace umatiGateway.Core.Mqtt
             }
             catch (Exception ex)
             {
-                Logger.Error($"Certificate validation error: {ex.Message}");
+                Logger.Error("Certificate validation error: {ExceptionMessage}", ex.Message);
                 return false;
             }
         }
@@ -672,11 +671,11 @@ namespace umatiGateway.Core.Mqtt
 
                 if (theNode != null)
                 {
-                    Logger.Trace($"The Placeholders Types in {nodeId} = {theNode.BrowseName} are:");
+                    Logger.Trace("The Placeholders Types in {NodeId} = {BrowseName} are:", nodeId, theNode.BrowseName);
                 }
                 else
                 {
-                    Logger.Trace($"The Placeholders Types in {nodeId} are:");
+                    Logger.Trace("The Placeholders Types in {NodeId} are:", nodeId);
                 }
             }
             else
@@ -684,11 +683,11 @@ namespace umatiGateway.Core.Mqtt
                 Node? parentNode = client.ReadNode(parent);
                 if (theNode != null && parentNode != null)
                 {
-                    Logger.Trace($"The Placeholders Types in {nodeId} = {theNode.BrowseName} and {parent} = {parentNode.BrowseName} are:");
+                    Logger.Trace("The Placeholders Types in {NodeId} = {BrowseName} and {Parent} = {ParentBrowseName} are:", nodeId, theNode.BrowseName, parent, parentNode.BrowseName);
                 }
                 else
                 {
-                    Logger.Trace($"The Placeholders Types in {nodeId} and {parent} are:");
+                    Logger.Trace("The Placeholders Types in {NodeId} and {Parent} are:", nodeId, parent);
                 }
             }
             foreach (NodeId placeholder in optionalMandatoryPlaceholders)
@@ -696,11 +695,11 @@ namespace umatiGateway.Core.Mqtt
                 Node? placeholderNode = client.ReadNode(placeholder);
                 if (placeholderNode != null)
                 {
-                    Logger.Trace($"Placeholder Type: {placeholder} = {placeholderNode.BrowseName}");
+                    Logger.Trace("Placeholder Type: {Placeholder} = {PlaceholderBrowseName}", placeholder, placeholderNode.BrowseName);
                 }
                 else
                 {
-                    Logger.Trace($"Placeholder Type: {placeholder} ");
+                    Logger.Trace("Placeholder Type: {Placeholder} ", placeholder);
                 }
             }
             Logger.Trace("Valid Placeholder Children are:");
@@ -774,7 +773,7 @@ namespace umatiGateway.Core.Mqtt
                     {
                         if (typeDefinition != null)
                         {
-                            Logger.Trace($"TypeDefinition: {typeDefinition}");
+                            Logger.Trace("TypeDefinition: {TypeDefinition}", typeDefinition);
                         }
                         else
                         {
@@ -783,10 +782,10 @@ namespace umatiGateway.Core.Mqtt
                     }
                     else
                     {
-                        Logger.Trace($"{child} = {childNode.BrowseName} is NOT a PlaceHolder");
+                        Logger.Trace("{Child} = {ChildBrowsename} is NOT a PlaceHolder", child, childNode.BrowseName);
                         if (typeDefinition != null)
                         {
-                            Logger.Trace($"TypeDefinition: {typeDefinition}");
+                            Logger.Trace("TypeDefinition: {TypeDefinition}", typeDefinition);
                         }
                         else
                         {
@@ -799,7 +798,7 @@ namespace umatiGateway.Core.Mqtt
                     if (browseName == "Results" && typeDefinition == ObjectTypeIds.FolderType)
                     {
                         resultFolder = childNode.NodeId;
-                        Logger.Trace($"Found resultfolder: {resultFolder}");
+                        Logger.Trace("Found resultfolder: {ResultFolder}", resultFolder);
                     }
                     JObject childObject = new JObject();
                     if (jObject.ContainsKey(browseName))
@@ -939,7 +938,7 @@ namespace umatiGateway.Core.Mqtt
 
                             }
                             break;
-                        default: Logger.Info($"Unexpected NodeClass detected! {childNodeClass}"); break;
+                        default: Logger.Info("Unexpected NodeClass detected! {ChildNodeclass}", childNodeClass); break;
                     }
                     createJSON(childObject, child, machineNode, nodeId);
                 }
@@ -1360,18 +1359,18 @@ namespace umatiGateway.Core.Mqtt
 
             }
             JObject jObject = new JObject();
-            Logger.Trace($"ExtensionObject Expanded NodeId: {extensionObject.TypeId}");
+            Logger.Trace("ExtensionObject Expanded NodeId: {ExtensionObjectTypeId}", extensionObject.TypeId);
             NodeId etoId = ExpandedNodeId.ToNodeId(extensionObject.TypeId, client.GetNamespaceTable());
-            Logger.Trace($"ExtensionObject NodeId: {etoId}");
+            Logger.Trace("ExtensionObject NodeId: {ExtensionObjectId}", etoId);
             NodeId? dataType = client.BrowseLocalNodeId(etoId, BrowseDirection.Inverse, (uint)NodeClass.DataType, ReferenceTypeIds.HasEncoding, true);
             if (dataType != null)
             {
-                Logger.Trace($"DataType NodeId: {dataType}");
+                Logger.Trace("DataType NodeId: {DataType}", dataType);
             }
             else
             {
                 dataType = etoId;
-                Logger.Trace($"DataType NodeId: {dataType} Took otherId as NodeId");
+                Logger.Trace("DataType NodeId: {DataType} Took otherId as NodeId", dataType);
             }
             Dictionary<NodeId, Node> dataTypes = app.OpcUaClient.GetTypeDictionaries().GetDataTypes();
             NodeId search = dataType;
@@ -1426,7 +1425,7 @@ namespace umatiGateway.Core.Mqtt
                         bool lastFieldWasSwitchedOff = false;
                         foreach (GeneratedField field in generatedStructure.fields)
                         {
-                            Logger.Trace($"Decode: {field.Name} {field.TypeName}");
+                            Logger.Trace("Decode: {FieldName} {FieldType}", field.Name, field.TypeName);
                             currentFieldName = field.Name;
                             currentFieldType = field.TypeName;
                             if (field.IsLengthField == true)
@@ -1500,7 +1499,7 @@ namespace umatiGateway.Core.Mqtt
                                     for (int i = 0; i < previousInt32; i++)
                                     {
                                         LocalizedText localizedTextValue = BinaryDecoder.ReadLocalizedText(field.Name);
-                                        Logger.Info($"Value: {localizedTextValue}");
+                                        Logger.Info("Value: {LocalizedTextValue}", localizedTextValue);
                                         JObject localizedTextObject = new JObject();
                                         localizedTextObject.Add("locale", localizedTextValue.Locale);
                                         localizedTextObject.Add("text", localizedTextValue.Text);
@@ -1762,17 +1761,17 @@ namespace umatiGateway.Core.Mqtt
                                             }
                                             else
                                             {
-                                                Logger.Error($"Could not find GeneratedDataClass for field: {field}");
+                                                Logger.Error("Could not find GeneratedDataClass for field: {Field}", field);
                                             }
                                         }
                                         else
                                         {
-                                            Logger.Error($"Could not find Namespace {namespaceKey} for GeneratedDataClass {generatedDataClass}");
+                                            Logger.Error("Could not find Namespace {NamespaceKey} for GeneratedDataClass {GeneratedDataClass}", namespaceKey, generatedDataClass);
                                         }
                                     }
                                     else
                                     {
-                                        Logger.Error($"Could not find DataTypeDefinition for GeneratedDataClass: {generatedDataClass}");
+                                        Logger.Error("Could not find DataTypeDefinition for GeneratedDataClass: {GeneratedDataClass}", generatedDataClass);
                                     }
                                 }
                             }
@@ -2057,34 +2056,34 @@ namespace umatiGateway.Core.Mqtt
                     NodeId? machine = machineNode1.ResolvedNodeId;
                     if (machine != null)
                     {
-                        Logger.Debug($"Machine Node Id:\t{machine}");
+                        Logger.Debug("Machine Node Id:\t{Machine}", machine);
                         Node? machineNode = client.ReadNode(machine);
                         if (machineNode != null)
                         {
                             NodeId? typedefinition = client.BrowseTypeDefinition(machine);
                             if (typedefinition != null)
                             {
-                                Logger.Debug($"TypeDefinition NodeId is:\t{typedefinition}");
+                                Logger.Debug("TypeDefinition NodeId is:\t{TypeDefinition}", typedefinition);
                                 Node? TypeDefinitionNode = client.ReadNode(typedefinition);
                                 if (TypeDefinitionNode != null)
                                 {
                                     InstanceNSU = getInstanceNsu(machine);
                                     TypeBrowseName = TypeDefinitionNode.BrowseName.Name;
-                                    Logger.Debug($"InstanceNsu:\t{InstanceNSU}\tTypeBrowseName:\t{TypeBrowseName}");
+                                    Logger.Debug("InstanceNsu:\t{InstanceNSU}\tTypeBrowseName:\t{TypeBrowseName}", InstanceNSU, TypeBrowseName);
                                 }
                                 else
                                 {
-                                    Logger.Error($"Unable to get TypeDefinitionNode for type NodeId:\t{typedefinition}");
+                                    Logger.Error("Unable to get TypeDefinitionNode for type NodeId:\t{TypeDefinition}", typedefinition);
                                 }
                             }
                             else
                             {
-                                Logger.Error($"Unable to browse NodeId of TypeDefinition for machine NodeId:\t{machine}");
+                                Logger.Error("Unable to browse NodeId of TypeDefinition for machine NodeId:\t{Machine}", machine);
                             }
                         }
                         else
                         {
-                            Logger.Error($"Unable to read machine for NodeId:\t{machine}");
+                            Logger.Error("Unable to read machine for NodeId:\t{Machine}", machine);
                         }
                     }
                     else
@@ -2095,30 +2094,30 @@ namespace umatiGateway.Core.Mqtt
                 Logger.Debug("Read InstanceNsu for published Machines");
                 foreach (MachineNode machineNode in MachineNodes)
                 {
-                    Logger.Debug($"Machine:\t{machineNode.NodeIdType}\t{machineNode.NamespaceUrl}\t{machineNode.NodeIdString}\t{machineNode.BaseType}");
+                    Logger.Debug("Machine:\t{NodeIdType}\t{NamespaceUrl}\t{NodeIdString}\t{BaseType}", machineNode.NodeIdType, machineNode.NamespaceUrl, machineNode.NodeIdString, machineNode.BaseType);
                     NodeId? machineNodeId = machineNode.ResolvedNodeId;
                     if (machineNodeId != null)
                     {
-                        Logger.Debug($"Resolved NodeId is:\t{machineNodeId}");
+                        Logger.Debug("Resolved NodeId is:\t{MachineNodeId}", machineNodeId);
                         NodeId? typedefinitionNodeId = client.BrowseTypeDefinition(machineNodeId);
                         if (typedefinitionNodeId != null)
                         {
-                            Logger.Debug($"TypeDefinition NodeId is:\t{typedefinitionNodeId}");
+                            Logger.Debug("TypeDefinition NodeId is:\t{TypeDefinitionNodeId}", typedefinitionNodeId);
                             Node? typeDefinitionNode = client.ReadNode(typedefinitionNodeId);
                             if (typeDefinitionNode != null)
                             {
                                 machineNode.InstanceNamespace = getInstanceNsu(machineNodeId);
                                 machineNode.TypeBrowseName = typeDefinitionNode.BrowseName.Name;
-                                Logger.Debug($"InstanceNsu:\t{machineNode.InstanceNamespace}\tTypeBrowseName:\t{machineNode.TypeBrowseName}");
+                                Logger.Debug("InstanceNsu:\t{InstanceNamespace}\tTypeBrowseName:\t{TypeBrowseName}", machineNode.InstanceNamespace, machineNode.TypeBrowseName);
                             }
                             else
                             {
-                                Logger.Error($"Unable to get TypeDefinitionNode for Type NodeId:\t{typedefinitionNodeId}");
+                                Logger.Error("Unable to get TypeDefinitionNode for Type NodeId:\t{TypeDefinitionNodeId}", typedefinitionNodeId);
                             }
                         }
                         else
                         {
-                            Logger.Error($"Unable to browse NodeId of Typedefinition for machine NodeId:\t{machineNodeId}");
+                            Logger.Error("Unable to browse NodeId of Typedefinition for machine NodeId:\t{MachineNodeId}", machineNodeId);
                         }
                     }
                     else
@@ -2176,39 +2175,39 @@ namespace umatiGateway.Core.Mqtt
             }
             public void printPlaceholderNode(UmatiGatewayApp client)
             {
-                Logger.Trace($"PlaceHolderNodeId: {placeholderNodeId} = ");
+                Logger.Trace("PlaceHolderNodeId: {PlaceholderNodeId} = ", placeholderNodeId);
                 Node? placeholderNodeIdNode = client.OpcUaClient.ReadNode(placeholderNodeId);
                 if (placeholderNodeIdNode != null)
                 {
-                    Logger.Trace($"{placeholderNodeIdNode.BrowseName}");
+                    Logger.Trace("{PlaceholderBrowsename}", placeholderNodeIdNode.BrowseName);
                 }
                 else
                 {
-                    Logger.Trace($"Unknown");
+                    Logger.Trace("Unknown");
                 }
-                Logger.Trace($"TypeDefinitionNodeId: {typeDefinitionNodeId} = ");
+                Logger.Trace("TypeDefinitionNodeId: {TypeDefinitionNodeId} = ", typeDefinitionNodeId);
                 Node? TypeDefinitionNodeIdNode = client.OpcUaClient.ReadNode(typeDefinitionNodeId);
                 if (TypeDefinitionNodeIdNode != null)
                 {
-                    Logger.Trace($"{TypeDefinitionNodeIdNode.BrowseName}");
+                    Logger.Trace("{TypeDefinitionNodeBrowseName}", TypeDefinitionNodeIdNode.BrowseName);
                 }
                 else
                 {
-                    Logger.Trace($"Unknown");
+                    Logger.Trace("Unknown");
                 }
-                Logger.Trace($"phList: {phList}");
+                Logger.Trace("phList: {PlaceholderList}", phList);
                 Logger.Trace("SubTypeNodeIds:");
                 foreach (NodeId nodeId in subTypeNodeIds)
                 {
-                    Logger.Trace($"SubTypeNodeId: {nodeId} = ");
+                    Logger.Trace("SubTypeNodeId: {NodeId} = ", nodeId);
                     Node? subTypeNode = client.OpcUaClient.ReadNode(nodeId);
                     if (subTypeNode != null)
                     {
-                        Logger.Trace($"{subTypeNode.BrowseName}");
+                        Logger.Trace("{SubTypeNodeBrowseName}", subTypeNode.BrowseName);
                     }
                     else
                     {
-                        Logger.Trace($"Unknown");
+                        Logger.Trace("Unknown");
                     }
                 }
             }
@@ -2278,7 +2277,7 @@ namespace umatiGateway.Core.Mqtt
         }
         void OpcUaEventListener.ModelChangeEvent(NodeId affectedNode)
         {
-            Logger.Info($"Update Affected Node {affectedNode}");
+            Logger.Info("Update Affected Node {AffectedNode}", affectedNode);
             updateNode(affectedNode);
         }
         void OpcUaEventListener.ResultReadyEvent()
@@ -2286,7 +2285,7 @@ namespace umatiGateway.Core.Mqtt
             Logger.Trace("ResultReadyEvent received.");
             if (resultFolder != null)
             {
-                Logger.Trace($"Update Resultfolder: {resultFolder}");
+                Logger.Trace("Update Resultfolder: {ResultFolder}", resultFolder);
                 updateNode(resultFolder);
             }
             else

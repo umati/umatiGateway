@@ -96,7 +96,7 @@ namespace umatiGateway.Core.Configuration
                         }
                         else
                         {
-                            Logger.Warn($"No {STARTCONFIGURATION} node defined in {UMATI_GATEWAY_CONFIG} node.");
+                            Logger.Warn("No {STARTCONFIGURATION} node defined in {UMATI_GATEWAY_CONFIG} node.", STARTCONFIGURATION, UMATI_GATEWAY_CONFIG);
                         }
                         XmlNode? opcConnectionNode = ReadNode(node, OPC_CONNECTION);
                         if (opcConnectionNode != null)
@@ -114,7 +114,7 @@ namespace umatiGateway.Core.Configuration
                         }
                         else
                         {
-                            Logger.Warn($"No {OPC_CONNECTION} node defined in {UMATI_GATEWAY_CONFIG} node.");
+                            Logger.Warn("No {OPC_CONNECTION} node defined in {UMATI_GATEWAY_CONFIG} node.", OPC_CONNECTION, UMATI_GATEWAY_CONFIG);
                         }
                         XmlNode? webUINode = ReadNode(node, WEB_UI);
                         if (webUINode != null)
@@ -123,7 +123,7 @@ namespace umatiGateway.Core.Configuration
                         }
                         else
                         {
-                            Logger.Warn($"No {WEB_UI} node defined in {UMATI_GATEWAY_CONFIG} node.");
+                            Logger.Warn("No {WEB_UI} node defined in {UMATI_GATEWAY_CONFIG} node.", WEB_UI, UMATI_GATEWAY_CONFIG);
                         }
                         XmlNode? mqttProviderNode = ReadNode(node, MQTT_PROVIDER);
                         if (mqttProviderNode != null)
@@ -148,7 +148,7 @@ namespace umatiGateway.Core.Configuration
                             }
                             else
                             {
-                                Logger.Warn($"No {PUBLISHED_NODES} node defined in {MQTT_PROVIDER} node.");
+                                Logger.Warn("No {PUBLISHED_NODES} node defined in {MQTT_PROVIDER} node.", PUBLISHED_NODES, MQTT_PROVIDER);
                             }
                             XmlNode? customEncodingsNode = ReadNode(mqttProviderNode, CUSTOM_ENCODINGS);
                             List<CustomEncoding> customEncodings = new List<CustomEncoding>();
@@ -169,7 +169,7 @@ namespace umatiGateway.Core.Configuration
                             }
                             else
                             {
-                                Logger.Warn($"No {CUSTOM_ENCODINGS} node defined in {MQTT_PROVIDER} node.");
+                                Logger.Warn("No {CUSTOM_ENCODINGS} node defined in {MQTT_PROVIDER} node.", CUSTOM_ENCODINGS, MQTT_PROVIDER);
                             }
                             configuration.MqttProviderConfig.CustomEncodings = customEncodings;
 
@@ -188,13 +188,13 @@ namespace umatiGateway.Core.Configuration
                                 }
                                 else
                                 {
-                                    Logger.Warn($"No {IGNORED_PLACEHOLDER_TAG} nodes defined in {IGNORED_PLACEHOLDER_TAGS} node.");
+                                    Logger.Warn("No {IGNORED_PLACEHOLDER_TAG} nodes defined in {IGNORED_PLACEHOLDER_TAGS} node.", IGNORED_PLACEHOLDER_TAG, IGNORED_PLACEHOLDER_TAGS);
                                 }
                             }
                         }
                         else
                         {
-                            Logger.Warn($"No {MQTT_PROVIDER} node defined in {UMATI_GATEWAY_CONFIG} node.");
+                            Logger.Warn("No {MQTT_PROVIDER} node defined in {UMATI_GATEWAY_CONFIG} node.", MQTT_PROVIDER, UMATI_GATEWAY_CONFIG);
                         }
                         XmlNode? pubSubProviderNode = ReadNode(node, PUB_SUB_PROVIDER);
                         if (pubSubProviderNode != null)
@@ -237,14 +237,14 @@ namespace umatiGateway.Core.Configuration
                             }
                             else
                             {
-                                Logger.Warn($"No {PUBLISHED_NODES} node defined in {PUB_SUB_PROVIDER} node.");
+                                Logger.Warn("No {PUBLISHED_NODES} node defined in {PUB_SUB_PROVIDER} node.", PUBLISHED_NODES, PUB_SUB_PROVIDER);
                             }
                         }
                     }
                     else
                     {
-                        Logger.Error($"Unable to load configuration file with version: {configuration.Version}.\n" +
-                            $"Minimum configuration version is: {VERSION_2_0}");
+                        Logger.Error(@"Unable to load configuration file with version: {configuration.Version}.
+                            Minimum configuration version is: {VERSION_2_0}", configuration.Version, VERSION_2_0);
                     }
                 }
                 else
@@ -451,7 +451,7 @@ namespace umatiGateway.Core.Configuration
                             }
                             else
                             {
-                                Logger.Error($"Unknown FilterType in node {filterNode} in attribute {TYPE}: {filterString}");
+                                Logger.Error("Unknown FilterType in node {FilterNode} in attribute {TYPE}: {FilterString}", filterNode, TYPE, filterString);
                             }
                         }
                         XmlNodeList? conditionsNodeList = filterNode.SelectNodes(CONDITIONS);
@@ -470,7 +470,7 @@ namespace umatiGateway.Core.Configuration
                                     }
                                     else
                                     {
-                                        Logger.Error($"Unknown ConditionType in node {conditionsNode} in attribute {TYPE}: {conditionsTypeString}");
+                                        Logger.Error("Unknown ConditionType in node {ConditionsNode} in attribute {TYPE}: {conditionsTypeString}", conditionsNode, TYPE);
                                     }
                                 }
                                 List<Condition> conditionList = new List<Condition>();
@@ -606,7 +606,7 @@ namespace umatiGateway.Core.Configuration
                         publishedNodesNode.AppendChild(publishedNodeNode);
                         break;
                     default:
-                        Logger.Error($"Unknown SubType of published node: {publishedNodeObj.GetType()}");
+                        Logger.Error("Unknown SubType of published node: {PublishedNodeType}", publishedNodeObj.GetType());
                         break;
                 }
             }
@@ -626,22 +626,22 @@ namespace umatiGateway.Core.Configuration
                 value = node.Attributes[attributeName]?.Value;
                 if (value == null)
                 {
-                    Logger.Warn($"Reading configuration: Attribute \"{attributeName}\" of node \"{node.Name}\" is missing.");
+                    Logger.Warn("Reading configuration: Attribute \"{AttributeName}\" of node \"{NodeName}\" is missing.", attributeName, node.Name);
                     value = "";
                 }
             }
             else
             {
-                Logger.Warn($"Error on reading configuration: Attribute \"{attributeName}\" of node \"{node.Name}\" is missing. The node \"{node.Name}\" does not contain attributes.");
+                Logger.Warn("Error on reading configuration: Attribute \"{AttributeName}\" of node \"{NodeName}\" is missing. The node does not contain attributes.", attributeName, node.Name);
             }
             //Log config values except password because of security reasons (log will be shared)
             if (attributeName == "password")
             {
-                Logger.Info($"Configuration:  \"{attributeName}\" = \"{value.Length}\"");
+                Logger.Info("Configuration:  \"{AttributeName}\" = \"{Length}\"", attributeName, value.Length);
             }
             else
             {
-                Logger.Info($"Configuration:  \"{attributeName}\" = \"{value}\"");
+                Logger.Info("Configuration:  \"{AttributeName}\" = \"{Value}\"", attributeName, value);
             }
             return value;
         }

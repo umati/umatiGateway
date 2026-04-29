@@ -36,7 +36,7 @@ if (umatiGateway.ActiveConfiguration.StartConfiguration.StartWebUI == true)
         }
         else
         {
-            Logger.Error($"Invalid formatted Uri specified: {url}");
+            Logger.Error("Invalid formatted Uri specified: {Url}", url);
         }
     }
     // Add services to the container

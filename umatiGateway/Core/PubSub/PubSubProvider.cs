@@ -104,7 +104,7 @@ namespace umatiGateway.Core.PubSub
             foreach (VirtualId virtualId in virtualIds)
             {
                 pubSubDataStore.WritePublishedDataItem(virtualId.nodeId, Attributes.Value, virtualId.dv);
-                Logger.Info($"Added value to PubSub DataStore: {virtualId.nodeId} \t {virtualId.dv}");
+                Logger.Info("Added value to PubSub DataStore: {VirtualNodeId} \t {VirtualDataValue}", virtualId.nodeId, virtualId.dv);
             }
         }
         public void Disconnect()
@@ -153,12 +153,12 @@ namespace umatiGateway.Core.PubSub
                 }
                 else
                 {
-                    Logger.Error($"Unable to get HierarchicalNode for NodeId: {nodeId}");
+                    Logger.Error("Unable to get HierarchicalNode for NodeId: {NodeId}", nodeId);
                 }
             }
             else
             {
-                Logger.Error($"Unable to get NodeId for publishing: {machineNode}");
+                Logger.Error("Unable to get NodeId for publishing: {MachineNode}", machineNode);
             }
         }
         private void PreSubscribe(NodeId nodeId)
@@ -844,7 +844,7 @@ namespace umatiGateway.Core.PubSub
                 case NodeClass.DataType:
                 case NodeClass.Unspecified:
                 case NodeClass.View:
-                default: Logger.Trace($"No DataSet created due to NodeClass: {nodeClass}"); break;
+                default: Logger.Trace("No DataSet created due to NodeClass: {NodeClass}", nodeClass); break;
             }
         }
         private void PrepareConnection()
@@ -937,7 +937,7 @@ namespace umatiGateway.Core.PubSub
                         {
                             DataValue dv = valueNotification.Value;
                             pubSubDataStore.WritePublishedDataItem(monitoredItem.ResolvedNodeId, Attributes.Value, dv);
-                            Logger.Info($"Updated Value in PubSub DataStore: {monitoredItem.ResolvedNodeId}\t {dv}");
+                            Logger.Info("Updated Value in PubSub DataStore: {MonitoredItemResolvedNodeId}\t {DataValue}", monitoredItem.ResolvedNodeId, dv);
                         }
                         catch (Exception ex)
                         {
@@ -947,7 +947,7 @@ namespace umatiGateway.Core.PubSub
                     }
                     else
                     {
-                        Logger.Info($"Unexpected Notification type: {args.NotificationValue}");
+                        Logger.Info("Unexpected Notification type: {NotificationValue}", args.NotificationValue);
                     }
                 }
             });
@@ -987,12 +987,12 @@ namespace umatiGateway.Core.PubSub
                                 }
                                 else
                                 {
-                                    Logger.Warn($"Double child NodeId {childNodeId} in HierarchicalNode {hierarchicalNode.NodeId}");
+                                    Logger.Warn("Double child NodeId {ChildNodeId} in HierarchicalNode {HierarchicalNodeId}", childNodeId, hierarchicalNode.NodeId);
                                 }
                             }
                             else
                             {
-                                Logger.Error($"Unable to read HierarchicalNode");
+                                Logger.Error("Unable to read HierarchicalNode");
                             }
                         }
                         else
@@ -1006,18 +1006,18 @@ namespace umatiGateway.Core.PubSub
                                 }
                                 else
                                 {
-                                    Logger.Warn($"Double child NodeId {childNodeId} in HierarchicalNode {hierarchicalNode.NodeId}");
+                                    Logger.Warn("Double child NodeId {ChildNodeId} in HierarchicalNode {HierarchicalNodeId}", childNodeId, hierarchicalNode.NodeId);
                                 }
                             }
                             else
                             {
-                                Logger.Error($"Unable to read HierarchicalNode");
+                                Logger.Error("Unable to read HierarchicalNode");
                             }
                         }
                     }
                     else
                     {
-                        Logger.Error($"No TypeDefinition for child NodeId {childNodeId}");
+                        Logger.Error("No TypeDefinition for child NodeId {ChildNodeId}", childNodeId);
                     }
                 }
                 if (node is VariableNode variableNode)
@@ -1037,7 +1037,7 @@ namespace umatiGateway.Core.PubSub
             }
             else
             {
-                Logger.Error($"Unable to read Node for NodeId {nodeId}");
+                Logger.Error("Unable to read Node for NodeId {NodeId}", nodeId);
             }
             return hierarchicalNode;
         }

@@ -87,7 +87,7 @@ namespace umatiGateway.Core.OPC
                 this.notifyOpcUaClientListeners();
                 try
                 {
-                    Logger.Info($"Disconnection OPC UA Session: {this.session}");
+                    Logger.Info("Disconnection OPC UA Session: {Session}", this.session);
                     Session session = this.CheckSession();
                     session.Close();
                     session.Dispose();
@@ -99,8 +99,8 @@ namespace umatiGateway.Core.OPC
                 {
                     this.ClientState.setState(OpcUaConnectionState.Error, ex.Message);
                     this.ClientStateHistory.Add(this.ClientState.Copy());
-                    Logger.Error($"Failed to disconnect session.", ex);
-                    throw new OpcUaException($"Failed to disconnect session.", ex);
+                    Logger.Error("Failed to disconnect session. {Exception}", ex);
+                    throw new OpcUaException("Failed to disconnect session.", ex);
                 }
                 finally
                 {
@@ -189,9 +189,9 @@ namespace umatiGateway.Core.OPC
                                     ModelChangeStructureDataType mcs = (ModelChangeStructureDataType)body;
                                     if (mcs.Affected != null)
                                     {
-                                        Logger.Info($"Affected: {mcs.Affected}");
-                                        Logger.Info($"AffectedType: {mcs.AffectedType}");
-                                        Logger.Info($"Verb: {mcs.Verb}");
+                                        Logger.Info("Affected: {Affected}", mcs.Affected);
+                                        Logger.Info("AffectedType: {AffectedType}", mcs.AffectedType);
+                                        Logger.Info("Verb: {Verb}", mcs.Verb);
                                         foreach (OpcUaEventListener listener in opcUaEventListeners)
                                         {
                                             listener.ModelChangeEvent(mcs.Affected);
@@ -205,7 +205,7 @@ namespace umatiGateway.Core.OPC
             }
             catch (Exception ex)
             {
-                Logger.Info($"OnMonitoredItemNotification error: {ex.Message}");
+                Logger.Info("OnMonitoredItemNotification error: {ExceptionMessage}", ex.Message);
             }
         }
         public BrowseResultCollection BrowseNode(NodeId nodeId, BrowseDirection browseDirection, uint nodeClassMask, NodeId referenceTypeIds, bool includeSubTypes)
@@ -384,7 +384,7 @@ namespace umatiGateway.Core.OPC
 
 
                     // Session created successfully.
-                    Logger.Info($"New session created with SessionName = {session.SessionName}");
+                    Logger.Info("New session created with SessionName = {SessionName}", session.SessionName);
 
                     TypeDictionaries = new TypeDictionaries(this.app);
                     TypeDictionaries.ReadExtraLibs = this.app.ActiveConfiguration.OPCConnection.ReadExtraLibs;
@@ -442,7 +442,7 @@ namespace umatiGateway.Core.OPC
             }
             catch (Exception ex)
             {
-                Logger.Error($"Create Session Error : {ex.Message}");
+                Logger.Error("Create Session Error : {ExceptionMessage}", ex.Message);
                 this.session = null;
                 throw;
             }

@@ -45,13 +45,13 @@ namespace umatiGateway.Core.Mqtt
                                 }
                                 else
                                 {
-                                    Logger.Info($"NodeId {child} already added to published Machines.");
+                                    Logger.Info("NodeId {Child} already added to published Machines.", child);
                                 }
                             }
                         }
                         else
                         {
-                            Logger.Error($"PublishedChildNodes could not be resolved to a NodeId{publishedChildNodes}");
+                            Logger.Error("PublishedChildNodes could not be resolved to a NodeId{PublishedChildNodes}", publishedChildNodes);
                         }
                         break;
                     case PublishedNode publishedNode:
@@ -68,12 +68,12 @@ namespace umatiGateway.Core.Mqtt
                             }
                             else
                             {
-                                Logger.Info($"NodeId {nodeId} already added to published Machines.");
+                                Logger.Info("NodeId {NodeId} already added to published Machines.", nodeId);
                             }
                         }
                         else
                         {
-                            Logger.Error($"PublishedNode could not be resolved to a NodeId{publishedNode}");
+                            Logger.Error("PublishedNode could not be resolved to a NodeId{PublishedNode}", publishedNode);
                         }
                         break;
                     default:
@@ -91,7 +91,7 @@ namespace umatiGateway.Core.Mqtt
             }
             else
             {
-                Logger.Error($"Unresolveable NodeId for RelationCondition: {relationCondition}");
+                Logger.Error("Unresolveable NodeId for RelationCondition: {RelationCondition}", relationCondition);
                 return new List<NodeId>();
             }
         }
@@ -111,7 +111,7 @@ namespace umatiGateway.Core.Mqtt
                 }
                 else
                 {
-                    Logger.Error($"Not implemented FilterType: {filter.FilterType.GetType()}");
+                    Logger.Error("Not implemented FilterType: {FilterType}", filter.FilterType.GetType());
                 }
             }
             List<NodeId> filteredIds = new List<NodeId>();
@@ -147,7 +147,7 @@ namespace umatiGateway.Core.Mqtt
                         singleConditionNodeIdsList.Add(this.MatchFilterTypeIdCondition(parentNodeId, typeIdCondition));
                         break;
                     default:
-                        Logger.Error($"Not implemented ConditionType: {condition.GetType()}");
+                        Logger.Error("Not implemented ConditionType: {ConditionType}", condition.GetType());
                         break;
                 }
             }
@@ -173,7 +173,7 @@ namespace umatiGateway.Core.Mqtt
                 }
                 else
                 {
-                    Logger.Error($"Not implemented ConditionType: {conditions.ConditionType}");
+                    Logger.Error("Not implemented ConditionType: {ConditionsType}", conditions.ConditionType);
                 }
             }
             nodeIdsMatchingConditions.Distinct().ToList();
@@ -188,28 +188,28 @@ namespace umatiGateway.Core.Mqtt
             }
             else
             {
-                Logger.Error($"Unresolveable NodeId for TypeIdCondition: {typeIdCondition}");
+                Logger.Error("Unresolveable NodeId for TypeIdCondition: {TypeIdCondition}", typeIdCondition);
                 return new List<NodeId>();
             }
         }
         private NodeId? ResolveNodeId(string nodeIdType, string nodeId, string namespaceurl, string baseType)
         {
             NodeId? resolvedNodeId = null;
-            Logger.Debug($"Read Machine Node: {nodeIdType}\t{nodeId}\t{namespaceurl}\t{baseType}");
+            Logger.Debug("Read Machine Node: {NodeIdType}\t{NodeId}\t{NamespaceUrl}\t{BaseType}", nodeIdType, nodeId, namespaceurl, baseType);
             int namespaceIndex = client.GetNamespaceTable().GetIndex(namespaceurl);
             if (nodeIdType == "Numeric")
             {
                 resolvedNodeId = new NodeId(Convert.ToUInt32(nodeId), (ushort)namespaceIndex);
-                Logger.Debug($"Resolved NodeId is:\t{resolvedNodeId}");
+                Logger.Debug("Resolved NodeId is:\t{ResolvedNodeId}", resolvedNodeId);
             }
             else if (nodeIdType == "String")
             {
                 resolvedNodeId = new NodeId(nodeId, (ushort)namespaceIndex);
-                Logger.Debug($"Resolved NodeId is:\t{resolvedNodeId}");
+                Logger.Debug("Resolved NodeId is:\t{ResolvedNodeId}", resolvedNodeId);
             }
             else
             {
-                Logger.Error($"Unknown NodeIdType {nodeIdType}");
+                Logger.Error("Unknown NodeIdType {nodeIdType}");
             }
             return resolvedNodeId;
         }
