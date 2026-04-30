@@ -181,9 +181,9 @@ namespace umatiGateway.Core.OPC
                         if (var.TypeInfo.ToString() == "ExtensionObject[]")
                         {
                             ExtensionObject[] etos = (ExtensionObject[])var.Value;
-                            foreach (ExtensionObject eto in etos)
+                            foreach (ExtensionObject extensionObject in etos)
                             {
-                                object body = eto.Body;
+                                object body = extensionObject.Body;
                                 if (body is ModelChangeStructureDataType)
                                 {
                                     ModelChangeStructureDataType mcs = (ModelChangeStructureDataType)body;
@@ -518,7 +518,7 @@ namespace umatiGateway.Core.OPC
             }
             else
             {
-                Logger.Info("Allready trying to Connect/Reconnect/Disconnect!");
+                Logger.Info("Already trying to Connect/Reconnect/Disconnect!");
             }
         }
         public void StartReconnectMonitor()
@@ -719,7 +719,7 @@ namespace umatiGateway.Core.OPC
         public List<NodeId> GetOptionalAndMandatoryPlaceholders(NodeId typeDefinition)
         {
             List<NodeId> nodeIds = new List<NodeId>();
-            //Look for the Childs
+            //Look for the Children
             BrowseResultCollection browseResultCollection = BrowseNode(typeDefinition, BrowseDirection.Forward, 0, ReferenceTypeIds.HasComponent, true);
             foreach (BrowseResult browseResult in browseResultCollection)
             {

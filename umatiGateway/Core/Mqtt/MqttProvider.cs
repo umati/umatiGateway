@@ -142,7 +142,7 @@ namespace umatiGateway.Core.Mqtt
                 Logger.Info("=== MQTT Connection Configuration ===");
                 Logger.Info("Connection String : {ServerEndpoint}", config.ServerEndpoint);
                 Logger.Info("Connection Type   : {ConnectionType}", this.connectionType);
-                Logger.Info("Username          : {UserName}",(string.IsNullOrEmpty(config.UserName) ? "<empty>" : config.UserName));
+                Logger.Info("Username          : {UserName}", (string.IsNullOrEmpty(config.UserName) ? "<empty>" : config.UserName));
                 Logger.Info("Password Length   : {PasswordLength}", (string.IsNullOrEmpty(config.Password) ? 0 : config.Password.Length));
 
                 if (this.connectionType == TCP)
