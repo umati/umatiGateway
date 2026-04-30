@@ -68,7 +68,7 @@ namespace umatiGateway.Core.OPC
 
                 foreach (string file in files)
                 {
-                    Logger.Info($"Read Bsd File: {file}");
+                    Logger.Info("Read Bsd File: {File}", file);
 
                     byte[] binaryData = File.ReadAllBytes(file);
                     string xmlString = Encoding.UTF8.GetString(binaryData);
@@ -77,7 +77,7 @@ namespace umatiGateway.Core.OPC
             }
             else
             {
-                Logger.Error($"Unable to find Folder: {folderPath}");
+                Logger.Error("Unable to find Folder: {FolderPath}", folderPath);
             }
 
 
@@ -96,25 +96,25 @@ namespace umatiGateway.Core.OPC
                             GeneratedDataTypeDefinition gtdd = generatedDataType.Key;
                             if (xmlString.Contains($"TargetNamespace=\"{gtdd.nameSpace}\""))
                             {
-                                Logger.Info($"Skipe reading BsdSchema from Server for NodeId: {binaryTypeDictionary} (Loaded Locally)");
+                                Logger.Info("Skip reading BsdSchema from Server for NodeId: {BinaryTypeDictionary} (Loaded Locally)", binaryTypeDictionary);
                                 skipReading = true;
                                 break;
                             }
                         }
                         if (!skipReading)
                         {
-                            Logger.Info($"Reading BsdSchema from Server for NodeId: {binaryTypeDictionary} (Loaded From Server)");
+                            Logger.Info("Reading BsdSchema from Server for NodeId: {BinaryTypeDictionary} (Loaded From Server)", binaryTypeDictionary);
                             generateDataClasses(xmlString);
                         }
                     }
                     else
                     {
-                        Logger.Error($"Unable to read binaryTypeDictionary {binaryTypeDictionary}");
+                        Logger.Error("Unable to read binaryTypeDictionary {BinaryTypeDictionary}", binaryTypeDictionary);
                     }
                 }
                 catch (Exception e)
                 {
-                    Logger.Error(e, $"Unable to read Value of Node: {binaryTypeDictionary}");
+                    Logger.Error(e, "Unable to read Value of Node: {BinaryTypeDictionary}", binaryTypeDictionary);
                 }
             }
             ;
