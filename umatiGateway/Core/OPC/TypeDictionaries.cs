@@ -135,7 +135,7 @@ namespace umatiGateway.Core.OPC
                 Node? node = client.ReadNode(opcBinaryNodeId);
                 if (node != null)
                 {
-                    if(!opcBinaryTypes.TryAdd(opcBinaryNodeId, node)) Logger.Warn("Duplicate NodeId: {NodeId}", opcBinaryNodeId);
+                    if (!opcBinaryTypes.TryAdd(opcBinaryNodeId, node)) Logger.Warn("Duplicate NodeId: {NodeId}", opcBinaryNodeId);
                 }
                 else
                 {
@@ -375,7 +375,7 @@ namespace umatiGateway.Core.OPC
                                     gdd.ua = ua;
                                     gdd.extraNameSpaces = extraNameSpaces;
                                     generatedStructure.DataTypeDefinition = gdd;
-                                    if(!generatedDataTypes.TryAdd(gdd, generatedStructure)) Logger.Warn("Duplicate GeneratedDataTypeDefinition: {GDD}", gdd);
+                                    if (!generatedDataTypes.TryAdd(gdd, generatedStructure)) Logger.Warn("Duplicate GeneratedDataTypeDefinition: {GDD}", gdd);
                                 }
                                 break;
                             case "opc:EnumeratedType":
@@ -389,7 +389,7 @@ namespace umatiGateway.Core.OPC
                                     gdd.ua = ua;
                                     gdd.extraNameSpaces = extraNameSpaces;
                                     generatedStructure.DataTypeDefinition = gdd;
-                                    if(!generatedDataTypes.TryAdd(gdd, generatedEnumeratedType)) Logger.Warn("Duplicate GeneratedDataTypeDefinition: {GDD}", gdd);
+                                    if (!generatedDataTypes.TryAdd(gdd, generatedEnumeratedType)) Logger.Warn("Duplicate GeneratedDataTypeDefinition: {GDD}", gdd);
                                 }
                                 break;
                         }
@@ -412,7 +412,7 @@ namespace umatiGateway.Core.OPC
                 Node? node = client.ReadNode(dataTypeNodeId);
                 if (node != null)
                 {
-                    if(!dataTypes.TryAdd(dataTypeNodeId, node)) Logger.Warn("Duplicate NodeId: {NodeId}", dataTypeNodeId);
+                    if (!dataTypes.TryAdd(dataTypeNodeId, node)) Logger.Warn("Duplicate NodeId: {NodeId}", dataTypeNodeId);
                 }
                 else
                 {
@@ -432,7 +432,7 @@ namespace umatiGateway.Core.OPC
                 Node? node = client.ReadNode(eventTypeNodeId);
                 if (node != null)
                 {
-                    if(!eventTypes.TryAdd(eventTypeNodeId, node)) Logger.Warn("Duplicate NodeId: {NodeId}", eventTypeNodeId);
+                    if (!eventTypes.TryAdd(eventTypeNodeId, node)) Logger.Warn("Duplicate NodeId: {NodeId}", eventTypeNodeId);
                 }
                 else
                 {
@@ -452,7 +452,7 @@ namespace umatiGateway.Core.OPC
                 Node? node = client.ReadNode(interfaceTypeNodeId);
                 if (node != null)
                 {
-                    if(!interfaceTypes.TryAdd(interfaceTypeNodeId, node)) Logger.Warn("Duplicate NodeId: {NodeId}", interfaceTypeNodeId);
+                    if (!interfaceTypes.TryAdd(interfaceTypeNodeId, node)) Logger.Warn("Duplicate NodeId: {NodeId}", interfaceTypeNodeId);
                 }
                 else
                 {
@@ -473,7 +473,7 @@ namespace umatiGateway.Core.OPC
                 Node? node = client.ReadNode(objectTypeNodeId);
                 if (node != null)
                 {
-                    if(!objectTypes.TryAdd(objectTypeNodeId, node)) Logger.Warn("Duplicate NodeId: {NodeId}", objectTypeNodeId); ;
+                    if (!objectTypes.TryAdd(objectTypeNodeId, node)) Logger.Warn("Duplicate NodeId: {NodeId}", objectTypeNodeId); ;
                 }
                 else
                 {
@@ -494,7 +494,7 @@ namespace umatiGateway.Core.OPC
                 Node? node = client.ReadNode(referenceTypeNodeId);
                 if (node != null)
                 {
-                    if(!referenceTypes.TryAdd(referenceTypeNodeId, node)) Logger.Warn("Duplicate NodeId: {NodeId}", referenceTypeNodeId);
+                    if (!referenceTypes.TryAdd(referenceTypeNodeId, node)) Logger.Warn("Duplicate NodeId: {NodeId}", referenceTypeNodeId);
                 }
                 else
                 {
@@ -515,7 +515,7 @@ namespace umatiGateway.Core.OPC
                 Node? node = client.ReadNode(variableTypeNodeId);
                 if (node != null)
                 {
-                    if(!variableTypes.TryAdd(variableTypeNodeId, node)) Logger.Warn("Duplicate NodeId: {NodeId}", variableTypeNodeId);
+                    if (!variableTypes.TryAdd(variableTypeNodeId, node)) Logger.Warn("Duplicate NodeId: {NodeId}", variableTypeNodeId);
                 }
                 else
                 {
