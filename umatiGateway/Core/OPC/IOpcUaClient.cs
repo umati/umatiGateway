@@ -24,12 +24,12 @@ namespace umatiGateway.Core.OPC
         /// <exception cref="OpcUaException">Exception in Opc Ua Context.</exception>
         public void Disconnect();
         /// <summary>
-        /// Returns the TypeDefinition for a given NodeId.
+        /// Reads the Typedefinition for a given NodeId.
         /// </summary>
-        /// <param name="nodeId"> The nodeId for which the typeDefinition is browsed.</param>
-        /// <returns>The typeDefinition node Id for the nodeId or null if the node has no typedefinition.</returns>
-        /// <exception cref="OpcUaException">Exception in Opc Ua Context.</exception>
-        public NodeId? BrowseTypeDefinition(NodeId nodeId);
+        /// <param name="nodeId"> The NodeId for a that the Typedefinition is red.</param>
+        /// <param name="typeDefinition">The TypeDefinition for the given NodeId or null if there is no TypeDefinition for the given node.</param>
+        /// <returns>True if the Browse was successful or false if it was not successful.</returns>
+        public bool TryBrowseTypeDefinition(NodeId nodeId, out NodeId? typeDefinition);
         /// <summary>
         /// Returns a List of nodeIds matching the description.
         /// </summary>

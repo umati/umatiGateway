@@ -1,5 +1,6 @@
 ﻿// SPDX-License-Identifier: Apache-2.0
 // Copyright (c) 2025 FVA GmbH - interop4x. All rights reserved.
+using NLog;
 using Opc.Ua;
 using Opc.Ua.Client;
 using umatiGateway.Core.OPC;
@@ -10,6 +11,8 @@ namespace umatiGateway.Core.PubSub
     {
         IOpcUaClient client;
         List<NodeId> referenceTypeIds = new List<NodeId>();
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
         public ReferenceDescriptionResolver(IOpcUaClient client)
         {
             this.client = client;
@@ -67,7 +70,14 @@ namespace umatiGateway.Core.PubSub
                             }
                             else
                             {
-                                referenceDescription.TypeDefinition = this.client.BrowseTypeDefinition(node.NodeId);
+                                if (client.TryBrowseTypeDefinition(node.NodeId, out NodeId? typeDefinition))
+                                {
+                                    referenceDescription.TypeDefinition = typeDefinition;
+                                }
+                                else
+                                {
+                                    HandleOpcUaClientError();
+                                }
                             }
 
                         }
@@ -98,6 +108,10 @@ namespace umatiGateway.Core.PubSub
                     GetReferenceSubTypes(child, result);
                 }
             }
+        }
+        private void HandleOpcUaClientError()
+        {
+            Logger.Error("Unable to retrieve Data from OpcUaClient");
         }
     }
 }

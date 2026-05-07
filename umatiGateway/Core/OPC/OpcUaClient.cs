@@ -30,6 +30,7 @@ namespace umatiGateway.Core.OPC
         private Thread? reconnectThread;
         private volatile bool keepRunning = true;
         private volatile bool reconnect = false;
+        private volatile bool wasinitialConnected = false;
 
         public OpcUaClient(UmatiGatewayApp app, ApplicationConfiguration applicationConfiguration)
         {
@@ -54,17 +55,19 @@ namespace umatiGateway.Core.OPC
                     _ = this.ConnectAsync().Result;
                     this.ClientState.setState(OpcUaConnectionState.Connected);
                     this.ClientStateHistory.Add(this.ClientState.Copy());
-                    this.reconnect = true;
+                    this.wasinitialConnected = true;
+                    
                 }
                 catch (Exception ex)
                 {
                     this.ClientState.setState(OpcUaConnectionState.Error, ex.Message);
                     this.ClientStateHistory.Add(this.ClientState.Copy());
                     Logger.Error("Unable to connect to OPC UA server.", ex);
-                    throw new OpcUaException("Unable to connect to OPC UA server.", ex);
+                    //throw new OpcUaException("Unable to connect to OPC UA server.", ex);
                 }
                 finally
                 {
+                    this.reconnect = true;
                     this.ClientState.ClearBlocked();
                     this.notifyOpcUaClientListeners();
                 }
@@ -100,7 +103,7 @@ namespace umatiGateway.Core.OPC
                     this.ClientState.setState(OpcUaConnectionState.Error, ex.Message);
                     this.ClientStateHistory.Add(this.ClientState.Copy());
                     Logger.Error("Failed to disconnect session. {Exception}", ex);
-                    throw new OpcUaException("Failed to disconnect session.", ex);
+                    //throw new OpcUaException("Failed to disconnect session.", ex);
                 }
                 finally
                 {
@@ -539,12 +542,21 @@ namespace umatiGateway.Core.OPC
                             catch (Exception ex)
                             {
                                 stillConnected = false;
+                                this.DisposeSession();
                                 Logger.Error(ex, "Error Reading server CurrentTime");
                             }
                             if (session == null || !session.Connected || !stillConnected)
                             {
-                                Console.WriteLine("Connection lost - trying reconnect...");
-                                TryReconnect();
+                                if (this.wasinitialConnected)
+                                {
+                                    Logger.Info("Connection lost - trying reconnect...");
+                                    TryReconnect();
+                                } 
+                                else
+                                {
+                                    Logger.Info("Try to establish connection to OPC Server...");
+                                    Connect();
+                                }
                             }
                         }
                         catch (Exception ex)
@@ -558,6 +570,22 @@ namespace umatiGateway.Core.OPC
 
             reconnectThread.IsBackground = true;
             reconnectThread.Start();
+        }
+        private void DisposeSession()
+        {
+            if (session == null) return;
+
+            try
+            {
+                foreach (var sub in session.Subscriptions.ToList())
+                {
+                    try { sub.Dispose(); } catch { }
+                }
+            }
+            catch { }
+
+            try { session.Close(); } catch { }
+            try { session.Dispose(); } catch { }
         }
 
         private void CertificateValidation(CertificateValidator sender, CertificateValidationEventArgs e)
@@ -638,13 +666,19 @@ namespace umatiGateway.Core.OPC
                 List<NodeId> nodeIds = BrowseLocalNodeIds(rootNodeId, browseDirection, nodeClassMask, referenceTypeId, includeSubTypes);
                 foreach (NodeId nodeId in nodeIds)
                 {
-                    NodeId? typeDefinition = BrowseTypeDefinition(nodeId);
-                    if (typeDefinition != null)
+                    if (TryBrowseTypeDefinition(nodeId, out NodeId? typeDefinition))
                     {
-                        if (typeDefinition == expectedTypeDefinition)
+                        if (typeDefinition != null)
                         {
-                            filteredNodeIds.Add(nodeId);
+                            if (typeDefinition == expectedTypeDefinition)
+                            {
+                                filteredNodeIds.Add(nodeId);
+                            }
                         }
+                    }
+                    else
+                    {
+                        Logger.Error("Unable to browse TypeDefinition");
                     }
                 }
                 return filteredNodeIds;
@@ -655,9 +689,9 @@ namespace umatiGateway.Core.OPC
             }
         }
 
-        public NodeId? BrowseTypeDefinition(NodeId nodeId)
+        public bool TryBrowseTypeDefinition(NodeId nodeId, out NodeId? typeDefinitionNodeId)
         {
-            NodeId? typeDefinition = null;
+            typeDefinitionNodeId = null;
             try
             {
                 BrowseResultCollection browseResults = BrowseNode(nodeId, BrowseDirection.Forward, (uint)NodeClass.ObjectType | (uint)NodeClass.VariableType, ReferenceTypes.HasTypeDefinition, false);
@@ -666,15 +700,16 @@ namespace umatiGateway.Core.OPC
                     ReferenceDescriptionCollection references = browseResult.References;
                     foreach (ReferenceDescription reference in references)
                     {
-                        typeDefinition = new NodeId(reference.NodeId.Identifier, reference.NodeId.NamespaceIndex);
+                        typeDefinitionNodeId = new NodeId(reference.NodeId.Identifier, reference.NodeId.NamespaceIndex);
                         break;
                     }
                 }
-                return typeDefinition;
+                return true;
             }
             catch (Exception exception)
             {
-                throw new OpcUaException($"Unable to browse TypeDefinition for NodeId: {nodeId}", exception);
+                Logger.Error(exception, "Unable to browse TypeDefinition for NodeId: {NodeId}", nodeId);
+                return false;
             }
         }
         public NodeId? BrowseLocalNodeId(NodeId rootNodeId, BrowseDirection browseDirection, uint nodeClassMask, NodeId referenceTypeIds, bool includeSubTypes)
@@ -804,15 +839,21 @@ namespace umatiGateway.Core.OPC
                 List<NodeId> parentNodeIds = BrowseLocalNodeIds(nodeId, BrowseDirection.Inverse, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true);
                 foreach (NodeId parentNodeId in parentNodeIds)
                 {
-                    NodeId? parentTypeDefinition = BrowseTypeDefinition(parentNodeId);
-                    if (parentTypeDefinition != null)
+                    if (TryBrowseTypeDefinition(parentNodeId, out NodeId? parentTypeDefinition))
                     {
-                        typeClassNodes.Add(new TypeClassNode(parentTypeDefinition, relativePath.Elements));
+                        if (parentTypeDefinition != null)
+                        {
+                            typeClassNodes.Add(new TypeClassNode(parentTypeDefinition, relativePath.Elements));
+                        }
+                        List<TypeClassNode> childDictionary = GetTypeClassNodesForNodeId(parentNodeId, relativePath.Elements);
+                        foreach (TypeClassNode typeclassnode in childDictionary)
+                        {
+                            typeClassNodes.Add(typeclassnode);
+                        }
                     }
-                    List<TypeClassNode> childDictionary = GetTypeClassNodesForNodeId(parentNodeId, relativePath.Elements);
-                    foreach (TypeClassNode typeclassnode in childDictionary)
+                    else
                     {
-                        typeClassNodes.Add(typeclassnode);
+                        Logger.Error("Unable to BrowseTypedefinition.");
                     }
                 }
             }

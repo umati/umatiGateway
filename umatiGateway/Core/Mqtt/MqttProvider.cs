@@ -575,22 +575,28 @@ namespace umatiGateway.Core.Mqtt
                         Node? machine = client.ReadNode(machineNodeId);
                         if (machine != null)
                         {
-                            NodeId? typedefinition = client.BrowseTypeDefinition(machineNodeId);
-                            if (typedefinition != null)
+                            if (client.TryBrowseTypeDefinition(machineNodeId, out NodeId? typedefinition))
                             {
-                                Node? TypeDefinitionNode = client.ReadNode(typedefinition);
-                                if (TypeDefinitionNode != null)
+                                if (typedefinition != null)
                                 {
-                                    if (string.IsNullOrEmpty(machineNode.BaseType))
+                                    Node? TypeDefinitionNode = client.ReadNode(typedefinition);
+                                    if (TypeDefinitionNode != null)
                                     {
-                                        WriteMessage(body, getInstanceNsu(machineNodeId), TypeDefinitionNode.BrowseName.Name);
+                                        if (string.IsNullOrEmpty(machineNode.BaseType))
+                                        {
+                                            WriteMessage(body, getInstanceNsu(machineNodeId), TypeDefinitionNode.BrowseName.Name);
+                                        }
+                                        else
+                                        {
+                                            WriteMessage(body, getInstanceNsu(machineNodeId), machineNode.BaseType);
+                                        }
+                                        machineNode.Data = body;
                                     }
-                                    else
-                                    {
-                                        WriteMessage(body, getInstanceNsu(machineNodeId), machineNode.BaseType);
-                                    }
-                                    machineNode.Data = body;
                                 }
+                            }
+                            else
+                            {
+                                HandleOpcClientError();
                             }
                         }
                     }
@@ -721,19 +727,25 @@ namespace umatiGateway.Core.Mqtt
                 Node? placeholderNode = client.ReadNode(placeholder);
                 if (placeholderNode != null)
                 {
-                    NodeId? placeHolderTypeDefinition = client.BrowseTypeDefinition(placeholder);
-                    string phBrowseName = placeholderNode.BrowseName.Name;
-                    List<string> ignoredPlaceholderTagNames = app.ActiveConfiguration.MqttProviderConfig.IgnoredPlaceholderTags.Select(t => t.Name).ToList();
-                    if (!jObject.ContainsKey(phBrowseName) && !ignoredPlaceholderTagNames.Contains(phBrowseName))
+                    if (client.TryBrowseTypeDefinition(placeholder, out NodeId? placeHolderTypeDefinition))
                     {
-                        JObject placeholderType = new JObject();
-                        jObject.Add(phBrowseName, placeholderType);
-                        List<NodeId> subTypes = new List<NodeId>();
-                        if (placeHolderTypeDefinition != null)
+                        string phBrowseName = placeholderNode.BrowseName.Name;
+                        List<string> ignoredPlaceholderTagNames = app.ActiveConfiguration.MqttProviderConfig.IgnoredPlaceholderTags.Select(t => t.Name).ToList();
+                        if (!jObject.ContainsKey(phBrowseName) && !ignoredPlaceholderTagNames.Contains(phBrowseName))
                         {
-                            client.BrowseAllHierarchicalSubType(placeHolderTypeDefinition, subTypes);
-                            placeholderNodes.Add(new PlaceholderNode(placeholder, placeHolderTypeDefinition, placeholderType, subTypes));
+                            JObject placeholderType = new JObject();
+                            jObject.Add(phBrowseName, placeholderType);
+                            List<NodeId> subTypes = new List<NodeId>();
+                            if (placeHolderTypeDefinition != null)
+                            {
+                                client.BrowseAllHierarchicalSubType(placeHolderTypeDefinition, subTypes);
+                                placeholderNodes.Add(new PlaceholderNode(placeholder, placeHolderTypeDefinition, placeholderType, subTypes));
+                            }
                         }
+                    }
+                    else
+                    {
+                        HandleOpcClientError();
                     }
                 }
 
@@ -755,192 +767,198 @@ namespace umatiGateway.Core.Mqtt
             foreach (NodeId child in hierarchicalChilds)
             {
                 JObject? placeHolderObject = null;
-                NodeId? typeDefinition = client.BrowseTypeDefinition(child);
-                if (typeDefinition != null)
+                if (client.TryBrowseTypeDefinition(child, out NodeId? typeDefinition))
                 {
-                    foreach (PlaceholderNode placeHolderNode in placeholderNodes)
+                    if (typeDefinition != null)
                     {
-                        if (typeDefinition == placeHolderNode.typeDefinitionNodeId || placeHolderNode.subTypeNodeIds.Contains(typeDefinition))
+                        foreach (PlaceholderNode placeHolderNode in placeholderNodes)
                         {
-                            placeHolderObject = placeHolderNode.phList;
-                        }
-                    }
-                }
-                Node? childNode = client.ReadNode(child);
-                if (childNode != null)
-                {
-                    if (placeHolderObject != null)
-                    {
-                        if (typeDefinition != null)
-                        {
-                            Logger.Trace("TypeDefinition: {TypeDefinition}", typeDefinition);
-                        }
-                        else
-                        {
-                            Logger.Trace("There is no TypeDefintion.");
-                        }
-                    }
-                    else
-                    {
-                        Logger.Trace("{Child} = {ChildBrowsename} is NOT a PlaceHolder", child, childNode.BrowseName);
-                        if (typeDefinition != null)
-                        {
-                            Logger.Trace("TypeDefinition: {TypeDefinition}", typeDefinition);
-                        }
-                        else
-                        {
-                            Logger.Trace("There is no TypeDefintion.");
-                        }
-                    }
-                    NodeClass childNodeClass = childNode.NodeClass;
-                    string browseName = childNode.BrowseName.Name;
-                    //Look for resultsfolder
-                    if (browseName == "Results" && typeDefinition == ObjectTypeIds.FolderType)
-                    {
-                        resultFolder = childNode.NodeId;
-                        Logger.Trace("Found resultfolder: {ResultFolder}", resultFolder);
-                    }
-                    JObject childObject = new JObject();
-                    if (jObject.ContainsKey(browseName))
-                    {
-                        //Console.Out.WriteLine($"Warning double browseName {browseName}");
-                        continue;
-                    }
-
-
-                    switch (childNodeClass)
-                    {
-                        case NodeClass.Object:
-                            if (placeHolderObject == null)
+                            if (typeDefinition == placeHolderNode.typeDefinitionNodeId || placeHolderNode.subTypeNodeIds.Contains(typeDefinition))
                             {
-                                jObject.Add(browseName, childObject);
-                                if (subscribe) addKnownBrowsePath(child, childObject, nodeId, machineNode);
+                                placeHolderObject = placeHolderNode.phList;
+                            }
+                        }
+                    }
+                    Node? childNode = client.ReadNode(child);
+                    if (childNode != null)
+                    {
+                        if (placeHolderObject != null)
+                        {
+                            if (typeDefinition != null)
+                            {
+                                Logger.Trace("TypeDefinition: {TypeDefinition}", typeDefinition);
                             }
                             else
                             {
-                                childObject.Add("$TypeDefinition", getInstanceNsu(typeDefinition, false));
-                                placeHolderObject.Add(browseName, childObject);
-                                if (subscribe) addKnownBrowsePath(child, childObject, nodeId, machineNode);
+                                Logger.Trace("There is no TypeDefintion.");
                             }
-                            break;
-                        case NodeClass.Variable:
-                            //ToDo Fix how the placeholder is received from DataType
-                            if (!placeholderVariablesWithTypeDefinition.ContainsKey(child))
+                        }
+                        else
+                        {
+                            Logger.Trace("{Child} = {ChildBrowsename} is NOT a PlaceHolder", child, childNode.BrowseName);
+                            if (typeDefinition != null)
                             {
-                                placeholderVariablesWithTypeDefinition.Add(child, getInstanceNsu(typeDefinition, false));
-                            }
-                            JToken dataValue = getDataValueAsObject(child);
-                            bool shorten = false;
-                            bool useValueIndentation = true;
-                            if (shortenVariables)
-                            {
-                                List<NodeId> nodeIds = new List<NodeId>();
-                                if (app.ActiveConfiguration.MqttProviderConfig.IncludeStructuredComponents)
-                                {
-                                    nodeIds = client.BrowseNodeIds(new BrowseDescriptionCollection { BrowseUtils.GetHierarchicalChildren(child, (int)NodeClass.Variable) });
-                                    //nodeIds = client.BrowseLocalNodeIds(child, BrowseDirection.Forward, (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true);
-                                }
-                                else
-                                {
-                                    nodeIds = client.BrowseNodeIds(
-                                        new BrowseDescriptionCollection { BrowseUtils.GetHierarchicalChildren(child, (int)NodeClass.Variable) },
-                                        new BrowseDescriptionCollection { BrowseUtils.ForwardBrowseDescription(child, (int)NodeClass.Variable, ReferenceTypeIds.HasStructuredComponent, true) });
-                                    //nodeIds = client.BrowseLocalNodeIdsExcludeReference(child, BrowseDirection.Forward, (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true, ReferenceTypeIds.HasStructuredComponent);
-                                }
-                                if (nodeIds.Count == 0)
-                                {
-                                    shorten = true;
-                                }
-                                if (getInstanceNsu(typeDefinition, false) == "nsu=http://opcfoundation.org/UA/GMS/;i=2004")
-                                {
-                                    Logger.Trace("Not use ValueIndentation");
-                                    useValueIndentation = false;
-                                }
-                            }
-                            if (shorten || !useValueIndentation)
-                            {
-                                if (dataValue is JValue)
-                                {
-                                    if (placeHolderObject == null)
-                                    {
-                                        jObject.Add(browseName, (JValue)dataValue);
-                                        if (subscribe) addKnownBrowsePath(child, (JValue)dataValue, nodeId, machineNode);
-                                    }
-                                    else
-                                    {
-                                        childObject.Add("$TypeDefinition", getInstanceNsu(typeDefinition, false));
-                                        placeHolderObject.Add(browseName, childObject);
-                                        if (subscribe) addKnownBrowsePath(child, childObject, nodeId, machineNode);
-
-                                    }
-                                }
-                                else if (dataValue is JObject)
-                                {
-                                    if (placeHolderObject == null)
-                                    {
-                                        jObject.Add(browseName, (JObject)dataValue);
-                                        if (subscribe) addKnownBrowsePath(child, (JObject)dataValue, nodeId, machineNode);
-
-                                    }
-                                    else
-                                    {
-                                        JObject dv = (JObject)dataValue;
-                                        dv.Add("$TypeDefinition", getInstanceNsu(typeDefinition, false));
-                                        placeHolderObject.Add(browseName, dv);
-                                        if (subscribe) addKnownBrowsePath(child, dv, nodeId, machineNode);
-
-                                    }
-                                }
-                                else if (dataValue is JArray)
-                                {
-                                    if (placeHolderObject == null)
-                                    {
-                                        jObject.Add(browseName, (JArray)dataValue);
-                                        if (subscribe) addKnownBrowsePath(child, (JArray)dataValue, nodeId, machineNode);
-                                    }
-                                    else
-                                    {
-                                        JArray array = (JArray)dataValue;
-                                        placeHolderObject.Add(browseName, array);
-                                        if (subscribe) addKnownBrowsePath(child, array, nodeId, machineNode);
-
-                                    }
-                                }
+                                Logger.Trace("TypeDefinition: {TypeDefinition}", typeDefinition);
                             }
                             else
                             {
-                                JObject valueObject = new JObject();
+                                Logger.Trace("There is no TypeDefintion.");
+                            }
+                        }
+                        NodeClass childNodeClass = childNode.NodeClass;
+                        string browseName = childNode.BrowseName.Name;
+                        //Look for resultsfolder
+                        if (browseName == "Results" && typeDefinition == ObjectTypeIds.FolderType)
+                        {
+                            resultFolder = childNode.NodeId;
+                            Logger.Trace("Found resultfolder: {ResultFolder}", resultFolder);
+                        }
+                        JObject childObject = new JObject();
+                        if (jObject.ContainsKey(browseName))
+                        {
+                            //Console.Out.WriteLine($"Warning double browseName {browseName}");
+                            continue;
+                        }
+
+
+                        switch (childNodeClass)
+                        {
+                            case NodeClass.Object:
                                 if (placeHolderObject == null)
                                 {
-                                    jObject.Add(browseName, valueObject);
+                                    jObject.Add(browseName, childObject);
+                                    if (subscribe) addKnownBrowsePath(child, childObject, nodeId, machineNode);
                                 }
                                 else
                                 {
-                                    valueObject.Add("$TypeDefinition", getInstanceNsu(typeDefinition, false));
-                                    placeHolderObject.Add(browseName, valueObject);
+                                    childObject.Add("$TypeDefinition", getInstanceNsu(typeDefinition, false));
+                                    placeHolderObject.Add(browseName, childObject);
+                                    if (subscribe) addKnownBrowsePath(child, childObject, nodeId, machineNode);
                                 }
-                                if (dataValue is JValue)
+                                break;
+                            case NodeClass.Variable:
+                                //ToDo Fix how the placeholder is received from DataType
+                                if (!placeholderVariablesWithTypeDefinition.ContainsKey(child))
                                 {
-                                    valueObject.Add("value", (JValue)dataValue);
-                                    if (subscribe) addKnownBrowsePath(child, (JValue)dataValue, nodeId, machineNode);
+                                    placeholderVariablesWithTypeDefinition.Add(child, getInstanceNsu(typeDefinition, false));
                                 }
-                                else if (dataValue is JObject)
+                                JToken dataValue = getDataValueAsObject(child);
+                                bool shorten = false;
+                                bool useValueIndentation = true;
+                                if (shortenVariables)
                                 {
-                                    valueObject.Add("value", (JObject)dataValue);
-                                    if (subscribe) addKnownBrowsePath(child, (JObject)dataValue, nodeId, machineNode);
+                                    List<NodeId> nodeIds = new List<NodeId>();
+                                    if (app.ActiveConfiguration.MqttProviderConfig.IncludeStructuredComponents)
+                                    {
+                                        nodeIds = client.BrowseNodeIds(new BrowseDescriptionCollection { BrowseUtils.GetHierarchicalChildren(child, (int)NodeClass.Variable) });
+                                        //nodeIds = client.BrowseLocalNodeIds(child, BrowseDirection.Forward, (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true);
+                                    }
+                                    else
+                                    {
+                                        nodeIds = client.BrowseNodeIds(
+                                            new BrowseDescriptionCollection { BrowseUtils.GetHierarchicalChildren(child, (int)NodeClass.Variable) },
+                                            new BrowseDescriptionCollection { BrowseUtils.ForwardBrowseDescription(child, (int)NodeClass.Variable, ReferenceTypeIds.HasStructuredComponent, true) });
+                                        //nodeIds = client.BrowseLocalNodeIdsExcludeReference(child, BrowseDirection.Forward, (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true, ReferenceTypeIds.HasStructuredComponent);
+                                    }
+                                    if (nodeIds.Count == 0)
+                                    {
+                                        shorten = true;
+                                    }
+                                    if (getInstanceNsu(typeDefinition, false) == "nsu=http://opcfoundation.org/UA/GMS/;i=2004")
+                                    {
+                                        Logger.Trace("Not use ValueIndentation");
+                                        useValueIndentation = false;
+                                    }
                                 }
-                                else if (dataValue is JArray)
+                                if (shorten || !useValueIndentation)
                                 {
-                                    valueObject.Add("value", (JArray)dataValue);
-                                    if (subscribe) addKnownBrowsePath(child, (JArray)dataValue, nodeId, machineNode);
-                                }
-                                valueObject.Add("properties", childObject);
+                                    if (dataValue is JValue)
+                                    {
+                                        if (placeHolderObject == null)
+                                        {
+                                            jObject.Add(browseName, (JValue)dataValue);
+                                            if (subscribe) addKnownBrowsePath(child, (JValue)dataValue, nodeId, machineNode);
+                                        }
+                                        else
+                                        {
+                                            childObject.Add("$TypeDefinition", getInstanceNsu(typeDefinition, false));
+                                            placeHolderObject.Add(browseName, childObject);
+                                            if (subscribe) addKnownBrowsePath(child, childObject, nodeId, machineNode);
 
-                            }
-                            break;
-                        default: Logger.Info("Unexpected NodeClass detected! {ChildNodeclass}", childNodeClass); break;
+                                        }
+                                    }
+                                    else if (dataValue is JObject)
+                                    {
+                                        if (placeHolderObject == null)
+                                        {
+                                            jObject.Add(browseName, (JObject)dataValue);
+                                            if (subscribe) addKnownBrowsePath(child, (JObject)dataValue, nodeId, machineNode);
+
+                                        }
+                                        else
+                                        {
+                                            JObject dv = (JObject)dataValue;
+                                            dv.Add("$TypeDefinition", getInstanceNsu(typeDefinition, false));
+                                            placeHolderObject.Add(browseName, dv);
+                                            if (subscribe) addKnownBrowsePath(child, dv, nodeId, machineNode);
+
+                                        }
+                                    }
+                                    else if (dataValue is JArray)
+                                    {
+                                        if (placeHolderObject == null)
+                                        {
+                                            jObject.Add(browseName, (JArray)dataValue);
+                                            if (subscribe) addKnownBrowsePath(child, (JArray)dataValue, nodeId, machineNode);
+                                        }
+                                        else
+                                        {
+                                            JArray array = (JArray)dataValue;
+                                            placeHolderObject.Add(browseName, array);
+                                            if (subscribe) addKnownBrowsePath(child, array, nodeId, machineNode);
+
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    JObject valueObject = new JObject();
+                                    if (placeHolderObject == null)
+                                    {
+                                        jObject.Add(browseName, valueObject);
+                                    }
+                                    else
+                                    {
+                                        valueObject.Add("$TypeDefinition", getInstanceNsu(typeDefinition, false));
+                                        placeHolderObject.Add(browseName, valueObject);
+                                    }
+                                    if (dataValue is JValue)
+                                    {
+                                        valueObject.Add("value", (JValue)dataValue);
+                                        if (subscribe) addKnownBrowsePath(child, (JValue)dataValue, nodeId, machineNode);
+                                    }
+                                    else if (dataValue is JObject)
+                                    {
+                                        valueObject.Add("value", (JObject)dataValue);
+                                        if (subscribe) addKnownBrowsePath(child, (JObject)dataValue, nodeId, machineNode);
+                                    }
+                                    else if (dataValue is JArray)
+                                    {
+                                        valueObject.Add("value", (JArray)dataValue);
+                                        if (subscribe) addKnownBrowsePath(child, (JArray)dataValue, nodeId, machineNode);
+                                    }
+                                    valueObject.Add("properties", childObject);
+
+                                }
+                                break;
+                            default: Logger.Info("Unexpected NodeClass detected! {ChildNodeclass}", childNodeClass); break;
+                        }
+                        createJSON(childObject, child, machineNode, nodeId);
                     }
-                    createJSON(childObject, child, machineNode, nodeId);
+                }
+                else
+                {
+                    HandleOpcClientError();
                 }
             }
         }
@@ -964,39 +982,51 @@ namespace umatiGateway.Core.Mqtt
                 if (node != null)
                 {
                     QualifiedName browseName = node.BrowseName;
-                    NodeId? parentTypeDefinition = client.BrowseTypeDefinition(parent);
-                    if (parentTypeDefinition != null)
+                    if (client.TryBrowseTypeDefinition(parent, out NodeId? parentTypeDefinition))
                     {
-                        NodeId? typeNodeIdofNodeID = client.BrowseLocalNodeIdWithBrowseName(parentTypeDefinition, BrowseDirection.Forward, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true, browseName);
-                        if (typeNodeIdofNodeID != null)
+                        if (parentTypeDefinition != null)
                         {
-                            optionalMandatoryPlaceholdersOverParent = client.GetOptionalAndMandatoryPlaceholders(typeNodeIdofNodeID);
-                        }
-                        //
-                        List<NodeId> typeParentNodeIds = new List<NodeId>();
-                        GetTypeParentNodeIds(parentTypeDefinition, typeParentNodeIds);
-                        foreach (NodeId typeParentNodeId in typeParentNodeIds)
-                        {
-                            NodeId? typeNodeIdofNodeIDFromSubType = client.BrowseLocalNodeIdWithBrowseName(typeParentNodeId, BrowseDirection.Forward, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true, browseName);
-                            if (typeNodeIdofNodeIDFromSubType != null)
+                            NodeId? typeNodeIdofNodeID = client.BrowseLocalNodeIdWithBrowseName(parentTypeDefinition, BrowseDirection.Forward, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true, browseName);
+                            if (typeNodeIdofNodeID != null)
                             {
-                                optionalMandatoryPlaceholdersOverParent.AddRange(client.GetOptionalAndMandatoryPlaceholders(typeNodeIdofNodeIDFromSubType));
+                                optionalMandatoryPlaceholdersOverParent = client.GetOptionalAndMandatoryPlaceholders(typeNodeIdofNodeID);
+                            }
+                            //
+                            List<NodeId> typeParentNodeIds = new List<NodeId>();
+                            GetTypeParentNodeIds(parentTypeDefinition, typeParentNodeIds);
+                            foreach (NodeId typeParentNodeId in typeParentNodeIds)
+                            {
+                                NodeId? typeNodeIdofNodeIDFromSubType = client.BrowseLocalNodeIdWithBrowseName(typeParentNodeId, BrowseDirection.Forward, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true, browseName);
+                                if (typeNodeIdofNodeIDFromSubType != null)
+                                {
+                                    optionalMandatoryPlaceholdersOverParent.AddRange(client.GetOptionalAndMandatoryPlaceholders(typeNodeIdofNodeIDFromSubType));
+                                }
                             }
                         }
+                    }
+                    else
+                    {
+                        HandleOpcClientError();
                     }
                 }
             }
             // Check for OptionalPlaceholder and MandatoryPlaceholder in the node Type
-            List<NodeId> optionalMandatoryPlaceholders = new List<NodeId>();
-            NodeId? ptypeDefinition = client.BrowseTypeDefinition(nodeId);
-            if (ptypeDefinition != null)
+            List<NodeId> optionalMandatoryPlaceholders = new List<NodeId>();;
+            if (client.TryBrowseTypeDefinition(nodeId, out NodeId? ptypeDefinition))
             {
-                List<NodeId> typeAndSuperTypes = new List<NodeId>();
-                SuperTypeList(ptypeDefinition, typeAndSuperTypes);
-                foreach (NodeId typeDefinition in typeAndSuperTypes)
+                if (ptypeDefinition != null)
                 {
-                    optionalMandatoryPlaceholders.AddRange(this.client.GetOptionalAndMandatoryPlaceholders(typeDefinition));
+                    List<NodeId> typeAndSuperTypes = new List<NodeId>();
+                    SuperTypeList(ptypeDefinition, typeAndSuperTypes);
+                    foreach (NodeId typeDefinition in typeAndSuperTypes)
+                    {
+                        optionalMandatoryPlaceholders.AddRange(this.client.GetOptionalAndMandatoryPlaceholders(typeDefinition));
+                    }
                 }
+            }
+            else 
+            {
+                HandleOpcClientError();
             }
             List<TypeClassNode> TypeClassNodes = client.GetTypeClassNodesForNodeId(nodeId);
             OptionalPlaceholdersByTypeClasses = client.GetOptionalAndMandatoryPlaceholdersForTypeClassNodes(TypeClassNodes);
@@ -2046,6 +2076,10 @@ namespace umatiGateway.Core.Mqtt
         {
             doPublish();
         }
+        private void HandleOpcClientError()
+        {
+            Logger.Error("Unable to retrieve Data from OPC Ua Client.");
+        }
         private void ReadInstanceNsuAndBrowseName()
         {
             try
@@ -2060,25 +2094,31 @@ namespace umatiGateway.Core.Mqtt
                         Node? machineNode = client.ReadNode(machine);
                         if (machineNode != null)
                         {
-                            NodeId? typedefinition = client.BrowseTypeDefinition(machine);
-                            if (typedefinition != null)
+                            if (client.TryBrowseTypeDefinition(machine, out NodeId? typedefinition))
                             {
-                                Logger.Debug("TypeDefinition NodeId is:\t{TypeDefinition}", typedefinition);
-                                Node? TypeDefinitionNode = client.ReadNode(typedefinition);
-                                if (TypeDefinitionNode != null)
+                                if (typedefinition != null)
                                 {
-                                    InstanceNSU = getInstanceNsu(machine);
-                                    TypeBrowseName = TypeDefinitionNode.BrowseName.Name;
-                                    Logger.Debug("InstanceNsu:\t{InstanceNSU}\tTypeBrowseName:\t{TypeBrowseName}", InstanceNSU, TypeBrowseName);
+                                    Logger.Debug("TypeDefinition NodeId is:\t{TypeDefinition}", typedefinition);
+                                    Node? TypeDefinitionNode = client.ReadNode(typedefinition);
+                                    if (TypeDefinitionNode != null)
+                                    {
+                                        InstanceNSU = getInstanceNsu(machine);
+                                        TypeBrowseName = TypeDefinitionNode.BrowseName.Name;
+                                        Logger.Debug("InstanceNsu:\t{InstanceNSU}\tTypeBrowseName:\t{TypeBrowseName}", InstanceNSU, TypeBrowseName);
+                                    }
+                                    else
+                                    {
+                                        Logger.Error("Unable to get TypeDefinitionNode for type NodeId:\t{TypeDefinition}", typedefinition);
+                                    }
                                 }
                                 else
                                 {
-                                    Logger.Error("Unable to get TypeDefinitionNode for type NodeId:\t{TypeDefinition}", typedefinition);
+                                    Logger.Error("Unable to browse NodeId of TypeDefinition for machine NodeId:\t{Machine}", machine);
                                 }
                             }
                             else
                             {
-                                Logger.Error("Unable to browse NodeId of TypeDefinition for machine NodeId:\t{Machine}", machine);
+                                HandleOpcClientError();
                             }
                         }
                         else
@@ -2099,25 +2139,31 @@ namespace umatiGateway.Core.Mqtt
                     if (machineNodeId != null)
                     {
                         Logger.Debug("Resolved NodeId is:\t{MachineNodeId}", machineNodeId);
-                        NodeId? typedefinitionNodeId = client.BrowseTypeDefinition(machineNodeId);
-                        if (typedefinitionNodeId != null)
+                        if (client.TryBrowseTypeDefinition(machineNodeId, out NodeId? typedefinitionNodeId))
                         {
-                            Logger.Debug("TypeDefinition NodeId is:\t{TypeDefinitionNodeId}", typedefinitionNodeId);
-                            Node? typeDefinitionNode = client.ReadNode(typedefinitionNodeId);
-                            if (typeDefinitionNode != null)
+                            if (typedefinitionNodeId != null)
                             {
-                                machineNode.InstanceNamespace = getInstanceNsu(machineNodeId);
-                                machineNode.TypeBrowseName = typeDefinitionNode.BrowseName.Name;
-                                Logger.Debug("InstanceNsu:\t{InstanceNamespace}\tTypeBrowseName:\t{TypeBrowseName}", machineNode.InstanceNamespace, machineNode.TypeBrowseName);
+                                Logger.Debug("TypeDefinition NodeId is:\t{TypeDefinitionNodeId}", typedefinitionNodeId);
+                                Node? typeDefinitionNode = client.ReadNode(typedefinitionNodeId);
+                                if (typeDefinitionNode != null)
+                                {
+                                    machineNode.InstanceNamespace = getInstanceNsu(machineNodeId);
+                                    machineNode.TypeBrowseName = typeDefinitionNode.BrowseName.Name;
+                                    Logger.Debug("InstanceNsu:\t{InstanceNamespace}\tTypeBrowseName:\t{TypeBrowseName}", machineNode.InstanceNamespace, machineNode.TypeBrowseName);
+                                }
+                                else
+                                {
+                                    Logger.Error("Unable to get TypeDefinitionNode for Type NodeId:\t{TypeDefinitionNodeId}", typedefinitionNodeId);
+                                }
                             }
                             else
                             {
-                                Logger.Error("Unable to get TypeDefinitionNode for Type NodeId:\t{TypeDefinitionNodeId}", typedefinitionNodeId);
+                                Logger.Error("Unable to browse NodeId of Typedefinition for machine NodeId:\t{MachineNodeId}", machineNodeId);
                             }
                         }
                         else
                         {
-                            Logger.Error("Unable to browse NodeId of Typedefinition for machine NodeId:\t{MachineNodeId}", machineNodeId);
+                            HandleOpcClientError();
                         }
                     }
                     else
