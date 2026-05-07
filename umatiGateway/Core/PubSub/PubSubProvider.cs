@@ -911,6 +911,10 @@ namespace umatiGateway.Core.PubSub
                 Connections = new PubSubConnectionDataTypeCollection { PubSubConnectionDataType }
             };
         }
+        private void HandleOpcClientError()
+        {
+            Logger.Error("Unable to retrieve Data from Opc Server.");
+        }
         private void CreateApp()
         {
             pubSubApp = UaPubSubApplication.Create(PubSubConfigurationDataType, pubSubDataStore);
@@ -967,57 +971,70 @@ namespace umatiGateway.Core.PubSub
                 hierarchicalNode.Parent = parent;
                 if (hierarchicalNode.TypeDefinitionNodeId == null)
                 {
-                    hierarchicalNode.TypeDefinitionNodeId = client.BrowseTypeDefinition(nodeId);
+                    if(client.TryBrowseTypeDefinition(nodeId, out NodeId? typeDefinitionNodeId))
+                    {
+                        hierarchicalNode.TypeDefinitionNodeId = typeDefinitionNodeId;
+                    }
+                    else
+                    {
+                        HandleOpcClientError();
+                    }
                 }
                 List<NodeId> childNodeIds = client.BrowseLocalNodeIds(nodeId, BrowseDirection.Forward, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true);
                 foreach (NodeId childNodeId in childNodeIds)
                 {
-                    NodeId? childTypeDefinition = client.BrowseTypeDefinition(childNodeId);
-                    if (childTypeDefinition != null)
+                    if (client.TryBrowseTypeDefinition(childNodeId, out NodeId? childTypeDefinition))
                     {
-                        if (childTypeDefinition == VariableTypeIds.PropertyType)
+                        if (childTypeDefinition != null)
                         {
-
-                            HierarchicalNode? childNode = ReadNodeIdAsHierarchicalNode(hierarchicalNode, childNodeId);
-                            if (childNode != null)
+                            if (childTypeDefinition == VariableTypeIds.PropertyType)
                             {
-                                if (!hierarchicalNode.hierarchicalChilds.Keys.Contains(childNodeId))
+
+                                HierarchicalNode? childNode = ReadNodeIdAsHierarchicalNode(hierarchicalNode, childNodeId);
+                                if (childNode != null)
                                 {
-                                    hierarchicalNode.hierarchicalChilds.Add(childNodeId, childNode);
+                                    if (!hierarchicalNode.hierarchicalChilds.Keys.Contains(childNodeId))
+                                    {
+                                        hierarchicalNode.hierarchicalChilds.Add(childNodeId, childNode);
+                                    }
+                                    else
+                                    {
+                                        Logger.Warn("Double child NodeId {ChildNodeId} in HierarchicalNode {HierarchicalNodeId}", childNodeId, hierarchicalNode.NodeId);
+                                    }
                                 }
                                 else
                                 {
-                                    Logger.Warn("Double child NodeId {ChildNodeId} in HierarchicalNode {HierarchicalNodeId}", childNodeId, hierarchicalNode.NodeId);
+                                    Logger.Error("Unable to read HierarchicalNode");
                                 }
                             }
                             else
                             {
-                                Logger.Error("Unable to read HierarchicalNode");
+                                HierarchicalNode? childNode = ReadNodeIdAsHierarchicalNode(hierarchicalNode, childNodeId);
+                                if (childNode != null)
+                                {
+                                    if (!hierarchicalNode.hierarchicalChilds.Keys.Contains(childNodeId))
+                                    {
+                                        hierarchicalNode.hierarchicalChilds.Add(childNodeId, childNode);
+                                    }
+                                    else
+                                    {
+                                        Logger.Warn("Double child NodeId {ChildNodeId} in HierarchicalNode {HierarchicalNodeId}", childNodeId, hierarchicalNode.NodeId);
+                                    }
+                                }
+                                else
+                                {
+                                    Logger.Error("Unable to read HierarchicalNode");
+                                }
                             }
                         }
                         else
                         {
-                            HierarchicalNode? childNode = ReadNodeIdAsHierarchicalNode(hierarchicalNode, childNodeId);
-                            if (childNode != null)
-                            {
-                                if (!hierarchicalNode.hierarchicalChilds.Keys.Contains(childNodeId))
-                                {
-                                    hierarchicalNode.hierarchicalChilds.Add(childNodeId, childNode);
-                                }
-                                else
-                                {
-                                    Logger.Warn("Double child NodeId {ChildNodeId} in HierarchicalNode {HierarchicalNodeId}", childNodeId, hierarchicalNode.NodeId);
-                                }
-                            }
-                            else
-                            {
-                                Logger.Error("Unable to read HierarchicalNode");
-                            }
+                            Logger.Error("No TypeDefinition for child NodeId {ChildNodeId}", childNodeId);
                         }
                     }
                     else
                     {
-                        Logger.Error("No TypeDefinition for child NodeId {ChildNodeId}", childNodeId);
+                        HandleOpcClientError();
                     }
                 }
                 if (node is VariableNode variableNode)
