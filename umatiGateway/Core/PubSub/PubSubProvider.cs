@@ -980,76 +980,82 @@ namespace umatiGateway.Core.PubSub
                         HandleOpcClientError();
                     }
                 }
-                List<NodeId> childNodeIds = client.BrowseLocalNodeIds(nodeId, BrowseDirection.Forward, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true);
-                foreach (NodeId childNodeId in childNodeIds)
+                if (client.TryBrowseLocalNodeIds(nodeId, BrowseDirection.Forward, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true, out List<NodeId> childNodeIds))
                 {
-                    if (client.TryBrowseTypeDefinition(childNodeId, out NodeId? childTypeDefinition))
+                    foreach (NodeId childNodeId in childNodeIds)
                     {
-                        if (childTypeDefinition != null)
+                        if (client.TryBrowseTypeDefinition(childNodeId, out NodeId? childTypeDefinition))
                         {
-                            if (childTypeDefinition == VariableTypeIds.PropertyType)
+                            if (childTypeDefinition != null)
                             {
-
-                                HierarchicalNode? childNode = ReadNodeIdAsHierarchicalNode(hierarchicalNode, childNodeId);
-                                if (childNode != null)
+                                if (childTypeDefinition == VariableTypeIds.PropertyType)
                                 {
-                                    if (!hierarchicalNode.hierarchicalChilds.Keys.Contains(childNodeId))
+
+                                    HierarchicalNode? childNode = ReadNodeIdAsHierarchicalNode(hierarchicalNode, childNodeId);
+                                    if (childNode != null)
                                     {
-                                        hierarchicalNode.hierarchicalChilds.Add(childNodeId, childNode);
+                                        if (!hierarchicalNode.hierarchicalChilds.Keys.Contains(childNodeId))
+                                        {
+                                            hierarchicalNode.hierarchicalChilds.Add(childNodeId, childNode);
+                                        }
+                                        else
+                                        {
+                                            Logger.Warn("Double child NodeId {ChildNodeId} in HierarchicalNode {HierarchicalNodeId}", childNodeId, hierarchicalNode.NodeId);
+                                        }
                                     }
                                     else
                                     {
-                                        Logger.Warn("Double child NodeId {ChildNodeId} in HierarchicalNode {HierarchicalNodeId}", childNodeId, hierarchicalNode.NodeId);
+                                        Logger.Error("Unable to read HierarchicalNode");
                                     }
                                 }
                                 else
                                 {
-                                    Logger.Error("Unable to read HierarchicalNode");
+                                    HierarchicalNode? childNode = ReadNodeIdAsHierarchicalNode(hierarchicalNode, childNodeId);
+                                    if (childNode != null)
+                                    {
+                                        if (!hierarchicalNode.hierarchicalChilds.Keys.Contains(childNodeId))
+                                        {
+                                            hierarchicalNode.hierarchicalChilds.Add(childNodeId, childNode);
+                                        }
+                                        else
+                                        {
+                                            Logger.Warn("Double child NodeId {ChildNodeId} in HierarchicalNode {HierarchicalNodeId}", childNodeId, hierarchicalNode.NodeId);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Logger.Error("Unable to read HierarchicalNode");
+                                    }
                                 }
                             }
                             else
                             {
-                                HierarchicalNode? childNode = ReadNodeIdAsHierarchicalNode(hierarchicalNode, childNodeId);
-                                if (childNode != null)
-                                {
-                                    if (!hierarchicalNode.hierarchicalChilds.Keys.Contains(childNodeId))
-                                    {
-                                        hierarchicalNode.hierarchicalChilds.Add(childNodeId, childNode);
-                                    }
-                                    else
-                                    {
-                                        Logger.Warn("Double child NodeId {ChildNodeId} in HierarchicalNode {HierarchicalNodeId}", childNodeId, hierarchicalNode.NodeId);
-                                    }
-                                }
-                                else
-                                {
-                                    Logger.Error("Unable to read HierarchicalNode");
-                                }
+                                Logger.Error("No TypeDefinition for child NodeId {ChildNodeId}", childNodeId);
                             }
                         }
                         else
                         {
-                            Logger.Error("No TypeDefinition for child NodeId {ChildNodeId}", childNodeId);
+                            HandleOpcClientError();
                         }
                     }
-                    else
+                    if (node is VariableNode variableNode)
                     {
-                        HandleOpcClientError();
+                        Session session = app.OpcUaClient.CheckSession();
+                        FieldMetaData meta = new FieldMetaData
+                        {
+                            Name = variableNode.BrowseName.Name,
+                            Description = variableNode.Description,
+                            BuiltInType = (byte)TypeInfo.GetBuiltInType(variableNode.DataType, session.TypeTree),
+                            DataType = variableNode.DataType,
+                            ValueRank = variableNode.ValueRank,
+                            DataSetFieldId = new Uuid(Guid.NewGuid())
+                        };
+                        hierarchicalNode.fieldMetaData = meta;
                     }
                 }
-                if (node is VariableNode variableNode)
+                else
                 {
-                    Session session = app.OpcUaClient.CheckSession();
-                    FieldMetaData meta = new FieldMetaData
-                    {
-                        Name = variableNode.BrowseName.Name,
-                        Description = variableNode.Description,
-                        BuiltInType = (byte)TypeInfo.GetBuiltInType(variableNode.DataType, session.TypeTree),
-                        DataType = variableNode.DataType,
-                        ValueRank = variableNode.ValueRank,
-                        DataSetFieldId = new Uuid(Guid.NewGuid())
-                    };
-                    hierarchicalNode.fieldMetaData = meta;
+                    HandleOpcClientError();
                 }
             }
             else

@@ -87,7 +87,15 @@ namespace umatiGateway.Core.Mqtt
             NodeId? relationTypeId = this.ResolveNodeId(relationCondition.Type, relationCondition.NodeId, relationCondition.NamespaceUrl, "");
             if (relationTypeId != null)
             {
-                return this.client.BrowseLocalNodeIds(parentNodeId, BrowseDirection.Forward, (int)NodeClass.Object | (int)NodeClass.Variable, relationTypeId, relationCondition.IncludeSubTypes);
+                if (this.client.TryBrowseLocalNodeIds(parentNodeId, BrowseDirection.Forward, (int)NodeClass.Object | (int)NodeClass.Variable, relationTypeId, relationCondition.IncludeSubTypes, out List<NodeId> localNodeIds))
+                {
+                    return localNodeIds;
+                }
+                else
+                {
+                    HandleOpcUaClientError();
+                    return new List<NodeId>();
+                }
             }
             else
             {
@@ -213,6 +221,9 @@ namespace umatiGateway.Core.Mqtt
             }
             return resolvedNodeId;
         }
-
+        private void HandleOpcUaClientError()
+        {
+            Logger.Error("Unable to retrieve Data form OpcUaClient");
+        }
     }
 }

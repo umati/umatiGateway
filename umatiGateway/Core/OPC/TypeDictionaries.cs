@@ -148,20 +148,32 @@ namespace umatiGateway.Core.OPC
         {
             IOpcUaClient client = app.OpcUaClient;
             nodeIds.Add(nodeId);
-            List<NodeId> subTypeNodeIds = client.BrowseLocalNodeIds(nodeId, BrowseDirection.Forward, (uint)nodeClass, ReferenceTypeIds.HasSubtype, true);
-            foreach (NodeId subTypeNodeId in subTypeNodeIds)
+            if (client.TryBrowseLocalNodeIds(nodeId, BrowseDirection.Forward, (uint)nodeClass, ReferenceTypeIds.HasSubtype, true, out List<NodeId> subTypeNodeIds))
             {
-                ReadAndAppendTypeNodeIds(subTypeNodeId, nodeClass, nodeIds);
+                foreach (NodeId subTypeNodeId in subTypeNodeIds)
+                {
+                    ReadAndAppendTypeNodeIds(subTypeNodeId, nodeClass, nodeIds);
+                }
+            }
+            else
+            {
+                HandleOpcUaClientError();
             }
         }
         private void ReadAndAppendTypeNodeIds(NodeId nodeId, NodeClass nodeClass, List<NodeId> nodeIds, NodeId referenceTypeId)
         {
             IOpcUaClient client = app.OpcUaClient;
             nodeIds.Add(nodeId);
-            List<NodeId> subTypeNodeIds = client.BrowseLocalNodeIds(nodeId, BrowseDirection.Forward, (uint)nodeClass, referenceTypeId, true);
-            foreach (NodeId subTypeNodeId in subTypeNodeIds)
+            if (client.TryBrowseLocalNodeIds(nodeId, BrowseDirection.Forward, (uint)nodeClass, referenceTypeId, true, out List<NodeId> subTypeNodeIds))
             {
-                ReadAndAppendTypeNodeIds(subTypeNodeId, nodeClass, nodeIds, referenceTypeId);
+                foreach (NodeId subTypeNodeId in subTypeNodeIds)
+                {
+                    ReadAndAppendTypeNodeIds(subTypeNodeId, nodeClass, nodeIds, referenceTypeId);
+                }
+            }
+            else
+            {
+                HandleOpcUaClientError();
             }
         }
         private void generateDataClasses(string xmlString)
@@ -613,6 +625,10 @@ namespace umatiGateway.Core.OPC
             Node? encodingType = null;
             encodingType = opcBinary[nodeId];
             return encodingType;
+        }
+        public void HandleOpcUaClientError()
+        {
+            Logger.Error("Unable to retrieve Data from OPCUaServer");
         }
     }
     public class NodeIdComparer : IEqualityComparer<NodeId>

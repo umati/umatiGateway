@@ -98,15 +98,20 @@ namespace umatiGateway.Core.PubSub
         }
         private void GetReferenceSubTypes(NodeId parentNodeId, List<NodeId> result)
         {
-
-            List<NodeId> children = client.BrowseLocalNodeIds(parentNodeId, BrowseDirection.Forward, (uint)NodeClass.ReferenceType, ReferenceTypeIds.HasSubtype, false);
-            foreach (NodeId child in children)
+            if (client.TryBrowseLocalNodeIds(parentNodeId, BrowseDirection.Forward, (uint)NodeClass.ReferenceType, ReferenceTypeIds.HasSubtype, false, out List<NodeId> children))
             {
-                if (!result.Contains(child))
+                foreach (NodeId child in children)
                 {
-                    result.Add(child);
-                    GetReferenceSubTypes(child, result);
+                    if (!result.Contains(child))
+                    {
+                        result.Add(child);
+                        GetReferenceSubTypes(child, result);
+                    }
                 }
+            }
+            else
+            {
+                HandleOpcUaClientError();
             }
         }
         private void HandleOpcUaClientError()
