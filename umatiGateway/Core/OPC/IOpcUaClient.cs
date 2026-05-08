@@ -38,8 +38,9 @@ namespace umatiGateway.Core.OPC
         /// <param name="nodeClass">The nodeclass for which is searched.</param>
         /// <param name="ReferenceTypeId">The node Id of the Reference for that is searched.</param>
         /// <param name="includeSubTypes"> A boolean that indicates if Subtypes of the ReferenceType should be included.</param>
-        /// <exception cref="OpcUaException">Exception in Opc Ua Context.</exception>
-        public List<NodeId> BrowseLocalNodeIds(NodeId nodeId, BrowseDirection browseDirection, uint nodeClass, NodeId ReferenceTypeId, bool includeSubTypes);
+        /// <param name="localNodeIds"> The browsed local NodeIds,</param>
+        /// <returns>True if the Browse was successful or false if it was not successful.</returns>
+        public bool TryBrowseLocalNodeIds(NodeId nodeId, BrowseDirection browseDirection, uint nodeClass, NodeId ReferenceTypeId, bool includeSubTypes, out List<NodeId> localNodeIds);
         /// <summary>
         /// Returns a List of NodeIds matching the parameters.
         /// </summary>

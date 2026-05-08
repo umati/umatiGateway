@@ -295,19 +295,27 @@ namespace umatiGateway.Core.OPC
             List<NodeId> nodeIds = this.BrowseNodeIds(browseDescriptionCollection, excluded);
             return nodeIds.FirstOrDefault();
         }
-        public List<NodeId> BrowseLocalNodeIds(NodeId rootNodeId, BrowseDirection browseDirection, uint nodeClassMask, NodeId referenceTypeIds, bool includeSubTypes)
+        public bool TryBrowseLocalNodeIds(NodeId rootNodeId, BrowseDirection browseDirection, uint nodeClassMask, NodeId referenceTypeIds, bool includeSubTypes, out List<NodeId> localNodeIds)
         {
-            List<NodeId> nodeList = new List<NodeId>();
-            BrowseResultCollection browseResults = BrowseNode(rootNodeId, browseDirection, nodeClassMask, referenceTypeIds, includeSubTypes);
-            foreach (BrowseResult browseResult in browseResults)
+            localNodeIds = new List<NodeId>();
+            try
             {
-                ReferenceDescriptionCollection references = browseResult.References;
-                foreach (ReferenceDescription reference in references)
+                BrowseResultCollection browseResults = BrowseNode(rootNodeId, browseDirection, nodeClassMask, referenceTypeIds, includeSubTypes);
+                foreach (BrowseResult browseResult in browseResults)
                 {
-                    nodeList.Add(new NodeId(reference.NodeId.Identifier, reference.NodeId.NamespaceIndex));
+                    ReferenceDescriptionCollection references = browseResult.References;
+                    foreach (ReferenceDescription reference in references)
+                    {
+                        localNodeIds.Add(new NodeId(reference.NodeId.Identifier, reference.NodeId.NamespaceIndex));
+                    }
                 }
+                return true;
             }
-            return nodeList;
+            catch (Exception exception)
+            {
+                Logger.Error(exception, "Unable to browse NodeIds for {RootNodeId}", rootNodeId);
+                return false;
+            }
         }
         public List<NodeId> BrowseLocalNodeIdsExcludeReference(NodeId rootNodeId, BrowseDirection browseDirection, uint nodeClassMask, NodeId referenceTypeIds, bool includeSubTypes, NodeId excludedReferenceTypeId)
         {
@@ -661,9 +669,8 @@ namespace umatiGateway.Core.OPC
         {
             Session session = this.CheckSession();
             List<NodeId> filteredNodeIds = new List<NodeId>();
-            try
+            if (TryBrowseLocalNodeIds(rootNodeId, browseDirection, nodeClassMask, referenceTypeId, includeSubTypes, out List<NodeId> nodeIds))
             {
-                List<NodeId> nodeIds = BrowseLocalNodeIds(rootNodeId, browseDirection, nodeClassMask, referenceTypeId, includeSubTypes);
                 foreach (NodeId nodeId in nodeIds)
                 {
                     if (TryBrowseTypeDefinition(nodeId, out NodeId? typeDefinition))
@@ -681,12 +688,8 @@ namespace umatiGateway.Core.OPC
                         Logger.Error("Unable to browse TypeDefinition");
                     }
                 }
-                return filteredNodeIds;
             }
-            catch (Exception exception)
-            {
-                throw new OpcUaException($"Unable to BrowseLocalNodeIds with Typedefinition for node: {rootNodeId}", exception);
-            }
+            return filteredNodeIds;
         }
 
         public bool TryBrowseTypeDefinition(NodeId nodeId, out NodeId? typeDefinitionNodeId)
@@ -714,20 +717,14 @@ namespace umatiGateway.Core.OPC
         }
         public NodeId? BrowseLocalNodeId(NodeId rootNodeId, BrowseDirection browseDirection, uint nodeClassMask, NodeId referenceTypeIds, bool includeSubTypes)
         {
-            Session session = this.CheckSession();
-            try
+            if (TryBrowseLocalNodeIds(rootNodeId, browseDirection, nodeClassMask, referenceTypeIds, includeSubTypes, out List<NodeId> nodeIds))
             {
-                List<NodeId> nodeIds = BrowseLocalNodeIds(rootNodeId, browseDirection, nodeClassMask, referenceTypeIds, includeSubTypes);
                 foreach (NodeId nodeId in nodeIds)
                 {
                     return nodeId;
                 }
-                return null;
             }
-            catch (Exception exception)
-            {
-                throw new OpcUaException($"Unable to Browse NodeId:{rootNodeId}", exception);
-            }
+            return null;
         }
         public NodeId? BrowseLocalNodeIdWithBrowseName(NodeId rootNodeId, BrowseDirection browseDirection, uint nodeClassMask, NodeId referenceTypeIds, bool includeSubTypes, QualifiedName browseName)
         {
@@ -836,24 +833,26 @@ namespace umatiGateway.Core.OPC
                 {
                     relativePath.Elements.AddRange(pathToChild);
                 }
-                List<NodeId> parentNodeIds = BrowseLocalNodeIds(nodeId, BrowseDirection.Inverse, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true);
-                foreach (NodeId parentNodeId in parentNodeIds)
+                if (TryBrowseLocalNodeIds(nodeId, BrowseDirection.Inverse, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true, out List<NodeId> parentNodeIds))
                 {
-                    if (TryBrowseTypeDefinition(parentNodeId, out NodeId? parentTypeDefinition))
+                    foreach (NodeId parentNodeId in parentNodeIds)
                     {
-                        if (parentTypeDefinition != null)
+                        if (TryBrowseTypeDefinition(parentNodeId, out NodeId? parentTypeDefinition))
                         {
-                            typeClassNodes.Add(new TypeClassNode(parentTypeDefinition, relativePath.Elements));
+                            if (parentTypeDefinition != null)
+                            {
+                                typeClassNodes.Add(new TypeClassNode(parentTypeDefinition, relativePath.Elements));
+                            }
+                            List<TypeClassNode> childDictionary = GetTypeClassNodesForNodeId(parentNodeId, relativePath.Elements);
+                            foreach (TypeClassNode typeclassnode in childDictionary)
+                            {
+                                typeClassNodes.Add(typeclassnode);
+                            }
                         }
-                        List<TypeClassNode> childDictionary = GetTypeClassNodesForNodeId(parentNodeId, relativePath.Elements);
-                        foreach (TypeClassNode typeclassnode in childDictionary)
+                        else
                         {
-                            typeClassNodes.Add(typeclassnode);
+                            Logger.Error("Unable to BrowseTypedefinition.");
                         }
-                    }
-                    else
-                    {
-                        Logger.Error("Unable to BrowseTypedefinition.");
                     }
                 }
             }
