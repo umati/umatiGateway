@@ -46,6 +46,11 @@ namespace umatiGateway.Core.PubSub
             Session? session = client.GetSession();
             if (session != null)
             {
+                NamespaceTable namespaceTable = new NamespaceTable();
+                if (client.TryGetNamespaceTable(out NamespaceTable namespaceTable1))
+                {
+                    namespaceTable = namespaceTable1;
+                }
                 session.Browse(null, null, 10000, nodesToBrowse, out BrowseResultCollection browseResultCollection, out DiagnosticInfoCollection diagnosticInfos);
                 for (int i = 0; i < browseResultCollection.Count; i++)
                 {
@@ -58,7 +63,7 @@ namespace umatiGateway.Core.PubSub
                         keyValuePair.Key = new QualifiedName($"relation_{counter}", 0);
                         referenceDescription.ReferenceTypeId = nodesToBrowse[i].ReferenceTypeId;
                         referenceDescription.IsForward = nodesToBrowse[i].BrowseDirection == BrowseDirection.Forward ? true : false;
-                        Node? node = client.ReadNode(ExpandedNodeId.ToNodeId(referenceDescription.NodeId, client.GetNamespaceTable()));
+                        Node? node = client.ReadNode(ExpandedNodeId.ToNodeId(referenceDescription.NodeId, namespaceTable));
                         if (node != null)
                         {
                             referenceDescription.BrowseName = node.BrowseName;

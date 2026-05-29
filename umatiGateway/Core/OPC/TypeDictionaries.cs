@@ -80,8 +80,14 @@ namespace umatiGateway.Core.OPC
                 Logger.Error("Unable to find Folder: {FolderPath}", folderPath);
             }
 
-
-            binaryTypeDictionaries = client.BrowseLocalNodeIdsWithTypeDefinition(ObjectIds.OPCBinarySchema_TypeSystem, BrowseDirection.Forward, (uint)NodeClass.Variable, ReferenceTypeIds.HasComponent, true, VariableTypeIds.DataTypeDictionaryType);
+            if(client.TryBrowseLocalNodeIdsWithTypeDefinition(ObjectIds.OPCBinarySchema_TypeSystem, BrowseDirection.Forward, (uint)NodeClass.Variable, ReferenceTypeIds.HasComponent, true, VariableTypeIds.DataTypeDictionaryType, out List<NodeId> localNodeIds))
+            {
+                binaryTypeDictionaries = localNodeIds;
+            }
+            else
+            {
+                HandleOpcUaClientError();
+            }
             foreach (NodeId binaryTypeDictionary in binaryTypeDictionaries)
             {
                 try
@@ -117,7 +123,7 @@ namespace umatiGateway.Core.OPC
                     Logger.Error(e, "Unable to read Value of Node: {BinaryTypeDictionary}", binaryTypeDictionary);
                 }
             }
-            ;
+
             if (ReadExtraLibs)
             {
                 Logger.Warn("The option ReadExtraLibs is deprecated and my be removed in future versions. You can now provide .bsd files in the./BsdFiles folder.");

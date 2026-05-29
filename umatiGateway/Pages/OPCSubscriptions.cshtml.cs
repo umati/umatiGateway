@@ -23,13 +23,18 @@ namespace UmatiGateway.Pages
         }
         public IActionResult OnPostAddNodeMqttConfig(string uuid)
         {
+            NamespaceTable namespaceTable = new NamespaceTable();
+            if (this.app.OpcUaClient.TryGetNamespaceTable(out NamespaceTable namespaceTable1))
+            {
+                namespaceTable = namespaceTable1;
+            }
             this.BrowseTree = app.BrowseTreeController.BrowseTree;
             this.BrowseTree.SelectedTreeNode = uuid;
             TreeNode? selectedTreeNode = this.GetForUid(uuid);
             if (selectedTreeNode != null)
             {
                 NodeId nodeId = selectedTreeNode.NodeData.node.NodeId;
-                string? namespaceUrl = this.app.OpcUaClient.GetNamespaceTable().GetString(nodeId.NamespaceIndex);
+                string? namespaceUrl = namespaceTable.GetString(nodeId.NamespaceIndex);
                 string? identifier = nodeId.Identifier.ToString();
                 if (namespaceUrl != null && identifier != null)
                 {
@@ -45,13 +50,18 @@ namespace UmatiGateway.Pages
         }
         public IActionResult OnPostAddNodeOpcPubSubConfig(string uuid)
         {
+            NamespaceTable namespaceTable = new NamespaceTable();
+            if (this.app.OpcUaClient.TryGetNamespaceTable(out NamespaceTable namespaceTable1))
+            {
+                namespaceTable = namespaceTable1;
+            }
             this.BrowseTree = app.BrowseTreeController.BrowseTree;
             this.BrowseTree.SelectedTreeNode = uuid;
             TreeNode? selectedTreeNode = this.GetForUid(uuid);
             if (selectedTreeNode != null)
             {
                 NodeId nodeId = selectedTreeNode.NodeData.node.NodeId;
-                string? namespaceUrl = this.app.OpcUaClient.GetNamespaceTable().GetString(nodeId.NamespaceIndex);
+                string? namespaceUrl = namespaceTable.GetString(nodeId.NamespaceIndex);
                 string? identifier = nodeId.Identifier.ToString();
                 if (namespaceUrl != null && identifier != null)
                 {

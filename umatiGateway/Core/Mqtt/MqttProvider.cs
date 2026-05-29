@@ -121,7 +121,10 @@ namespace umatiGateway.Core.Mqtt
             connectionType = WEBSOCKET;
             Connect(config.ServerEndpoint, connectionType, "4321", config.UserName, config.Password);
             doPublish();
-            client.ConnectEvents(this);
+            if(!client.TryConnectEvents(this))
+            {
+                Logger.Error("Unable to connect events.");
+            }
             aTimer.Start();
 
         }
@@ -738,8 +741,14 @@ namespace umatiGateway.Core.Mqtt
                             List<NodeId> subTypes = new List<NodeId>();
                             if (placeHolderTypeDefinition != null)
                             {
-                                client.BrowseAllHierarchicalSubType(placeHolderTypeDefinition, subTypes);
-                                placeholderNodes.Add(new PlaceholderNode(placeholder, placeHolderTypeDefinition, placeholderType, subTypes));
+                                if (this.client.TryBrowseAllHierarchicalSubType(placeHolderTypeDefinition, subTypes))
+                                {
+                                    placeholderNodes.Add(new PlaceholderNode(placeholder, placeHolderTypeDefinition, placeholderType, subTypes));
+                                }
+                                else
+                                {
+                                    HandleOpcClientError();
+                                }
                             }
                         }
                     }
@@ -754,15 +763,29 @@ namespace umatiGateway.Core.Mqtt
             List<NodeId> hierarchicalChilds = new List<NodeId>();
             if (app.ActiveConfiguration.MqttProviderConfig.IncludeStructuredComponents)
             {
-                hierarchicalChilds = client.BrowseNodeIds(new BrowseDescriptionCollection { BrowseUtils.GetHierarchicalChildren(nodeId, (int)NodeClass.Object | (int)NodeClass.Variable) });
-                //hierarchicalChilds = client.BrowseLocalNodeIds(nodeId, BrowseDirection.Forward, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true);
+                if(client.TryBrowseNodeIds(new BrowseDescriptionCollection { BrowseUtils.GetHierarchicalChildren(nodeId, (int)NodeClass.Object | (int)NodeClass.Variable) }, out List<NodeId> browsedNodes))
+                {
+                    hierarchicalChilds = browsedNodes;
+                }
+                else
+                {
+                    Logger.Error("Unable to browseNodes.");
+                }
             }
             else
             {
-                hierarchicalChilds = client.BrowseNodeIds(
+                if(client.TryBrowseNodeIds(
                     new BrowseDescriptionCollection { BrowseUtils.GetHierarchicalChildren(nodeId, (int)NodeClass.Object | (int)NodeClass.Variable) },
-                    new BrowseDescriptionCollection { BrowseUtils.ForwardBrowseDescription(nodeId, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HasStructuredComponent, true) });
-                //hierarchicalChilds = client.BrowseLocalNodeIdsExcludeReference(nodeId, BrowseDirection.Forward, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true, ReferenceTypeIds.HasStructuredComponent);
+                    out List<NodeId> browsedNodes,
+                    new BrowseDescriptionCollection { BrowseUtils.ForwardBrowseDescription(nodeId, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HasStructuredComponent, true) }))
+                {
+                    hierarchicalChilds = browsedNodes;
+                }
+                else
+                {
+                    Logger.Error("Unable to browseNodes.");
+                }
+
             }
             foreach (NodeId child in hierarchicalChilds)
             {
@@ -850,15 +873,28 @@ namespace umatiGateway.Core.Mqtt
                                     List<NodeId> nodeIds = new List<NodeId>();
                                     if (app.ActiveConfiguration.MqttProviderConfig.IncludeStructuredComponents)
                                     {
-                                        nodeIds = client.BrowseNodeIds(new BrowseDescriptionCollection { BrowseUtils.GetHierarchicalChildren(child, (int)NodeClass.Variable) });
-                                        //nodeIds = client.BrowseLocalNodeIds(child, BrowseDirection.Forward, (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true);
+                                        if(client.TryBrowseNodeIds(new BrowseDescriptionCollection { BrowseUtils.GetHierarchicalChildren(child, (int)NodeClass.Variable) }, out List<NodeId> browsedNodeIds))
+                                        {
+                                            nodeIds = browsedNodeIds;
+                                        }
+                                        else
+                                        {
+                                            Logger.Error("Unable to browseNodes.");
+                                        }
                                     }
                                     else
                                     {
-                                        nodeIds = client.BrowseNodeIds(
+                                        if(client.TryBrowseNodeIds(
                                             new BrowseDescriptionCollection { BrowseUtils.GetHierarchicalChildren(child, (int)NodeClass.Variable) },
-                                            new BrowseDescriptionCollection { BrowseUtils.ForwardBrowseDescription(child, (int)NodeClass.Variable, ReferenceTypeIds.HasStructuredComponent, true) });
-                                        //nodeIds = client.BrowseLocalNodeIdsExcludeReference(child, BrowseDirection.Forward, (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true, ReferenceTypeIds.HasStructuredComponent);
+                                            out List<NodeId> browsedNodeIds,
+                                            new BrowseDescriptionCollection { BrowseUtils.ForwardBrowseDescription(child, (int)NodeClass.Variable, ReferenceTypeIds.HasStructuredComponent, true) }))
+                                        {
+                                            nodeIds = browsedNodeIds;
+                                        }
+                                        else
+                                        {
+                                            Logger.Error("Unable to browseNodes.");
+                                        }
                                     }
                                     if (nodeIds.Count == 0)
                                     {
@@ -964,18 +1000,23 @@ namespace umatiGateway.Core.Mqtt
         }
         private void GetTypeParentNodeIds(NodeId nodeId, List<NodeId> typeParents)
         {
-            NodeId? typeParent = client.BrowseLocalNodeId(nodeId, BrowseDirection.Inverse, (int)NodeClass.ObjectType | (int)NodeClass.VariableType, ReferenceTypeIds.HasSubtype, true);
-            if (typeParent != null && typeParent != ObjectTypeIds.BaseObjectType && typeParent != VariableTypeIds.BaseDataVariableType)
+            if (client.TryBrowseLocalNodeId(nodeId, BrowseDirection.Inverse, (int)NodeClass.ObjectType | (int)NodeClass.VariableType, ReferenceTypeIds.HasSubtype, true, out NodeId? typeParent))
             {
-                typeParents.Add(typeParent);
-                GetTypeParentNodeIds(typeParent, typeParents);
+                if (typeParent != null && typeParent != ObjectTypeIds.BaseObjectType && typeParent != VariableTypeIds.BaseDataVariableType)
+                {
+                    typeParents.Add(typeParent);
+                    GetTypeParentNodeIds(typeParent, typeParents);
+                }
+            }
+            else
+            {
+                HandleOpcClientError();
             }
         }
 
         private List<NodeId> GetOptionalAndMandatoryPlaceHolders(NodeId nodeId, NodeId? parent)
         {
             List<NodeId> optionalMandatoryPlaceholdersOverParent = new List<NodeId>();
-            List<NodeId> OptionalPlaceholdersByTypeClasses = new List<NodeId>();
             if (parent != null)
             {
                 Node? node = client.ReadNode(nodeId);
@@ -986,21 +1027,47 @@ namespace umatiGateway.Core.Mqtt
                     {
                         if (parentTypeDefinition != null)
                         {
-                            NodeId? typeNodeIdofNodeID = client.BrowseLocalNodeIdWithBrowseName(parentTypeDefinition, BrowseDirection.Forward, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true, browseName);
-                            if (typeNodeIdofNodeID != null)
+                            if (client.TryBrowseLocalNodeIdWithBrowseName(parentTypeDefinition, BrowseDirection.Forward, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true, browseName, out NodeId? typeNodeIdofNodeID))
                             {
-                                optionalMandatoryPlaceholdersOverParent = client.GetOptionalAndMandatoryPlaceholders(typeNodeIdofNodeID);
-                            }
-                            //
-                            List<NodeId> typeParentNodeIds = new List<NodeId>();
-                            GetTypeParentNodeIds(parentTypeDefinition, typeParentNodeIds);
-                            foreach (NodeId typeParentNodeId in typeParentNodeIds)
-                            {
-                                NodeId? typeNodeIdofNodeIDFromSubType = client.BrowseLocalNodeIdWithBrowseName(typeParentNodeId, BrowseDirection.Forward, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true, browseName);
-                                if (typeNodeIdofNodeIDFromSubType != null)
+                                if (typeNodeIdofNodeID != null)
                                 {
-                                    optionalMandatoryPlaceholdersOverParent.AddRange(client.GetOptionalAndMandatoryPlaceholders(typeNodeIdofNodeIDFromSubType));
+                                    if(client.TryGetOptionalAndMandatoryPlaceholders(typeNodeIdofNodeID, out List<NodeId> optionalMandatoryPlaceholders1))
+                                    {
+                                        optionalMandatoryPlaceholdersOverParent = optionalMandatoryPlaceholders1;
+                                    } 
+                                    else
+                                    {
+                                        HandleOpcClientError();
+                                    }
                                 }
+                                //
+                                List<NodeId> typeParentNodeIds = new List<NodeId>();
+                                GetTypeParentNodeIds(parentTypeDefinition, typeParentNodeIds);
+                                foreach (NodeId typeParentNodeId in typeParentNodeIds)
+                                {
+                                    if (client.TryBrowseLocalNodeIdWithBrowseName(typeParentNodeId, BrowseDirection.Forward, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true, browseName, out NodeId? typeNodeIdofNodeIDFromSubType))
+                                    {
+                                        if (typeNodeIdofNodeIDFromSubType != null)
+                                        {
+                                            if(client.TryGetOptionalAndMandatoryPlaceholders(typeNodeIdofNodeIDFromSubType, out List<NodeId> optionalMandatoryPlaceholders2))
+                                            {
+                                                optionalMandatoryPlaceholdersOverParent.AddRange(optionalMandatoryPlaceholders2);
+                                            }
+                                            else
+                                            {
+                                                HandleOpcClientError();
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        HandleOpcClientError();
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                HandleOpcClientError();
                             }
                         }
                     }
@@ -1020,7 +1087,14 @@ namespace umatiGateway.Core.Mqtt
                     SuperTypeList(ptypeDefinition, typeAndSuperTypes);
                     foreach (NodeId typeDefinition in typeAndSuperTypes)
                     {
-                        optionalMandatoryPlaceholders.AddRange(this.client.GetOptionalAndMandatoryPlaceholders(typeDefinition));
+                        if(this.client.TryGetOptionalAndMandatoryPlaceholders(typeDefinition, out List<NodeId> optionalMandatoryPlaceholders1))
+                        {
+                            optionalMandatoryPlaceholders.AddRange(optionalMandatoryPlaceholders1);
+                        }
+                        else
+                        {
+                            HandleOpcClientError();
+                        }
                     }
                 }
             }
@@ -1028,11 +1102,30 @@ namespace umatiGateway.Core.Mqtt
             {
                 HandleOpcClientError();
             }
-            List<TypeClassNode> TypeClassNodes = client.GetTypeClassNodesForNodeId(nodeId);
-            OptionalPlaceholdersByTypeClasses = client.GetOptionalAndMandatoryPlaceholdersForTypeClassNodes(TypeClassNodes);
-            foreach (NodeId TypeClassNodeId in OptionalPlaceholdersByTypeClasses)
+            if (client.TryGetTypeClassNodesForNodeId(nodeId, out List<TypeClassNode> TypeClassNodes))
             {
-                optionalMandatoryPlaceholders.AddRange(client.GetOptionalAndMandatoryPlaceholders(TypeClassNodeId));
+                if (client.TryGetOptionalAndMandatoryPlaceholdersForTypeClassNodes(TypeClassNodes, out List<NodeId> OptionalPlaceholdersByTypeClasses))
+                {
+                    foreach (NodeId TypeClassNodeId in OptionalPlaceholdersByTypeClasses)
+                    {
+                        if (this.client.TryGetOptionalAndMandatoryPlaceholders(TypeClassNodeId, out List<NodeId> optionalMandatoryPlaceholders2))
+                        {
+                            optionalMandatoryPlaceholders.AddRange(optionalMandatoryPlaceholders2);
+                        }
+                        else
+                        {
+                            HandleOpcClientError();
+                        }
+                    }
+                }
+                else
+                {
+                    HandleOpcClientError();
+                }
+            } 
+            else
+            {
+                HandleOpcClientError();
             }
             optionalMandatoryPlaceholders.AddRange(optionalMandatoryPlaceholdersOverParent);
             return optionalMandatoryPlaceholders;
@@ -1040,11 +1133,16 @@ namespace umatiGateway.Core.Mqtt
         private void SuperTypeList(NodeId typeNodeId, List<NodeId> superTypes)
         {
             superTypes.Add(typeNodeId);
-            List<NodeId> superTypesOfType = this.client.BrowseNodeIds(new BrowseDescriptionCollection { BrowseUtils.InverseBrowseDescription(typeNodeId, (int)NodeClass.VariableType | (int)NodeClass.ObjectType, ReferenceTypeIds.HasSubtype, true) });
-            //List<NodeId> superTypesOfType = this.client.BrowseLocalNodeIds(typeNodeId, BrowseDirection.Inverse, (int)NodeClass.VariableType | (int)NodeClass.ObjectType, ReferenceTypeIds.HasSubtype, true);
-            foreach (NodeId superType in superTypesOfType)
+            if (this.client.TryBrowseNodeIds(new BrowseDescriptionCollection { BrowseUtils.InverseBrowseDescription(typeNodeId, (int)NodeClass.VariableType | (int)NodeClass.ObjectType, ReferenceTypeIds.HasSubtype, true) }, out List<NodeId> superTypesOfType))
             {
-                SuperTypeList(superType, superTypes);
+                foreach (NodeId superType in superTypesOfType)
+                {
+                    SuperTypeList(superType, superTypes);
+                }
+            }
+            else
+            {
+                this.HandleOpcClientError();
             }
         }
 
@@ -1121,9 +1219,8 @@ namespace umatiGateway.Core.Mqtt
                 {
                     if (machineNode != null && machineNode.ResolvedNodeId != null)
                     {
+                        if(this.client.TryBrowseNodeIds(new BrowseDescriptionCollection { BrowseUtils.GetHierarchicalChildren(machineNode.ResolvedNodeId, (int)NodeClass.Object) }, out List<NodeId> identificationNodes))
                         {
-                            List<NodeId> identificationNodes = client.BrowseNodeIds(new BrowseDescriptionCollection { BrowseUtils.GetHierarchicalChildren(machineNode.ResolvedNodeId, (int)NodeClass.Object) });
-                            //List<NodeId> identificationNodes = client.BrowseLocalNodeIds(machineNode.ResolvedNodeId, BrowseDirection.Forward, (int)NodeClass.Object, ReferenceTypeIds.HierarchicalReferences, true);
                             foreach (NodeId child in identificationNodes)
                             {
                                 Node? childNode = client.ReadNode(child);
@@ -1161,6 +1258,10 @@ namespace umatiGateway.Core.Mqtt
                             }
                             IdentificationArray = identificationArray;
                         }
+                    }
+                    else
+                    {
+                        this.HandleOpcClientError();
                     }
                 }
             }
@@ -1379,6 +1480,11 @@ namespace umatiGateway.Core.Mqtt
         }
         public JObject decode(ExtensionObject extensionObject)
         {
+            NamespaceTable namespaceTable = new NamespaceTable();
+            if (client.TryGetNamespaceTable(out NamespaceTable namespaceTable1))
+            {
+                namespaceTable = namespaceTable1;
+            }
             ICustomEncoding? customEncoding = customEncodingManager.GetActiveEncodingForNodeId(extensionObject.TypeId);
             if (customEncoding != null)
             {
@@ -1390,9 +1496,12 @@ namespace umatiGateway.Core.Mqtt
             }
             JObject jObject = new JObject();
             Logger.Trace("ExtensionObject Expanded NodeId: {ExtensionObjectTypeId}", extensionObject.TypeId);
-            NodeId etoId = ExpandedNodeId.ToNodeId(extensionObject.TypeId, client.GetNamespaceTable());
+            NodeId etoId = ExpandedNodeId.ToNodeId(extensionObject.TypeId, namespaceTable);
             Logger.Trace("ExtensionObject NodeId: {ExtensionObjectId}", etoId);
-            NodeId? dataType = client.BrowseLocalNodeId(etoId, BrowseDirection.Inverse, (uint)NodeClass.DataType, ReferenceTypeIds.HasEncoding, true);
+            if(!client.TryBrowseLocalNodeId(etoId, BrowseDirection.Inverse, (uint)NodeClass.DataType, ReferenceTypeIds.HasEncoding, true, out NodeId? dataType))
+            {
+                HandleOpcClientError();
+            }
             if (dataType != null)
             {
                 Logger.Trace("DataType NodeId: {DataType}", dataType);
@@ -1418,7 +1527,7 @@ namespace umatiGateway.Core.Mqtt
                 {
                     Dictionary<GeneratedDataTypeDefinition, GeneratedDataClass> gclasses = app.OpcUaClient.GetTypeDictionaries().generatedDataTypes;
                     DataTypeNode dtn = (DataTypeNode)value;
-                    GeneratedDataTypeDefinition generatedDataTypeDefinition = new GeneratedDataTypeDefinition(client.GetNamespaceTable().GetString(dtn.NodeId.NamespaceIndex), dtn.BrowseName.Name);
+                    GeneratedDataTypeDefinition generatedDataTypeDefinition = new GeneratedDataTypeDefinition(namespaceTable.GetString(dtn.NodeId.NamespaceIndex), dtn.BrowseName.Name);
                     gclasses.TryGetValue(generatedDataTypeDefinition, out GeneratedDataClass? gdc);
                     ExtensionObject dtd = dtn.DataTypeDefinition;
                     if (gdc != null)
@@ -1983,12 +2092,14 @@ namespace umatiGateway.Core.Mqtt
                                 {
                                     nodeIdsToSubscribe.Add(entry.Key);
                                 }
-                                client.SubscribeToDataChanges(nodeIdsToSubscribe, updateDataValue);
+                                if(!client.TrySubscribeToDataChanges(nodeIdsToSubscribe, updateDataValue, out uint subscriptionId))
+                                {
+                                    Logger.Error("Unable to subscribe");
+                                }
                             }
                             ReadInProgress = false;
                             firstReadFinished = true;
                         }
-
                     }
                     else
                     {

@@ -1,11 +1,12 @@
 ﻿// SPDX-License-Identifier: Apache-2.0
 // Copyright (c) 2025 FVA GmbH - interop4x. All rights reserved.
 
-using System.Reflection;
-using System.Security.Cryptography.X509Certificates;
 using NLog;
 using Opc.Ua;
 using Opc.Ua.Client;
+using System.Reflection;
+using System.Reflection.Metadata;
+using System.Security.Cryptography.X509Certificates;
 
 namespace umatiGateway.Core.OPC
 {
@@ -88,28 +89,29 @@ namespace umatiGateway.Core.OPC
                 this.ClientState.setState(OpcUaConnectionState.Disconnecting);
                 this.ClientStateHistory.Add(this.ClientState.Copy());
                 this.notifyOpcUaClientListeners();
-                try
+                Logger.Info("Disconnection OPC UA Session: {Session}", this.session);
+                if(this.TryCheckSession(out Session? checkedSession))
                 {
-                    Logger.Info("Disconnection OPC UA Session: {Session}", this.session);
-                    Session session = this.CheckSession();
-                    session.Close();
-                    session.Dispose();
-                    this.session = null;
-                    this.ClientState.setState(OpcUaConnectionState.Idle);
-                    this.ClientStateHistory.Add(this.ClientState.Copy());
+                    if(checkedSession != null)
+                    {
+                        try
+                        {
+                            checkedSession.Close();
+                            checkedSession.Dispose();
+                            this.session = null;
+                        } 
+                        catch (Exception exception)
+                        {
+                            this.ClientState.setState(OpcUaConnectionState.Error, exception.Message);
+                            this.ClientStateHistory.Add(this.ClientState.Copy());
+                            Logger.Error(exception, "Exception on disconnecting Session.");
+                        }
                 }
-                catch (Exception ex)
-                {
-                    this.ClientState.setState(OpcUaConnectionState.Error, ex.Message);
-                    this.ClientStateHistory.Add(this.ClientState.Copy());
-                    Logger.Error("Failed to disconnect session. {Exception}", ex);
-                    //throw new OpcUaException("Failed to disconnect session.", ex);
+                this.ClientState.setState(OpcUaConnectionState.Idle);
+                this.ClientStateHistory.Add(this.ClientState.Copy());
                 }
-                finally
-                {
-                    this.ClientState.ClearBlocked();
-                    this.notifyOpcUaClientListeners();
-                }
+                this.ClientState.ClearBlocked();
+                this.notifyOpcUaClientListeners();
             }
             else
             {
@@ -119,44 +121,59 @@ namespace umatiGateway.Core.OPC
 
         public Node? ReadNode(NodeId nodeId)
         {
-            Session session = this.CheckSession();
-            try
+            if (this.TryCheckSession(out Session? checkedSession) && checkedSession != null)
             {
-                return session.ReadNode(nodeId);
+                try
+                {
+                    return checkedSession.ReadNode(nodeId);
+                }
+                catch (ServiceResultException ex) when (ex.StatusCode == Opc.Ua.StatusCodes.BadNodeIdUnknown)
+                {
+                    Logger.Warn(ex, "Failed to read Node with NodeId: {nodeId}", nodeId);
+                    return null;
+                }
+                catch (Exception ex)
+                {
+                    throw new OpcUaException($"Failed to read Node with NodeId: {nodeId}", ex);
+                }
             }
-            catch (ServiceResultException ex) when (ex.StatusCode == Opc.Ua.StatusCodes.BadNodeIdUnknown)
+            else
             {
-                Logger.Warn(ex, "Failed to read Node with NodeId: {nodeId}", nodeId);
+                Logger.Error("Invalid Session.");
                 return null;
             }
-            catch (Exception ex)
-            {
-                throw new OpcUaException($"Failed to read Node with NodeId: {nodeId}", ex);
-            }
         }
-        public void ConnectEvents(OpcUaEventListener opcUaEventListener)
+        public bool TryConnectEvents(OpcUaEventListener opcUaEventListener)
         {
-            Session session = this.CheckSession();
-            opcUaEventListeners.Add(opcUaEventListener);
-            this.eventSubscription = new Subscription(session.DefaultSubscription);
-            eventSubscription.DisplayName = "ModelChangeEventSubscription";
-            eventSubscription.PublishingInterval = 1000;
-            MonitoredItem eventMonitoredItem = new MonitoredItem(eventSubscription.DefaultItem);
-            eventMonitoredItem.StartNodeId = ObjectIds.Server;
-            eventMonitoredItem.AttributeId = Attributes.EventNotifier;
-            eventMonitoredItem.MonitoringMode = MonitoringMode.Reporting;
+            if (this.TryCheckSession(out Session? checkedSession) && checkedSession != null)
+            {
+                opcUaEventListeners.Add(opcUaEventListener);
+                this.eventSubscription = new Subscription(checkedSession.DefaultSubscription);
+                eventSubscription.DisplayName = "ModelChangeEventSubscription";
+                eventSubscription.PublishingInterval = 1000;
+                MonitoredItem eventMonitoredItem = new MonitoredItem(eventSubscription.DefaultItem);
+                eventMonitoredItem.StartNodeId = ObjectIds.Server;
+                eventMonitoredItem.AttributeId = Attributes.EventNotifier;
+                eventMonitoredItem.MonitoringMode = MonitoringMode.Reporting;
 
-            EventFilter filter = new EventFilter();
-            filter.AddSelectClause(ObjectTypeIds.BaseEventType, BrowseNames.Changes);
-            filter.AddSelectClause(ObjectTypeIds.BaseEventType, BrowseNames.EventType);
-            filter.AddSelectClause(ObjectTypeIds.BaseEventType, BrowseNames.SourceNode);
+                EventFilter filter = new EventFilter();
+                filter.AddSelectClause(ObjectTypeIds.BaseEventType, BrowseNames.Changes);
+                filter.AddSelectClause(ObjectTypeIds.BaseEventType, BrowseNames.EventType);
+                filter.AddSelectClause(ObjectTypeIds.BaseEventType, BrowseNames.SourceNode);
 
-            eventMonitoredItem.Filter = filter;
+                eventMonitoredItem.Filter = filter;
 
-            eventMonitoredItem.Notification += HandleEventNotification;
-            eventSubscription.AddItem(eventMonitoredItem);
-            session.AddSubscription(eventSubscription);
-            eventSubscription.Create();
+                eventMonitoredItem.Notification += HandleEventNotification;
+                eventSubscription.AddItem(eventMonitoredItem);
+                checkedSession.AddSubscription(eventSubscription);
+                eventSubscription.Create();
+                return true;
+            }
+            else
+            {
+                Logger.Error("InvalidSession");
+                return false;
+            }
         }
         private void HandleEventNotification(MonitoredItem item, MonitoredItemNotificationEventArgs notification)
         {
@@ -211,105 +228,161 @@ namespace umatiGateway.Core.OPC
                 Logger.Info("OnMonitoredItemNotification error: {ExceptionMessage}", ex.Message);
             }
         }
-        public BrowseResultCollection BrowseNode(NodeId nodeId, BrowseDirection browseDirection, uint nodeClassMask, NodeId referenceTypeIds, bool includeSubTypes)
+        public bool TryBrowseNode(NodeId nodeId, BrowseDirection browseDirection, uint nodeClassMask, NodeId referenceTypeIds, bool includeSubTypes, out BrowseResultCollection browseResultCollection)
         {
-            Session session = this.CheckSession();
-            BrowseDescriptionCollection nodesToBrowse = new BrowseDescriptionCollection();
-            BrowseDescription nodeToBrowse = new BrowseDescription();
-            nodeToBrowse.NodeId = nodeId;
-            nodeToBrowse.BrowseDirection = browseDirection;
-            nodeToBrowse.NodeClassMask = nodeClassMask;
-            nodeToBrowse.ReferenceTypeId = referenceTypeIds;
-            nodeToBrowse.IncludeSubtypes = includeSubTypes;
-            nodeToBrowse.ResultMask = (uint)BrowseResultMask.All;
-            nodesToBrowse.Add(nodeToBrowse);
-            try
+            browseResultCollection = new BrowseResultCollection();
+            if (this.TryCheckSession(out Session? checkedSession) && checkedSession != null)
             {
-                session.Browse(null, null, 10000, nodesToBrowse, out BrowseResultCollection results, out DiagnosticInfoCollection diagnosticInfos);
-                return results;
+                BrowseDescriptionCollection nodesToBrowse = new BrowseDescriptionCollection();
+                BrowseDescription nodeToBrowse = new BrowseDescription();
+                nodeToBrowse.NodeId = nodeId;
+                nodeToBrowse.BrowseDirection = browseDirection;
+                nodeToBrowse.NodeClassMask = nodeClassMask;
+                nodeToBrowse.ReferenceTypeId = referenceTypeIds;
+                nodeToBrowse.IncludeSubtypes = includeSubTypes;
+                nodeToBrowse.ResultMask = (uint)BrowseResultMask.All;
+                nodesToBrowse.Add(nodeToBrowse);
+                try
+                {
+                    session.Browse(null, null, 10000, nodesToBrowse, out BrowseResultCollection results, out DiagnosticInfoCollection diagnosticInfos);
+                    browseResultCollection = results;
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error(ex, "Unable to browse Node:", nodeId);
+                    return false;
+                }
             }
-            catch (Exception ex)
+            else
             {
-                throw new OpcUaException("Unable to browse Node:", ex);
+                Logger.Error("Invalid Session");
+                return false;
             }
         }
         public BrowseResultCollection BrowseNode(NodeId nodeId, BrowseDirection browseDirection, uint nodeClassMask, NodeId referenceTypeIds, bool includeSubTypes, NodeId excludedReferenceTypeId)
         {
-            Session session = this.CheckSession();
-            BrowseDescriptionCollection nodesToBrowse = new BrowseDescriptionCollection();
-            BrowseDescription nodeToBrowse = new BrowseDescription();
-            nodeToBrowse.NodeId = nodeId;
-            nodeToBrowse.BrowseDirection = browseDirection;
-            nodeToBrowse.NodeClassMask = nodeClassMask;
-            nodeToBrowse.ReferenceTypeId = referenceTypeIds;
-            nodeToBrowse.IncludeSubtypes = includeSubTypes;
-            nodesToBrowse.Add(nodeToBrowse);
-            BrowseDescription excludedNodeToBrowse = new BrowseDescription();
-            excludedNodeToBrowse.NodeId = nodeId;
-            excludedNodeToBrowse.BrowseDirection = browseDirection;
-            excludedNodeToBrowse.NodeClassMask = nodeClassMask;
-            excludedNodeToBrowse.ReferenceTypeId = excludedReferenceTypeId;
-            excludedNodeToBrowse.IncludeSubtypes = true;
-            nodesToBrowse.Add(excludedNodeToBrowse);
-            session.Browse(null, null, 10000, nodesToBrowse, out BrowseResultCollection results, out DiagnosticInfoCollection diagnosticInfos);
-            return results;
+            if (this.TryCheckSession(out Session? checkedSession) && checkedSession != null)
+            {
+                BrowseDescriptionCollection nodesToBrowse = new BrowseDescriptionCollection();
+                BrowseDescription nodeToBrowse = new BrowseDescription();
+                nodeToBrowse.NodeId = nodeId;
+                nodeToBrowse.BrowseDirection = browseDirection;
+                nodeToBrowse.NodeClassMask = nodeClassMask;
+                nodeToBrowse.ReferenceTypeId = referenceTypeIds;
+                nodeToBrowse.IncludeSubtypes = includeSubTypes;
+                nodesToBrowse.Add(nodeToBrowse);
+                BrowseDescription excludedNodeToBrowse = new BrowseDescription();
+                excludedNodeToBrowse.NodeId = nodeId;
+                excludedNodeToBrowse.BrowseDirection = browseDirection;
+                excludedNodeToBrowse.NodeClassMask = nodeClassMask;
+                excludedNodeToBrowse.ReferenceTypeId = excludedReferenceTypeId;
+                excludedNodeToBrowse.IncludeSubtypes = true;
+                nodesToBrowse.Add(excludedNodeToBrowse);
+                session.Browse(null, null, 10000, nodesToBrowse, out BrowseResultCollection results, out DiagnosticInfoCollection diagnosticInfos);
+                return results;
+            } 
+            else
+            {
+                Logger.Error("Invalid Session.");
+                //Remove after Refactoring
+                return new BrowseResultCollection();
+            }
         }
-        public List<NodeId> BrowseNodeIds(BrowseDescriptionCollection included, BrowseDescriptionCollection? excluded = null)
+        public bool TryBrowseNodeIds(BrowseDescriptionCollection included, out List<NodeId> browsedNodeIds, BrowseDescriptionCollection? excluded = null)
         {
-            List<NodeId> resultNodeIds = new List<NodeId>();
+            browsedNodeIds = new List<NodeId>();
             int includedCount = included.Count;
             int excludedCount = 0;
-            Session session = this.CheckSession();
-            BrowseDescriptionCollection nodesToBrowse = new BrowseDescriptionCollection();
-            nodesToBrowse.AddRange(included);
-            if (excluded != null)
+            if (this.TryCheckSession(out Session? checkedSession) && checkedSession != null)
             {
-                excludedCount = excluded.Count;
-                nodesToBrowse.AddRange(excluded);
-            }
-            ResponseHeader responseHeader = session.Browse(null, null, 10000, nodesToBrowse, out BrowseResultCollection browseResults, out DiagnosticInfoCollection diagnosticInfos);
-            for (int i = 0; i < browseResults.Count; i++)
-            {
-                BrowseResult browseResult = browseResults[i];
-                ReferenceDescriptionCollection references = browseResult.References;
-                foreach (ReferenceDescription reference in references)
+                BrowseDescriptionCollection nodesToBrowse = new BrowseDescriptionCollection();
+                nodesToBrowse.AddRange(included);
+                if (excluded != null)
                 {
-                    NodeId nodeId = new NodeId(reference.NodeId.Identifier, reference.NodeId.NamespaceIndex);
-                    if (i < includedCount)
+                    excludedCount = excluded.Count;
+                    nodesToBrowse.AddRange(excluded);
+                }
+                try
+                {
+                    ResponseHeader responseHeader = session.Browse(null, null, 10000, nodesToBrowse, out BrowseResultCollection browseResults, out DiagnosticInfoCollection diagnosticInfos);
+                    for (int i = 0; i < browseResults.Count; i++)
                     {
-                        resultNodeIds.Add(nodeId);
-                    }
-                    else
-                    {
-                        if (resultNodeIds.Contains(nodeId))
+                        BrowseResult browseResult = browseResults[i];
+                        ReferenceDescriptionCollection references = browseResult.References;
+                        foreach (ReferenceDescription reference in references)
                         {
-                            resultNodeIds.Remove(nodeId);
+                            NodeId nodeId = new NodeId(reference.NodeId.Identifier, reference.NodeId.NamespaceIndex);
+                            if (i < includedCount)
+                            {
+                                browsedNodeIds.Add(nodeId);
+                            }
+                            else
+                            {
+                                if (browsedNodeIds.Contains(nodeId))
+                                {
+                                    browsedNodeIds.Remove(nodeId);
+                                }
+                            }
                         }
                     }
+                    return true;
+                }
+                catch (Exception exception)
+                {
+                    Logger.Error(exception, "Unable to browse NodeIds.");
+                    return false;
                 }
             }
-            return resultNodeIds;
+            else
+            {
+                Logger.Error("Invalid Session.");
+                return false;
+            }
         }
-        public NodeId? BrowseFirstNodeId(BrowseDescriptionCollection browseDescriptionCollection, BrowseDescriptionCollection? excluded = null)
+        public bool TryBrowseFirstNodeId(BrowseDescriptionCollection browseDescriptionCollection, out NodeId? browsedNodeId, BrowseDescriptionCollection? excluded = null)
         {
-            List<NodeId> nodeIds = this.BrowseNodeIds(browseDescriptionCollection, excluded);
-            return nodeIds.FirstOrDefault();
+            browsedNodeId = null;
+            try
+            {
+                if (this.TryBrowseNodeIds(browseDescriptionCollection, out List<NodeId> nodeIds, excluded))
+                {
+                    browsedNodeId = nodeIds.FirstOrDefault();
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch(Exception exception)
+            {
+                Logger.Error(exception, "Unable to browse FirstNodeIds.");
+                return false;
+            }
         }
         public bool TryBrowseLocalNodeIds(NodeId rootNodeId, BrowseDirection browseDirection, uint nodeClassMask, NodeId referenceTypeIds, bool includeSubTypes, out List<NodeId> localNodeIds)
         {
             localNodeIds = new List<NodeId>();
             try
             {
-                BrowseResultCollection browseResults = BrowseNode(rootNodeId, browseDirection, nodeClassMask, referenceTypeIds, includeSubTypes);
-                foreach (BrowseResult browseResult in browseResults)
+                if (TryBrowseNode(rootNodeId, browseDirection, nodeClassMask, referenceTypeIds, includeSubTypes, out BrowseResultCollection browseResults))
                 {
-                    ReferenceDescriptionCollection references = browseResult.References;
-                    foreach (ReferenceDescription reference in references)
+                    foreach (BrowseResult browseResult in browseResults)
                     {
-                        localNodeIds.Add(new NodeId(reference.NodeId.Identifier, reference.NodeId.NamespaceIndex));
+                        ReferenceDescriptionCollection references = browseResult.References;
+                        foreach (ReferenceDescription reference in references)
+                        {
+                            localNodeIds.Add(new NodeId(reference.NodeId.Identifier, reference.NodeId.NamespaceIndex));
+                        }
                     }
+                    return true;
                 }
-                return true;
+                else
+                {
+                    Logger.Error("Unable to browse NodeIds for {RootNodeId}", rootNodeId);
+                    return false;
+                }
             }
             catch (Exception exception)
             {
@@ -317,30 +390,38 @@ namespace umatiGateway.Core.OPC
                 return false;
             }
         }
-        public List<NodeId> BrowseLocalNodeIdsExcludeReference(NodeId rootNodeId, BrowseDirection browseDirection, uint nodeClassMask, NodeId referenceTypeIds, bool includeSubTypes, NodeId excludedReferenceTypeId)
+        public bool TryBrowseLocalNodeIdsExcludeReference(NodeId rootNodeId, BrowseDirection browseDirection, uint nodeClassMask, NodeId referenceTypeIds, bool includeSubTypes, NodeId excludedReferenceTypeId, out List<NodeId> localNodeIds)
         {
-            List<NodeId> nodeList = new List<NodeId>();
-            BrowseResultCollection browseResults = BrowseNode(rootNodeId, browseDirection, nodeClassMask, referenceTypeIds, includeSubTypes, excludedReferenceTypeId);
-            if (browseResults.Count == 2)
+            localNodeIds = new List<NodeId>();
+            try
             {
-                BrowseResult allNodesResult = browseResults[0];
-                ReferenceDescriptionCollection allReferences = allNodesResult.References;
-                foreach (ReferenceDescription reference in allReferences)
+                BrowseResultCollection browseResults = BrowseNode(rootNodeId, browseDirection, nodeClassMask, referenceTypeIds, includeSubTypes, excludedReferenceTypeId);
+                if (browseResults.Count == 2)
                 {
-                    nodeList.Add(new NodeId(reference.NodeId.Identifier, reference.NodeId.NamespaceIndex));
+                    BrowseResult allNodesResult = browseResults[0];
+                    ReferenceDescriptionCollection allReferences = allNodesResult.References;
+                    foreach (ReferenceDescription reference in allReferences)
+                    {
+                        localNodeIds.Add(new NodeId(reference.NodeId.Identifier, reference.NodeId.NamespaceIndex));
+                    }
+                    BrowseResult excludedNodesResult = browseResults[1];
+                    ReferenceDescriptionCollection excludedReferences = excludedNodesResult.References;
+                    foreach (ReferenceDescription excludedReference in excludedReferences)
+                    {
+                        localNodeIds.Remove(new NodeId(excludedReference.NodeId.Identifier, excludedReference.NodeId.NamespaceIndex));
+                    }
                 }
-                BrowseResult excludedNodesResult = browseResults[1];
-                ReferenceDescriptionCollection excludedReferences = excludedNodesResult.References;
-                foreach (ReferenceDescription excludedReference in excludedReferences)
+                else
                 {
-                    nodeList.Remove(new NodeId(excludedReference.NodeId.Identifier, excludedReference.NodeId.NamespaceIndex));
+                    Logger.Error("Number of BrowseResults does not match 2.");
                 }
+                return true;
             }
-            else
+            catch(Exception exception)
             {
-                Logger.Error("Number of BrowseResults does not match 2.");
+                Logger.Error(exception, "Unable to browse NodeIds for {RootNodeId}", rootNodeId);
+                return false;
             }
-            return nodeList;
         }
 
         public async Task<bool> ConnectAsync()
@@ -497,10 +578,17 @@ namespace umatiGateway.Core.OPC
                     {
                         this.publishedDataSubscription.Dispose();
                         this.publishedDataSubscription = null;
-                        this.SubscribeToDataChanges(this.subscribedNodeIds, this.publishedDataEventHandler);
+                        if(!this.TrySubscribeToDataChanges(this.subscribedNodeIds, this.publishedDataEventHandler, out uint subscriptionId))
+                        {
+                            Logger.Error("Unable to subscribe");
+                        }
                         foreach (OpcUaEventListener eventListener in this.opcUaEventListeners)
                         {
-                            this.ConnectEvents(eventListener);
+
+                            if(!this.TryConnectEvents(eventListener))
+                            {
+                                Logger.Error("Unable to Connect Events!");
+                            }
                         }
                     }
                 }
@@ -623,22 +711,25 @@ namespace umatiGateway.Core.OPC
                 Logger.Info("Untrusted certificate rejected. Subject = {0}", e.Certificate.Subject);
             }
         }
-        public Session CheckSession()
+        public bool TryCheckSession(out Session? session)
         {
+            session = null;
             try
             {
-                if (this.session != null && session.Connected)
+                if (this.session != null && this.session.Connected)
                 {
-                    return this.session;
+                    session = this.session;
+                    return true;
                 }
                 else
                 {
-                    throw new OpcUaException("Opc Ua Session not connected");
+                    return false;
                 }
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                throw new OpcUaException("Exception on checking Opc Session state.", ex);
+                Logger.Error(exception, "Invalid Session!");
+                return false;
             }
         }
 
@@ -665,31 +756,46 @@ namespace umatiGateway.Core.OPC
             }
         }
 
-        public List<NodeId> BrowseLocalNodeIdsWithTypeDefinition(NodeId rootNodeId, BrowseDirection browseDirection, uint nodeClassMask, NodeId referenceTypeId, bool includeSubTypes, NodeId expectedTypeDefinition)
+        public bool TryBrowseLocalNodeIdsWithTypeDefinition(NodeId rootNodeId, BrowseDirection browseDirection, uint nodeClassMask, NodeId referenceTypeId, bool includeSubTypes, NodeId expectedTypeDefinition, out List<NodeId> localNodeIds)
         {
-            Session session = this.CheckSession();
-            List<NodeId> filteredNodeIds = new List<NodeId>();
-            if (TryBrowseLocalNodeIds(rootNodeId, browseDirection, nodeClassMask, referenceTypeId, includeSubTypes, out List<NodeId> nodeIds))
+            localNodeIds = new List<NodeId>();
+            try
             {
-                foreach (NodeId nodeId in nodeIds)
+                if (this.TryCheckSession(out Session? checkedSession) && checkedSession != null)
                 {
-                    if (TryBrowseTypeDefinition(nodeId, out NodeId? typeDefinition))
+                    if (TryBrowseLocalNodeIds(rootNodeId, browseDirection, nodeClassMask, referenceTypeId, includeSubTypes, out List<NodeId> nodeIds))
                     {
-                        if (typeDefinition != null)
+                        foreach (NodeId nodeId in nodeIds)
                         {
-                            if (typeDefinition == expectedTypeDefinition)
+                            if (TryBrowseTypeDefinition(nodeId, out NodeId? typeDefinition))
                             {
-                                filteredNodeIds.Add(nodeId);
+                                if (typeDefinition != null)
+                                {
+                                    if (typeDefinition == expectedTypeDefinition)
+                                    {
+                                        localNodeIds.Add(nodeId);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                Logger.Error("Unable to browse TypeDefinition");
                             }
                         }
                     }
-                    else
-                    {
-                        Logger.Error("Unable to browse TypeDefinition");
-                    }
+                    return true;
+                }
+                else
+                {
+                    Logger.Error("Invalid Session.");
+                    return false;
                 }
             }
-            return filteredNodeIds;
+            catch(Exception exception)
+            {
+                Logger.Error(exception, "Unable to browse NodeIds for {RootNodeId}", rootNodeId);
+                return false;
+            }
         }
 
         public bool TryBrowseTypeDefinition(NodeId nodeId, out NodeId? typeDefinitionNodeId)
@@ -697,17 +803,24 @@ namespace umatiGateway.Core.OPC
             typeDefinitionNodeId = null;
             try
             {
-                BrowseResultCollection browseResults = BrowseNode(nodeId, BrowseDirection.Forward, (uint)NodeClass.ObjectType | (uint)NodeClass.VariableType, ReferenceTypes.HasTypeDefinition, false);
-                foreach (BrowseResult browseResult in browseResults)
+                if (TryBrowseNode(nodeId, BrowseDirection.Forward, (uint)NodeClass.ObjectType | (uint)NodeClass.VariableType, ReferenceTypes.HasTypeDefinition, false, out BrowseResultCollection browseResults))
                 {
-                    ReferenceDescriptionCollection references = browseResult.References;
-                    foreach (ReferenceDescription reference in references)
+                    foreach (BrowseResult browseResult in browseResults)
                     {
-                        typeDefinitionNodeId = new NodeId(reference.NodeId.Identifier, reference.NodeId.NamespaceIndex);
-                        break;
+                        ReferenceDescriptionCollection references = browseResult.References;
+                        foreach (ReferenceDescription reference in references)
+                        {
+                            typeDefinitionNodeId = new NodeId(reference.NodeId.Identifier, reference.NodeId.NamespaceIndex);
+                            break;
+                        }
                     }
+                    return true;
                 }
-                return true;
+                else
+                {
+                    Logger.Error("Unable to browse TypeDefinition for NodeId: {NodeId}", nodeId);
+                    return false;
+                }
             }
             catch (Exception exception)
             {
@@ -715,194 +828,278 @@ namespace umatiGateway.Core.OPC
                 return false;
             }
         }
-        public NodeId? BrowseLocalNodeId(NodeId rootNodeId, BrowseDirection browseDirection, uint nodeClassMask, NodeId referenceTypeIds, bool includeSubTypes)
+        public bool TryBrowseLocalNodeId(NodeId rootNodeId, BrowseDirection browseDirection, uint nodeClassMask, NodeId referenceTypeIds, bool includeSubTypes, out NodeId? localNodeId)
         {
+            localNodeId = null;
             if (TryBrowseLocalNodeIds(rootNodeId, browseDirection, nodeClassMask, referenceTypeIds, includeSubTypes, out List<NodeId> nodeIds))
             {
                 foreach (NodeId nodeId in nodeIds)
                 {
-                    return nodeId;
+                    localNodeId = nodeId;
+                    return true;
                 }
+                return true;
             }
-            return null;
-        }
-        public NodeId? BrowseLocalNodeIdWithBrowseName(NodeId rootNodeId, BrowseDirection browseDirection, uint nodeClassMask, NodeId referenceTypeIds, bool includeSubTypes, QualifiedName browseName)
-        {
-            BrowseResultCollection browseResults = BrowseNode(rootNodeId, browseDirection, nodeClassMask, referenceTypeIds, includeSubTypes);
-            foreach (BrowseResult browseResult in browseResults)
+            else
             {
-                ReferenceDescriptionCollection references = browseResult.References;
-                foreach (ReferenceDescription reference in references)
+                return false;
+            }
+        }
+        public bool TryBrowseLocalNodeIdWithBrowseName(NodeId rootNodeId, BrowseDirection browseDirection, uint nodeClassMask, NodeId referenceTypeIds, bool includeSubTypes, QualifiedName browseName, out NodeId? localNodeId)
+        {
+            localNodeId = null;
+            try
+            {
+                if (TryBrowseNode(rootNodeId, browseDirection, nodeClassMask, referenceTypeIds, includeSubTypes, out BrowseResultCollection browseResults))
                 {
-
-                    NodeId innerNodeId = new NodeId(reference.NodeId.Identifier, reference.NodeId.NamespaceIndex);
-                    Node? node = ReadNode(innerNodeId);
-                    if (node != null)
+                    foreach (BrowseResult browseResult in browseResults)
                     {
-                        if (node.BrowseName == browseName)
+                        ReferenceDescriptionCollection references = browseResult.References;
+                        foreach (ReferenceDescription reference in references)
                         {
-                            return innerNodeId;
+
+                            NodeId innerNodeId = new NodeId(reference.NodeId.Identifier, reference.NodeId.NamespaceIndex);
+                            Node? node = ReadNode(innerNodeId);
+                            if (node != null)
+                            {
+                                if (node.BrowseName == browseName)
+                                {
+                                    localNodeId = innerNodeId;
+                                    return true;
+                                }
+                            }
                         }
                     }
+                    return true;
+                }
+                else
+                {
+                    return false;
                 }
             }
-            return null;
-        }
-        public List<NodeId> GetOptionalAndMandatoryPlaceholders(NodeId typeDefinition)
-        {
-            List<NodeId> nodeIds = new List<NodeId>();
-            //Look for the Children
-            BrowseResultCollection browseResultCollection = BrowseNode(typeDefinition, BrowseDirection.Forward, 0, ReferenceTypeIds.HasComponent, true);
-            foreach (BrowseResult browseResult in browseResultCollection)
+            catch (Exception e)
             {
-                BrowseDescriptionCollection browseDescriptions = new BrowseDescriptionCollection();
-                foreach (ReferenceDescription reference in browseResult.References)
+                return false;
+            }
+        }
+        public bool TryGetOptionalAndMandatoryPlaceholders(NodeId typeDefinition, out List<NodeId> optionalMandatoryPlaceholders)
+        {
+            optionalMandatoryPlaceholders = new List<NodeId>();
+            //Look for the Children
+            try
+            {
+                if (TryBrowseNode(typeDefinition, BrowseDirection.Forward, 0, ReferenceTypeIds.HasComponent, true, out BrowseResultCollection browseResultCollection))
                 {
-                    NodeId nodeId = (NodeId)reference.NodeId;
-                    browseDescriptions.Add(BrowseUtils.GetModellingRule(nodeId));
-                }
-                if (browseDescriptions.Count > 0)
-                {
-                    BrowseResultCollection modelRuleCollection = Browse(browseDescriptions);
-                    for (int i = 0; i < modelRuleCollection.Count; i++)
+                    foreach (BrowseResult browseResult in browseResultCollection)
                     {
-                        BrowseResult modelRuleBrowseResult = modelRuleCollection[i];
-                        foreach (ReferenceDescription modelRuleReference in modelRuleBrowseResult.References)
+                        BrowseDescriptionCollection browseDescriptions = new BrowseDescriptionCollection();
+                        foreach (ReferenceDescription reference in browseResult.References)
                         {
-                            NodeId nodeId = (NodeId)modelRuleReference.NodeId;
-                            if (nodeId == ObjectIds.ModellingRule_MandatoryPlaceholder || nodeId == ObjectIds.ModellingRule_OptionalPlaceholder)
+                            NodeId nodeId = (NodeId)reference.NodeId;
+                            browseDescriptions.Add(BrowseUtils.GetModellingRule(nodeId));
+                        }
+                        if (browseDescriptions.Count > 0)
+                        {
+                            BrowseResultCollection modelRuleCollection = Browse(browseDescriptions);
+                            for (int i = 0; i < modelRuleCollection.Count; i++)
                             {
-                                nodeIds.Add(browseDescriptions[i].NodeId);
+                                BrowseResult modelRuleBrowseResult = modelRuleCollection[i];
+                                foreach (ReferenceDescription modelRuleReference in modelRuleBrowseResult.References)
+                                {
+                                    NodeId nodeId = (NodeId)modelRuleReference.NodeId;
+                                    if (nodeId == ObjectIds.ModellingRule_MandatoryPlaceholder || nodeId == ObjectIds.ModellingRule_OptionalPlaceholder)
+                                    {
+                                        optionalMandatoryPlaceholders.Add(browseDescriptions[i].NodeId);
+                                    }
+                                }
                             }
                         }
                     }
                 }
-            }
-            return nodeIds;
-        }
-        public BrowseResultCollection Browse(BrowseDescription browseDescription)
-        {
-            Session session = this.CheckSession();
-            try
+                else
+                {
+                    return false;
+                }
+            } 
+            catch(Exception exception)
             {
-                BrowseDescriptionCollection browseDescriptionCollection = new BrowseDescriptionCollection(new BrowseDescription[] { browseDescription });
-                session.Browse(null, null, 10000, browseDescriptionCollection, out BrowseResultCollection results, out DiagnosticInfoCollection diagnosticInfos);
-                return results;
+                Logger.Error(exception, "Unable to browse OptionalAndMandatoryPlaceholders: {NodeId}", typeDefinition);
+                return false;
             }
-            catch (Exception exception)
-            {
-                throw new OpcUaException($"Unable to browse Browsedescription: {browseDescription}", exception);
-            }
+            return true;
         }
         public BrowseResultCollection Browse(BrowseDescriptionCollection browseDescriptionCollection)
         {
-            Session session = this.CheckSession();
+            if (this.TryCheckSession(out Session? checkedSession) && checkedSession != null)
+            {
+                try
+                {
+                    checkedSession.Browse(null, null, 10000, browseDescriptionCollection, out BrowseResultCollection results, out DiagnosticInfoCollection diagnosticInfos);
+                    return results;
+                }
+                catch (Exception exception)
+                {
+                    throw new OpcUaException($"Unable to browse browseDescriptions: {browseDescriptionCollection}", exception);
+                }
+            }
+            else
+            {
+                Logger.Error("Invalid Session");
+                return new BrowseResultCollection();
+            }
+        }
+        public bool TryBrowseAllHierarchicalSubType(NodeId nodeId, List<NodeId> subTypeList)
+        {
             try
             {
-                session.Browse(null, null, 10000, browseDescriptionCollection, out BrowseResultCollection results, out DiagnosticInfoCollection diagnosticInfos);
-                return results;
-            }
+                if (TryBrowseNode(nodeId, BrowseDirection.Forward, (uint)NodeClass.ObjectType | (uint)NodeClass.VariableType, ReferenceTypes.HasSubtype, false, out BrowseResultCollection browseResults))
+                {
+                    foreach (BrowseResult browseResult in browseResults)
+                    {
+                        ReferenceDescriptionCollection references = browseResult.References;
+                        foreach (ReferenceDescription reference in references)
+                        {
+                            NodeId subTypeId = new NodeId(reference.NodeId.Identifier, reference.NodeId.NamespaceIndex);
+                            if (this.TryBrowseAllHierarchicalSubType(subTypeId, subTypeList))
+                            {
+                                subTypeList.Add(subTypeId);
+                            }
+                            else
+                            {
+                                return false;
+                            }
+                        }
+                    }
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            } 
             catch (Exception exception)
             {
-                throw new OpcUaException($"Unable to browse browseDescriptions: {browseDescriptionCollection}", exception);
+                Logger.Error(exception, "Error on Browsing Hierarchical SubTypes");
+                return false;
             }
         }
-        public List<NodeId> BrowseAllHierarchicalSubType(NodeId nodeId, List<NodeId> subTypeList)
+        public bool TryGetTypeClassNodesForNodeId(NodeId nodeId, out List<TypeClassNode> typeClassNodes, RelativePathElementCollection? pathToChild = null)
         {
-            BrowseResultCollection browseResults = BrowseNode(nodeId, BrowseDirection.Forward, (uint)NodeClass.ObjectType | (uint)NodeClass.VariableType, ReferenceTypes.HasSubtype, false);
-            foreach (BrowseResult browseResult in browseResults)
+            typeClassNodes = new List<TypeClassNode>();
+            try
             {
-                ReferenceDescriptionCollection references = browseResult.References;
-                foreach (ReferenceDescription reference in references)
+                Node? node = ReadNode(nodeId);
+                if (node != null)
                 {
-                    NodeId subTypeId = new NodeId(reference.NodeId.Identifier, reference.NodeId.NamespaceIndex);
-                    BrowseAllHierarchicalSubType(subTypeId, subTypeList);
-                    subTypeList.Add(subTypeId);
-                }
-            }
-            return subTypeList;
-        }
-        public List<TypeClassNode> GetTypeClassNodesForNodeId(NodeId nodeId, RelativePathElementCollection? pathToChild = null)
-        {
-            List<TypeClassNode> typeClassNodes = new List<TypeClassNode>();
-            Node? node = ReadNode(nodeId);
-            if (node != null)
-            {
-                RelativePath relativePath = new RelativePath(node.BrowseName);
-                if (pathToChild != null)
-                {
-                    relativePath.Elements.AddRange(pathToChild);
-                }
-                if (TryBrowseLocalNodeIds(nodeId, BrowseDirection.Inverse, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true, out List<NodeId> parentNodeIds))
-                {
-                    foreach (NodeId parentNodeId in parentNodeIds)
+                    RelativePath relativePath = new RelativePath(node.BrowseName);
+                    if (pathToChild != null)
                     {
-                        if (TryBrowseTypeDefinition(parentNodeId, out NodeId? parentTypeDefinition))
+                        relativePath.Elements.AddRange(pathToChild);
+                    }
+                    if (TryBrowseLocalNodeIds(nodeId, BrowseDirection.Inverse, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true, out List<NodeId> parentNodeIds))
+                    {
+                        foreach (NodeId parentNodeId in parentNodeIds)
                         {
-                            if (parentTypeDefinition != null)
+                            if (TryBrowseTypeDefinition(parentNodeId, out NodeId? parentTypeDefinition))
                             {
-                                typeClassNodes.Add(new TypeClassNode(parentTypeDefinition, relativePath.Elements));
+                                if (parentTypeDefinition != null)
+                                {
+                                    typeClassNodes.Add(new TypeClassNode(parentTypeDefinition, relativePath.Elements));
+                                }
+                                if (TryGetTypeClassNodesForNodeId(parentNodeId, out List<TypeClassNode> childDictionary, relativePath.Elements))
+                                {
+                                    foreach (TypeClassNode typeclassnode in childDictionary)
+                                    {
+                                        typeClassNodes.Add(typeclassnode);
+                                    }
+                                } 
+                                else
+                                {
+                                    Logger.Error("Unable to BrowseTypedefinition.");
+                                }
                             }
-                            List<TypeClassNode> childDictionary = GetTypeClassNodesForNodeId(parentNodeId, relativePath.Elements);
-                            foreach (TypeClassNode typeclassnode in childDictionary)
+                            else
                             {
-                                typeClassNodes.Add(typeclassnode);
+                                Logger.Error("Unable to BrowseTypedefinition.");
                             }
                         }
-                        else
+                    }
+                }
+            }
+            catch(Exception exception)
+            {
+                Logger.Error(exception, "Unable to browse TypeClassNodes for nodeId: {NodeId}", nodeId);
+                return false;
+            }
+            return true;
+        }
+        public bool TryGetOptionalAndMandatoryPlaceholdersForTypeClassNodes(List<TypeClassNode> typeClassNodes, out List <NodeId> optionalMandatoryPlaceholders)
+        {
+            optionalMandatoryPlaceholders = new List<NodeId>();
+            if (this.TryCheckSession(out Session? checkedSession) && checkedSession != null)
+            {
+                BrowsePathCollection browsePathCollection = new BrowsePathCollection();
+                foreach (TypeClassNode typeClassNode in typeClassNodes)
+                {
+                    BrowsePath browsePath = new BrowsePath();
+                    browsePath.StartingNode = typeClassNode.StartNodeId;
+                    RelativePath relativePath = new RelativePath();
+                    relativePath.Elements = typeClassNode.RelativePathElements;
+                    browsePath.RelativePath = relativePath;
+                    browsePathCollection.Add(browsePath);
+                }
+                if (browsePathCollection.Count > 0)
+                {
+                    if (session != null)
+                    {
+                        try
+                        {
+                            checkedSession.TranslateBrowsePathsToNodeIds(null, browsePathCollection, out BrowsePathResultCollection results, out DiagnosticInfoCollection diagnosticInfos);
+                            foreach (BrowsePathResult result in results)
+                            {
+                                if (StatusCode.IsGood(result.StatusCode))
+                                {
+                                    if (result.Targets.Count > 0)
+                                    {
+                                        NodeId nodeId = ExpandedNodeId.ToNodeId(result.Targets[0].TargetId, checkedSession.NamespaceUris);
+                                        optionalMandatoryPlaceholders.Add(nodeId);
+                                    }
+                                }
+                            }
+                        }
+                        catch (Exception e)
                         {
                             Logger.Error("Unable to BrowseTypedefinition.");
+                            return false;
                         }
                     }
                 }
+                return true;
             }
-            return typeClassNodes;
-        }
-        public List<NodeId> GetOptionalAndMandatoryPlaceholdersForTypeClassNodes(List<TypeClassNode> typeClassNodes)
-        {
-            Session session = this.CheckSession();
-            List<NodeId> typeClassesFromParent = new List<NodeId>();
-            BrowsePathCollection browsePathCollection = new BrowsePathCollection();
-            foreach (TypeClassNode typeClassNode in typeClassNodes)
+            else
             {
-                BrowsePath browsePath = new BrowsePath();
-                browsePath.StartingNode = typeClassNode.StartNodeId;
-                RelativePath relativePath = new RelativePath();
-                relativePath.Elements = typeClassNode.RelativePathElements;
-                browsePath.RelativePath = relativePath;
-                browsePathCollection.Add(browsePath);
+                Logger.Error("Invalid Session");
+                return false;
             }
-            if (browsePathCollection.Count > 0)
-            {
-                if (session != null)
-                {
-                    session.TranslateBrowsePathsToNodeIds(null, browsePathCollection, out BrowsePathResultCollection results, out DiagnosticInfoCollection diagnosticInfos);
-                    foreach (BrowsePathResult result in results)
-                    {
-                        if (StatusCode.IsGood(result.StatusCode))
-                        {
-                            if (result.Targets.Count > 0)
-                            {
-                                NodeId nodeId = ExpandedNodeId.ToNodeId(result.Targets[0].TargetId, GetNamespaceTable());
-                                typeClassesFromParent.Add(nodeId);
-                            }
-                        }
-                    }
-                }
-            }
-            return typeClassesFromParent;
         }
 
         public DataValue? ReadValue(NodeId nodeId)
         {
-            Session session = this.CheckSession();
-            try
+            if (this.TryCheckSession(out Session? checkedSession) && checkedSession != null)
             {
-                return session.ReadValue(nodeId);
+                try
+                {
+                    return session.ReadValue(nodeId);
+                }
+                catch (Exception exception)
+                {
+                    throw new OpcUaException($"Unable to read Datavalue for NodeId: {nodeId}", exception);
+                }
             }
-            catch (Exception exception)
+            else
             {
-                throw new OpcUaException($"Unable to read Datavalue for NodeId: {nodeId}", exception);
+                Logger.Error("Invalid Session");
+                throw new OpcUaException($"Invalid Session");
             }
         }
 
@@ -910,57 +1107,75 @@ namespace umatiGateway.Core.OPC
         {
             return this.session;
         }
-        public NamespaceTable GetNamespaceTable()
+        public bool TryGetNamespaceTable(out NamespaceTable namespaceTable)
         {
-            Session session = this.CheckSession();
-            try
+            namespaceTable = new NamespaceTable();
+            if (this.TryCheckSession(out Session? checkedSession) && session != null)
             {
-                DataValue dv = session.ReadValue(VariableIds.Server_NamespaceArray);
-                string[] namespaces = (string[])dv.Value;
-                return new NamespaceTable(namespaces);
+                try
+                {
+                    DataValue dv = checkedSession.ReadValue(VariableIds.Server_NamespaceArray);
+                    string[] namespaces = (string[])dv.Value;
+                    namespaceTable = new NamespaceTable(namespaces);
+                    return true;
+                }
+                catch (Exception exception)
+                {
+                    Logger.Error(exception, "Unable to get NamespaceTable from server.");
+                    return false;
+                }
             }
-            catch (Exception exception)
+            else
             {
-                throw new OpcUaException("Unable to get NamespaceTable from server.", exception);
+                Logger.Error("Invalid Session");
+                return false;
             }
         }
-        public uint SubscribeToDataChanges(List<NodeId> nodeIds, MonitoredItemNotificationEventHandler eventHandler)
+        public bool TrySubscribeToDataChanges(List<NodeId> nodeIds, MonitoredItemNotificationEventHandler eventHandler, out uint subscriptionId)
         {
+            subscriptionId = 0;
             this.subscribedNodeIds = nodeIds;
             this.publishedDataEventHandler = eventHandler;
-            Session session = this.CheckSession();
-            uint subscriptionId = 0;
-            try
+            if (this.TryCheckSession(out Session? checkedSession) && checkedSession != null)
             {
-                if (this.publishedDataSubscription == null)
+                try
                 {
-                    this.publishedDataSubscription = new Subscription(session.DefaultSubscription);
-                    this.publishedDataSubscription.DisplayName = "Subscription for NodeIds";
-                    this.publishedDataSubscription.PublishingEnabled = true;
-                    this.publishedDataSubscription.PublishingInterval = 1000;
-                    session.AddSubscription(publishedDataSubscription);
-                    publishedDataSubscription.Create();
-                    subscriptionId = publishedDataSubscription.Id;
-                }
+                    if (this.publishedDataSubscription == null)
+                    {
+                        this.publishedDataSubscription = new Subscription(session.DefaultSubscription);
+                        this.publishedDataSubscription.DisplayName = "Subscription for NodeIds";
+                        this.publishedDataSubscription.PublishingEnabled = true;
+                        this.publishedDataSubscription.PublishingInterval = 1000;
+                        checkedSession.AddSubscription(publishedDataSubscription);
+                        publishedDataSubscription.Create();
+                        subscriptionId = publishedDataSubscription.Id;
+                    }
 
-                foreach (NodeId nodeId in nodeIds)
+                    foreach (NodeId nodeId in nodeIds)
+                    {
+                        MonitoredItem intMonitoredItem = new MonitoredItem(publishedDataSubscription.DefaultItem);
+                        intMonitoredItem.StartNodeId = nodeId;
+                        intMonitoredItem.AttributeId = Attributes.Value;
+                        intMonitoredItem.DisplayName = "Subscription";
+                        intMonitoredItem.SamplingInterval = 1000;
+                        intMonitoredItem.Notification += eventHandler;
+
+                        publishedDataSubscription.AddItem(intMonitoredItem);
+                    }
+                    publishedDataSubscription.ApplyChanges();
+                    return true;
+                }
+                catch (Exception exception)
                 {
-                    MonitoredItem intMonitoredItem = new MonitoredItem(publishedDataSubscription.DefaultItem);
-                    intMonitoredItem.StartNodeId = nodeId;
-                    intMonitoredItem.AttributeId = Attributes.Value;
-                    intMonitoredItem.DisplayName = "Subscription";
-                    intMonitoredItem.SamplingInterval = 1000;
-                    intMonitoredItem.Notification += eventHandler;
-
-                    publishedDataSubscription.AddItem(intMonitoredItem);
+                    Logger.Error(exception, "Unable to Create Subscription.");
+                    return false;
                 }
-                publishedDataSubscription.ApplyChanges();
             }
-            catch (Exception exception)
+            else
             {
-                throw new OpcUaException("Unable to Create Subscription.", exception);
+                Logger.Error("Invalid Session");
+                return false;
             }
-            return subscriptionId;
         }
 
         public void ClearSubscriptions()
