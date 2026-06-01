@@ -80,8 +80,14 @@ namespace umatiGateway.Core.OPC
                 Logger.Error("Unable to find Folder: {FolderPath}", folderPath);
             }
 
-
-            binaryTypeDictionaries = client.BrowseLocalNodeIdsWithTypeDefinition(ObjectIds.OPCBinarySchema_TypeSystem, BrowseDirection.Forward, (uint)NodeClass.Variable, ReferenceTypeIds.HasComponent, true, VariableTypeIds.DataTypeDictionaryType);
+            if(client.TryBrowseLocalNodeIdsWithTypeDefinition(ObjectIds.OPCBinarySchema_TypeSystem, BrowseDirection.Forward, (uint)NodeClass.Variable, ReferenceTypeIds.HasComponent, true, VariableTypeIds.DataTypeDictionaryType, out List<NodeId> localNodeIds))
+            {
+                binaryTypeDictionaries = localNodeIds;
+            }
+            else
+            {
+                HandleOpcUaClientError();
+            }
             foreach (NodeId binaryTypeDictionary in binaryTypeDictionaries)
             {
                 try
@@ -117,7 +123,7 @@ namespace umatiGateway.Core.OPC
                     Logger.Error(e, "Unable to read Value of Node: {BinaryTypeDictionary}", binaryTypeDictionary);
                 }
             }
-            ;
+
             if (ReadExtraLibs)
             {
                 Logger.Warn("The option ReadExtraLibs is deprecated and my be removed in future versions. You can now provide .bsd files in the./BsdFiles folder.");
@@ -148,20 +154,32 @@ namespace umatiGateway.Core.OPC
         {
             IOpcUaClient client = app.OpcUaClient;
             nodeIds.Add(nodeId);
-            List<NodeId> subTypeNodeIds = client.BrowseLocalNodeIds(nodeId, BrowseDirection.Forward, (uint)nodeClass, ReferenceTypeIds.HasSubtype, true);
-            foreach (NodeId subTypeNodeId in subTypeNodeIds)
+            if (client.TryBrowseLocalNodeIds(nodeId, BrowseDirection.Forward, (uint)nodeClass, ReferenceTypeIds.HasSubtype, true, out List<NodeId> subTypeNodeIds))
             {
-                ReadAndAppendTypeNodeIds(subTypeNodeId, nodeClass, nodeIds);
+                foreach (NodeId subTypeNodeId in subTypeNodeIds)
+                {
+                    ReadAndAppendTypeNodeIds(subTypeNodeId, nodeClass, nodeIds);
+                }
+            }
+            else
+            {
+                HandleOpcUaClientError();
             }
         }
         private void ReadAndAppendTypeNodeIds(NodeId nodeId, NodeClass nodeClass, List<NodeId> nodeIds, NodeId referenceTypeId)
         {
             IOpcUaClient client = app.OpcUaClient;
             nodeIds.Add(nodeId);
-            List<NodeId> subTypeNodeIds = client.BrowseLocalNodeIds(nodeId, BrowseDirection.Forward, (uint)nodeClass, referenceTypeId, true);
-            foreach (NodeId subTypeNodeId in subTypeNodeIds)
+            if (client.TryBrowseLocalNodeIds(nodeId, BrowseDirection.Forward, (uint)nodeClass, referenceTypeId, true, out List<NodeId> subTypeNodeIds))
             {
-                ReadAndAppendTypeNodeIds(subTypeNodeId, nodeClass, nodeIds, referenceTypeId);
+                foreach (NodeId subTypeNodeId in subTypeNodeIds)
+                {
+                    ReadAndAppendTypeNodeIds(subTypeNodeId, nodeClass, nodeIds, referenceTypeId);
+                }
+            }
+            else
+            {
+                HandleOpcUaClientError();
             }
         }
         private void generateDataClasses(string xmlString)
@@ -613,6 +631,10 @@ namespace umatiGateway.Core.OPC
             Node? encodingType = null;
             encodingType = opcBinary[nodeId];
             return encodingType;
+        }
+        public void HandleOpcUaClientError()
+        {
+            Logger.Error("Unable to retrieve Data from OPCUaServer");
         }
     }
     public class NodeIdComparer : IEqualityComparer<NodeId>

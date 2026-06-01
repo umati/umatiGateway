@@ -1,5 +1,6 @@
 ﻿// SPDX-License-Identifier: Apache-2.0
 // Copyright (c) 2025 FVA GmbH - interop4x. All rights reserved.
+using NLog;
 using Opc.Ua;
 using Opc.Ua.Client;
 using umatiGateway.Core.OPC;
@@ -10,6 +11,8 @@ namespace umatiGateway.Core.PubSub
     {
         IOpcUaClient client;
         List<NodeId> referenceTypeIds = new List<NodeId>();
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
         public ReferenceDescriptionResolver(IOpcUaClient client)
         {
             this.client = client;
@@ -43,6 +46,11 @@ namespace umatiGateway.Core.PubSub
             Session? session = client.GetSession();
             if (session != null)
             {
+                NamespaceTable namespaceTable = new NamespaceTable();
+                if (client.TryGetNamespaceTable(out NamespaceTable namespaceTable1))
+                {
+                    namespaceTable = namespaceTable1;
+                }
                 session.Browse(null, null, 10000, nodesToBrowse, out BrowseResultCollection browseResultCollection, out DiagnosticInfoCollection diagnosticInfos);
                 for (int i = 0; i < browseResultCollection.Count; i++)
                 {
@@ -55,7 +63,7 @@ namespace umatiGateway.Core.PubSub
                         keyValuePair.Key = new QualifiedName($"relation_{counter}", 0);
                         referenceDescription.ReferenceTypeId = nodesToBrowse[i].ReferenceTypeId;
                         referenceDescription.IsForward = nodesToBrowse[i].BrowseDirection == BrowseDirection.Forward ? true : false;
-                        Node? node = client.ReadNode(ExpandedNodeId.ToNodeId(referenceDescription.NodeId, client.GetNamespaceTable()));
+                        Node? node = client.ReadNode(ExpandedNodeId.ToNodeId(referenceDescription.NodeId, namespaceTable));
                         if (node != null)
                         {
                             referenceDescription.BrowseName = node.BrowseName;
@@ -67,7 +75,14 @@ namespace umatiGateway.Core.PubSub
                             }
                             else
                             {
-                                referenceDescription.TypeDefinition = this.client.BrowseTypeDefinition(node.NodeId);
+                                if (client.TryBrowseTypeDefinition(node.NodeId, out NodeId? typeDefinition))
+                                {
+                                    referenceDescription.TypeDefinition = typeDefinition;
+                                }
+                                else
+                                {
+                                    HandleOpcUaClientError();
+                                }
                             }
 
                         }
@@ -88,16 +103,25 @@ namespace umatiGateway.Core.PubSub
         }
         private void GetReferenceSubTypes(NodeId parentNodeId, List<NodeId> result)
         {
-
-            List<NodeId> children = client.BrowseLocalNodeIds(parentNodeId, BrowseDirection.Forward, (uint)NodeClass.ReferenceType, ReferenceTypeIds.HasSubtype, false);
-            foreach (NodeId child in children)
+            if (client.TryBrowseLocalNodeIds(parentNodeId, BrowseDirection.Forward, (uint)NodeClass.ReferenceType, ReferenceTypeIds.HasSubtype, false, out List<NodeId> children))
             {
-                if (!result.Contains(child))
+                foreach (NodeId child in children)
                 {
-                    result.Add(child);
-                    GetReferenceSubTypes(child, result);
+                    if (!result.Contains(child))
+                    {
+                        result.Add(child);
+                        GetReferenceSubTypes(child, result);
+                    }
                 }
             }
+            else
+            {
+                HandleOpcUaClientError();
+            }
+        }
+        private void HandleOpcUaClientError()
+        {
+            Logger.Error("Unable to retrieve Data from OpcUaClient");
         }
     }
 }
