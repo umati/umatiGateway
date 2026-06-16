@@ -1,0 +1,13 @@
+{
+  "Timestamp": "2025-04-14T10:10:00.000Z",
+  "Status": 0,
+  "Name": "nsu=http://example.com/FullMachineTool/;i=66382",
+  "Payload": {
+    "virtual_id": "2:Machines.4:FullMachineTool.3:Equipment.3:Tools.4:Tool1",
+    "ControlIdentifier1": 2,
+    "ControlIdentifierInterpretation": 0,
+    "Locked": false,
+    "Locked_ReasonForLocking": 5,
+    "Name": "Tool1"
+  }
+}

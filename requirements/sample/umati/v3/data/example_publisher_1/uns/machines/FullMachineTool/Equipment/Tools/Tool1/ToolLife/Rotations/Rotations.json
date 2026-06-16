@@ -1,0 +1,24 @@
+{
+  "Timestamp": "2025-04-14T10:16:00.000Z",
+  "Status": 0,
+  "Name": "nsu=http://example.com/FullMachineTool/;i=58514",
+  "Payload": {
+    "virtual_id": "2:Machines.4:FullMachineTool.3:Equipment.3:Tools.4:Tool1.3:ToolLife.4:Rotations",
+    "value": 512,
+    "EngineeringUnits": {
+      "DisplayName": {
+        "locale": "",
+        "text": ""
+      },
+      "Description": {
+        "locale": "",
+        "text": ""
+      },
+      "UnitId": 0,
+      "NamespaceUri": ""
+    },
+    "Indication": 7,
+    "IsCountingUp": true,
+    "LimitValue": 1048576
+  }
+}
