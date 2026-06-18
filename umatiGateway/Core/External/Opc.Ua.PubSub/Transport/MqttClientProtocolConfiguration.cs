@@ -231,14 +231,14 @@ namespace Opc.Ua.PubSub.Transport
         /// <param name="trustedIssuerCertificates">The trusted issuer certificates store identifier</param>
         /// <param name="trustedPeerCertificates">The trusted peer certificates store identifier</param>
         /// <param name="rejectedCertificateStore">The rejected certificates store identifier</param>
-        public MqttTlsOptions(MqttTlsCertificates certificates = null,
+        public MqttTlsOptions(MqttTlsCertificates? certificates = null,
             SslProtocols sslProtocolVersion = SslProtocols.Tls12,
             bool allowUntrustedCertificates = false,
             bool ignoreCertificateChainErrors = false,
             bool ignoreRevocationListErrors = false,
-            CertificateStoreIdentifier trustedIssuerCertificates = null,
-            CertificateStoreIdentifier trustedPeerCertificates = null,
-            CertificateStoreIdentifier rejectedCertificateStore = null
+            CertificateStoreIdentifier? trustedIssuerCertificates = null,
+            CertificateStoreIdentifier? trustedPeerCertificates = null,
+            CertificateStoreIdentifier? rejectedCertificateStore = null
             )
         {
             Certificates = certificates;

@@ -5,9 +5,10 @@ services:
   mqtt_broker:
     image: eclipse-mosquitto
     volumes:
-      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - ./mqtt-config:/mosquitto/config
     ports:
       - 1883:1883
+
   opcuaserver:
     image: ghcr.io/umati/sample-server:develop
     ports:
@@ -19,3 +20,6 @@ services:
     image: localhost:5000/umati/umatigateway:${DOCKER_METADATA_OUTPUT_VERSION}
     volumes:
       - ./SimpleConfig/umatiGatewayConfig.xml:/app/umatiGatewayConfig.xml
+#    command: >
+#     /config/umatiGatewayConfig.xml /app/umatiGatewayConfig.xml &&
+#           exec /app/umatiGateway"

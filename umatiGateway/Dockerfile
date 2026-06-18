@@ -2,6 +2,10 @@
 
 # This stage is used when running from VS in fast mode (Default for Debug configuration)
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
+
+ARG APP_UID=1000
+ENV APP_UID=$APP_UID
+
 USER $APP_UID
 WORKDIR /app
 EXPOSE 8080
@@ -25,8 +29,13 @@ RUN dotnet publish "./umatiGateway.csproj" -c $BUILD_CONFIGURATION -o /app/publi
 
 # This stage is used in production or when running from VS in regular mode (Default when not using the Debug configuration)
 FROM base AS final
+USER $APP_UID
 WORKDIR /app
 COPY --from=publish /app/publish .
+USER root
+RUN touch /app/umatiGatewayConfig.xml
+RUN chown -R $APP_UID:$APP_UID /app
+USER $APP_UID
 ENTRYPOINT ["/app/umatiGateway"]
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \

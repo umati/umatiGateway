@@ -1,15 +1,16 @@
-#---
+---
 name: build
 
 on:
   push:
-    # branches: [main, develop]
+    branches: [main, develop, dev-sascha]
     # Publish semver tags as releases.
     # tags: ["v*.*.*"]
   pull_request:
     branches: [main, develop]
   merge_group:
-
+  workflow_dispatch:
+    
 permissions: read-all
 
 jobs:
@@ -93,17 +94,17 @@ jobs:
           path: umatiGateway/releases/*-win-*.zip
       - name: List files in the releases directory
         run: ls -lh umatiGateway/releases/
-      - name: Publish a Codeberg release
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: https://code.forgejo.org/actions/forgejo-release@v2.11.0
-        with:
-          direction: upload
-          url: https://codeberg.org
-          repo: ${{ forge.repository }}
-          tag: ${{ forge.ref_name }}
-          token: ${{ secrets.RELEASE_TOKEN }}
-          release-dir: umatiGateway/releases
-          release-notes: "Automated release of umatiGateway packages."
+      # - name: Publish a Codeberg release
+      #   if: startsWith(github.ref, 'refs/tags/')
+      #   uses: https://code.forgejo.org/actions/forgejo-release@v2.11.0
+      #   with:
+      #     direction: upload
+      #     url: https://codeberg.org
+      #     repo: ${{ forge.repository }}
+      #     tag: ${{ forge.ref_name }}
+      #     token: ${{ secrets.RELEASE_TOKEN }}
+      #     release-dir: umatiGateway/releases
+      #     release-notes: "Automated release of umatiGateway packages."
 
   build-multi:
     if: false
@@ -153,20 +154,20 @@ jobs:
     permissions:
       packages: write
       contents: read
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     services:
       registry:
         image: registry:3
         ports:
           - 5000:5000
     steps:
-      - name: Verify workspace
-        run: |
-          pwd
-          echo "Hello from Job Container (current directory)" > sync-test.txt
-          echo "Hello from Job Container (/workspace directory)" > /workspace/sync-test.txt
-          ls -l .
-          ls -l /workspace/
+      # - name: Verify workspace
+      #   run: |
+      #     pwd
+      #     echo "Hello from Job Container (current directory)" > sync-test.txt
+      #     echo "Hello from Job Container (/workspace directory)" > /workspace/sync-test.txt
+      #     ls -l .
+      #     ls -l /workspace/
       - name: Set registry
         run: |
           #!/bin/bash
@@ -186,7 +187,7 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ env.REGISTRY_TOKEN }}
       - name: Checkout code
-        uses: actions/checkout@v6.0.2
+        uses: actions/checkout@v6.0.3
         with:
           path: umatiGateway
           persist-credentials: false
@@ -212,35 +213,37 @@ jobs:
         with:
           driver-opts: network=host
       - name: Build and push container image to ${{ env.REGISTRY }}
-        uses: docker/build-push-action@v6.18.0
+        uses: docker/build-push-action@v7.2.0
         #if: github.event_name != 'pull_request'
         with:
           context: ./umatiGateway
           file: "./umatiGateway/umatiGateway/Dockerfile"
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
+          #platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            VERSION=${{ steps.docker_meta.outputs.version }}
+            VERSION=${{ steps.meta.outputs.version }}
           provenance: false
       - name: Build and Push container image to local registry
         uses: docker/build-push-action@v7.2.0
-        if: github.event_name == 'pull_request'
+        #if: github.event_name == 'pull_request'
         with:
           context: ./umatiGateway
           file: "./umatiGateway/umatiGateway/Dockerfile"
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           push: true
           tags: localhost:5000/umati/umatigateway:${{ steps.meta.outputs.version }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            VERSION=${{ steps.docker_meta.outputs.version }}
+            VERSION=${{ steps.meta.outputs.version }}
           provenance: false
       - name: Run integration test mqtt
         # if: github.event_name == 'pull_request'
         run: |
           #!/bin/bash
+          docker --version
           cd ./umatiGateway/tests/integration/mqtt_test || exit
           TARGET="./SimpleConfig/umatiGatewayConfig.xml"
           echo "─── File Info ---"
@@ -256,12 +259,21 @@ jobs:
           id
           pwd
           ls -la
-
-          docker compose up -d
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          sudo apt-get install --update -y python3-jsonschema python3-paho-mqtt
+          #python3 -m venv .venv
+          #source .venv/bin/activate
+          #python3 -m pip install --upgrade pip
+          #pip install -r requirements.txt
+          #export CONFIG_FILE="$(pwd)/SimpleConfig/umatiGatewayConfig.xml"
+          docker compose up -d --force-recreate
+          docker compose ps
+          sleep 20
+          docker logs mqtt_test-gateway-1
+          sleep 20
           ./waitForContainer.sh
-          python -m unittest discover test_mqtt_sampleserver
+          python3 test_mqtt_sampleserver.py
+          #python3 -m unittest discover test_mqtt_sampleserver
+          docker compose down --rmi all
 
   release:
     permissions:
