@@ -4,6 +4,8 @@ using Microsoft.Extensions.Configuration;
 using NLog;
 using Opc.Ua;
 using System;
+using System.IO;
+using System.Linq;
 using System.Text;
 using System.Xml;
 using System.Xml.Linq;
@@ -68,13 +70,60 @@ namespace umatiGateway.Core.Configuration
 
         public UmatiConfigurationManager() { }
 
-        public UmatiConfiguration ReadConfiguration()
+        /// <summary>
+        /// Resolves the configuration file path.
+        /// Priority:
+        /// 1. Environment variable UMATI_CONFIG
+        /// 2. CLI argument --config=...
+        /// 3. Default fallback path
+        /// </summary>
+        private static string ResolveConfigPath(string[]? args = null)
+        {
+            const string defaultPath = UMATI_GATEWAY_CONFIG_FILE_PATH;
+
+            // 1. Environment variable
+            string? envPath = Environment.GetEnvironmentVariable("UMATI_CONFIG");
+            if (!string.IsNullOrWhiteSpace(envPath))
+            {
+                Logger.Info("Using configuration from environment variable: {path}", envPath);
+                return envPath;
+            }
+
+            // 2. CLI argument
+            if (args != null)
+            {
+                string? cliPath = args
+                    .FirstOrDefault(a => a.StartsWith("--config=", StringComparison.OrdinalIgnoreCase))
+                    ?.Split("=", 2)[1];
+
+                if (!string.IsNullOrWhiteSpace(cliPath))
+                {
+                    Logger.Info("Using configuration from CLI argument: {path}", cliPath);
+                    return cliPath;
+                }
+            }
+
+            // 3. fallback
+            Logger.Info("Using default configuration path: {path}", defaultPath);
+            return defaultPath;
+        }
+
+        public UmatiConfiguration ReadConfiguration(string[]? args = null)
         {
             UmatiConfiguration configuration = new UmatiConfiguration();
             XmlDocument xmlDoc = new();
             try
             {
-                xmlDoc.Load(UMATI_GATEWAY_CONFIG_FILE_PATH);
+                string configPath = ResolveConfigPath(args);
+
+                if (!File.Exists(configPath))
+                {
+                    Logger.Error("Configuration file not found at path: {path}", configPath);
+                    throw new FileNotFoundException($"Configuration file not found: {configPath}");
+                }
+
+                xmlDoc.Load(configPath);
+
                 XmlNode? node = xmlDoc.SelectSingleNode($"/{UMATI_GATEWAY_CONFIG}");
                 if (node != null)
                 {
