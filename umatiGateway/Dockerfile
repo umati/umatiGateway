@@ -32,11 +32,11 @@ FROM base AS final
 USER $APP_UID
 WORKDIR /app
 COPY --from=publish /app/publish .
-#USER root
+USER root
 RUN mkdir -p /config
 RUN touch /config/umatiGatewayConfig.xml
-#RUN chown -R $APP_UID:$APP_UID /app
-#USER $APP_UID
+RUN chown -R $APP_UID:$APP_UID /app /config
+USER $APP_UID
 ENTRYPOINT ["/app/umatiGateway"]
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \

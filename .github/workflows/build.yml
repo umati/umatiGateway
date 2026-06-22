@@ -265,10 +265,13 @@ jobs:
           #python3 -m pip install --upgrade pip
           #pip install -r requirements.txt
           export CONFIG_DIR="$(pwd)/SimpleConfig"
-          docker compose up -d --force-recreate
+          echo "CONFIG_DIR=$CONFIG_DIR"
+          docker compose config
+          CONFIG_DIR="$(pwd)/SimpleConfig" docker compose up -d --force-recreate
           docker compose ps
           docker compose exec gateway printenv | grep UMATI_CONFIG
           docker compose exec gateway ls -l /config
+          docker compose exec gateway ls -l /app
           sleep 20
           docker logs mqtt_test-gateway-1
           sleep 20
