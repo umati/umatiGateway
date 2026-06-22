@@ -264,9 +264,11 @@ jobs:
           #source .venv/bin/activate
           #python3 -m pip install --upgrade pip
           #pip install -r requirements.txt
-          #export CONFIG_FILE="$(pwd)/SimpleConfig/umatiGatewayConfig.xml"
+          export CONFIG_DIR="$(pwd)/SimpleConfig"
           docker compose up -d --force-recreate
           docker compose ps
+          docker compose exec gateway printenv | grep UMATI_CONFIG
+          docker compose exec gateway ls -l /config
           sleep 20
           docker logs mqtt_test-gateway-1
           sleep 20
