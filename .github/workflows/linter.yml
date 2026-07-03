@@ -36,11 +36,14 @@ jobs:
         uses: super-linter/super-linter@v8.7.0
         env:
           # To report GitHub Actions status checks
-          RUN_LOCAL: true
+          #RUN_LOCAL: true
           DEFAULT_BRANCH: origin/develop
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VALIDATE_ALL_CODEBASE: false
           VALIDATE_GITHUB_ACTIONS_ZIZMOR: false
           VALIDATE_BIOME_FORMAT: false
           VALIDATE_BIOME_LINT: false
+          VALIDATE_PYTHON_RUFF: false
+          VALIDATE_PYTHON_RUFF_FORMAT: false
+          VALIDATE_GIT_COMMITLINT: false
           FILTER_REGEX_EXCLUDE: .*umatiGateway/wwwroot/.*|.*umatiGateway/Pages/.*

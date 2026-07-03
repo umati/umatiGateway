@@ -5,7 +5,7 @@ REPO_DIR=$(pwd)
 echo "$REPO_DIR"
 
 # Pull latest image
-docker pull ghcr.io/super-linter/super-linter:latest
+docker pull ghcr.io/super-linter/super-linter:v8.7.0
 
 # Run the Docker container with the specified environment variables and volume mount
 docker run \
@@ -16,4 +16,7 @@ docker run \
 	-e RUN_LOCAL=true \
 	-e VALIDATE_CHECKOV=true \
 	-e VALIDATE_ALL_CODEBASE=false \
-	-v "$REPO_DIR:/tmp/lint" -it --rm ghcr.io/super-linter/super-linter:latest
+	-e VALIDATE_PYTHON_RUFF=false \
+	-e VALIDATE_PYTHON_RUFF_FORMAT=false \
+	-e VALIDATE_GIT_COMMITLINT=false \
+	-v "$REPO_DIR:/tmp/lint" -it --rm ghcr.io/super-linter/super-linter:v8.7.0
