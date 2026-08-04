@@ -1,0 +1,9 @@
+{
+  "PublisherId": "example_publisher_1",
+  "WriterGroups": [
+    {
+      "Name": "MachineDataWriterGroup",
+      "DataSetWriters": []
+    }
+  ]
+}

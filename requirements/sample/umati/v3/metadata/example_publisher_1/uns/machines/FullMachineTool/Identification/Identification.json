@@ -1,0 +1,111 @@
+{
+  "Name": "nsu=http://example.com/FullMachineTool/;i=66382",
+  "Namespaces": [
+    "http://opcfoundation.org/UA/DI/",
+    "http://opcfoundation.org/UA/Machinery/",
+    "http://opcfoundation.org/UA/MachineTool/",
+    "http://example.com/FullMachineTool/"
+  ],
+  "Fields": [
+    {
+      "Name": "virtual_id",
+      "BuiltInType": 12,
+      "DataType": { "id": 12 },
+      "ValueRank": -1,
+      "Properties": [
+        {
+          "key": "Reference_1",
+          "value": {
+            "referenceTypeId": "nsu=http://opcfoundation.org/UA/;i=40",
+            "isForward": true,
+            "nodeId": "nsu=http://opcfoundation.org/UA/MachineTool/;i=11",
+            "browseName1": "5:MachineToolIdentificationType",
+            "displayName": {
+              "locale": "en",
+              "text": "IdentificationType"
+            },
+            "nodeClass1": "ObjectType",
+            "typeDefinition1": ""
+          }
+        }
+      ]
+    },
+    {
+      "Name": "ComponentName",
+      "BuiltInType": 21,
+      "DataType": { "id": 21 },
+      "ValueRank": -1,
+      "Properties": []
+    },
+    {
+      "Name": "DeviceClass",
+      "BuiltInType": 12,
+      "DataType": { "id": 12 },
+      "ValueRank": -1,
+      "Properties": []
+    },
+    {
+      "Name": "Location",
+      "BuiltInType": 12,
+      "DataType": { "id": 12 },
+      "ValueRank": -1,
+      "Properties": []
+    },
+    {
+      "Name": "Manufacturer",
+      "BuiltInType": 21,
+      "DataType": { "id": 21 },
+      "ValueRank": -1,
+      "Properties": []
+    },
+    {
+      "Name": "Model",
+      "BuiltInType": 21,
+      "DataType": { "id": 21 },
+      "ValueRank": -1,
+      "Properties": []
+    },
+    {
+      "Name": "MonthOfConstruction",
+      "BuiltInType": 6,
+      "DataType": { "id": 6 },
+      "ValueRank": -1,
+      "Properties": []
+    },
+    {
+      "Name": "YearOfConstruction",
+      "BuiltInType": 6,
+      "DataType": { "id": 6 },
+      "ValueRank": -1,
+      "Properties": []
+    },
+    {
+      "Name": "ProductCode",
+      "BuiltInType": 12,
+      "DataType": { "id": 12 },
+      "ValueRank": -1,
+      "Properties": []
+    },
+    {
+      "Name": "SerialNumber",
+      "BuiltInType": 12,
+      "DataType": { "id": 12 },
+      "ValueRank": -1,
+      "Properties": []
+    },
+    {
+      "Name": "ProductInstanceUri",
+      "BuiltInType": 12,
+      "DataType": { "id": 12 },
+      "ValueRank": -1,
+      "Properties": []
+    },
+    {
+      "Name": "SoftwareRevision",
+      "BuiltInType": 12,
+      "DataType": { "id": 12 },
+      "ValueRank": -1,
+      "Properties": []
+    }
+  ]
+}
