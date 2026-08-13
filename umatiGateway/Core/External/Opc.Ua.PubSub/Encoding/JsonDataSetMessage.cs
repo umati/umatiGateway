@@ -29,7 +29,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Reflection;
 using Opc.Ua.PubSub.PublishedData;
 using umatiGateway.Core.External.Opc.Ua.PubSub.Encoding;
 
@@ -43,6 +43,7 @@ namespace Opc.Ua.PubSub.Encoding
     {
         #region Fields
         private const string kFieldPayload = "Payload";
+        private const int kMaxNormalizationDepth = 64;
         private FieldTypeEncodingMask m_fieldTypeEncoding;
         #endregion
 
@@ -454,6 +455,7 @@ namespace Opc.Ua.PubSub.Encoding
             string fieldName = field.FieldMetaData.Name;
 
             Variant valueToEncode = field.Value.WrappedValue;
+            valueToEncode = NormalizeVariantForJsonEncoding(valueToEncode);
 
             // The StatusCode.Good value is not encoded correctly then it shall be committed
             // Korrigirt Matthias Dornaus
@@ -584,6 +586,90 @@ namespace Opc.Ua.PubSub.Encoding
                 }
             }
 #pragma warning restore CS0618 // Type or member is obsolete
+        }
+
+        private static Variant NormalizeVariantForJsonEncoding(Variant variant)
+        {
+            NormalizeObjectGraphForJsonEncoding(variant.Value, new HashSet<object>(ReferenceEqualityComparer.Instance), 0);
+            return variant;
+        }
+
+        private static void NormalizeObjectGraphForJsonEncoding(object value, ISet<object> visited, int depth)
+        {
+            if (value == null || value is string || depth >= kMaxNormalizationDepth)
+            {
+                return;
+            }
+
+            if (!value.GetType().IsValueType && !visited.Add(value))
+            {
+                return;
+            }
+
+            if (value is ExtensionObject extensionObject)
+            {
+                object encodeable = ExtensionObject.ToEncodeable(extensionObject);
+                if (encodeable != null)
+                {
+                    NormalizeEncodeableObjectForJsonEncoding(encodeable, visited, depth + 1);
+                }
+                return;
+            }
+
+            if (value is Array array)
+            {
+                foreach (object element in array)
+                {
+                    NormalizeObjectGraphForJsonEncoding(element, visited, depth + 1);
+                }
+                return;
+            }
+        }
+
+        private static void NormalizeEncodeableObjectForJsonEncoding(object encodeable, ISet<object> visited, int depth)
+        {
+            if (!encodeable.GetType().IsValueType && !visited.Add(encodeable))
+            {
+                return;
+            }
+
+            foreach (PropertyInfo property in encodeable.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public))
+            {
+                if (!property.CanRead || property.GetIndexParameters().Length > 0 || !property.PropertyType.IsArray)
+                {
+                    continue;
+                }
+
+                object propertyValue;
+                try
+                {
+                    propertyValue = property.GetValue(encodeable);
+                }
+                catch
+                {
+                    continue;
+                }
+
+                Type elementType = property.PropertyType.GetElementType() ?? typeof(object);
+                if (propertyValue == null)
+                {
+                    if (property.CanWrite)
+                    {
+                        property.SetValue(encodeable, Array.CreateInstance(elementType, 0));
+                    }
+                    continue;
+                }
+
+                if (propertyValue is not Array propertyArray)
+                {
+                    continue;
+                }
+
+                foreach (object element in propertyArray)
+                {
+                    NormalizeObjectGraphForJsonEncoding(element, visited, depth + 1);
+                }
+            }
         }
         #endregion
 
