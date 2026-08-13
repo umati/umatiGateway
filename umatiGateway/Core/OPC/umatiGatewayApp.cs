@@ -39,7 +39,7 @@ namespace umatiGateway.Core.OPC
             LoggingConfiguration config = new LoggingConfiguration();
             ConsoleTarget logconsole = new ConsoleTarget("logconsole")
             {
-                Layout = "${uppercase:${level}} ${message}"
+                Layout = "${uppercase:${level}} ${logger:shortName=true} ${message}${onexception:inner= | ${exception:format=tostring}}"
             };
             string logfilePath = Path.Combine(AppContext.BaseDirectory, "logs/umatiGateway.log");
             if (File.Exists(logfilePath))
@@ -49,7 +49,7 @@ namespace umatiGateway.Core.OPC
             FileTarget logfile = new FileTarget("logfile")
             {
                 FileName = logfilePath,
-                Layout = "${uppercase:${level}} ${message}",
+                Layout = "${uppercase:${level}} ${logger:shortName=true} ${message}${onexception:inner= | ${exception:format=tostring}}",
                 ArchiveAboveSize = 10L * 1024 * 1024, // 10 MB
                 MaxArchiveFiles = 5, // max. 5 alte Files
                 ArchiveFileName = "${basedir}/logs/umatiGateway.{#}.log",

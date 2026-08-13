@@ -314,7 +314,7 @@ namespace Opc.Ua.PubSub.Transport
                         }
                         catch (Exception ex)
                         {
-                            Utils.Trace(ex, "MqttPubSubConnection.PublishNetworkMessage");
+                            Utils.Trace(ex, "MqttPubSubConnection.PublishNetworkMessage inner: {0} | {1}", ex.Message, ex.ToString());
                             return false;
                         }
 
@@ -324,7 +324,7 @@ namespace Opc.Ua.PubSub.Transport
             }
             catch (Exception ex)
             {
-                Utils.Trace(ex, "MqttPubSubConnection.PublishNetworkMessage");
+                Utils.Trace(ex, "MqttPubSubConnection.PublishNetworkMessage outer: {0} | {1}", ex.Message, ex.ToString());
                 return false;
             }
 
