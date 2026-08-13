@@ -33,6 +33,8 @@ using System.Globalization;
 using System.IO;
 using static Opc.Ua.Utils;
 
+#pragma warning disable CS0618
+
 namespace Opc.Ua.PubSub.Encoding
 {
     /// <summary>
@@ -1442,3 +1444,5 @@ namespace Opc.Ua.PubSub.Encoding
         #endregion
     }
 }
+
+#pragma warning enable CS0618

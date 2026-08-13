@@ -43,8 +43,6 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using umatiGateway.Core.Util;
 using DataSet = Opc.Ua.PubSub.PublishedData.DataSet;
-using JsonDataSetMessage = Opc.Ua.PubSub.Encoding.JsonDataSetMessage;
-using JsonNetworkMessage = Opc.Ua.PubSub.Encoding.JsonNetworkMessage;
 
 namespace Opc.Ua.PubSub.Transport
 {
@@ -55,19 +53,20 @@ namespace Opc.Ua.PubSub.Transport
     {
         #region Private Fields
         private string m_brokerHostName = "localhost";
-        private string m_urlScheme;
+        private string? m_urlScheme;
         private int m_brokerPort = Utils.MqttDefaultPort;
         private int m_reconnectIntervalSeconds = 5;
 
-        private IMqttClient m_publisherMqttClient;
-        private IMqttClient m_subscriberMqttClient;
+        private IMqttClient? m_publisherMqttClient;
+        private IMqttClient? m_subscriberMqttClient;
         private readonly MessageMapping m_messageMapping;
-        private readonly MessageCreator m_messageCreator;
+        private readonly MessageCreator? m_messageCreator;
 
-        private CertificateValidator m_certificateValidator;
-        private MqttClientTlsOptions m_mqttClientTlsOptions;
-        private MqttClientOptions m_publisherMqttClientOptions;
-        private MqttClientOptions m_subscriberMqttClientOptions;
+
+        private CertificateValidator? m_certificateValidator;
+        private MqttClientTlsOptions? m_mqttClientTlsOptions;
+        private MqttClientOptions? m_publisherMqttClientOptions;
+        private MqttClientOptions? m_subscriberMqttClientOptions;
         private readonly List<MqttMetadataPublisher> m_metaDataPublishers = new List<MqttMetadataPublisher>();
         private readonly BlockingCollection<MqttApplicationMessage> messageQueue = new BlockingCollection<MqttApplicationMessage>();
         #endregion
@@ -86,12 +85,12 @@ namespace Opc.Ua.PubSub.Transport
         /// <summary>
         /// Gets the scheme of the Url.
         /// </summary>
-        public string UrlScheme { get => m_urlScheme; }
+        public string? UrlScheme { get => m_urlScheme; }
 
         /// <summary>
         /// Gets and sets the MqttClientOptions for the publisher connection
         /// </summary>
-        public MqttClientOptions PublisherMqttClientOptions
+        public MqttClientOptions? PublisherMqttClientOptions
         {
             get
             {
@@ -120,7 +119,7 @@ namespace Opc.Ua.PubSub.Transport
         /// <summary>
         /// Gets and sets the MqttClientOptions for the subscriber connection
         /// </summary>
-        public MqttClientOptions SubscriberMqttClientOptions
+        public MqttClientOptions? SubscriberMqttClientOptions
         {
             get
             {
@@ -210,7 +209,7 @@ namespace Opc.Ua.PubSub.Transport
             if (!(ExtensionObject.ToEncodeable(writerGroupConfiguration.TransportSettings) is BrokerWriterGroupTransportDataType))
             {
                 //Wrong configuration of writer group MessageSettings
-                return null;
+                return new List<UaNetworkMessage>();
             }
 
             if (m_messageCreator != null)
@@ -219,7 +218,7 @@ namespace Opc.Ua.PubSub.Transport
             }
 
             // no other encoding is implemented
-            return null;
+            return new List<UaNetworkMessage>();
         }
 
         /// <summary> 
@@ -237,7 +236,7 @@ namespace Opc.Ua.PubSub.Transport
                         dataSetWriter.DataSetWriterId, publishedDataSet.DataSetMetaData);
                 }
             }
-            return null;
+            throw new InvalidOperationException("Unable to create DataSetMetaData network message.");
         }
 
         /// <summary>
@@ -262,13 +261,13 @@ namespace Opc.Ua.PubSub.Transport
 
                         try
                         {
-                            string queueName = null;
+                            string? queueName = null;
                             BrokerTransportQualityOfService qos = BrokerTransportQualityOfService.AtLeastOnce;
 
                             // the network messages that have DataSetWriterId are either metaData messages or SingleDataSet messages and 
                             if (networkMessage.DataSetWriterId != null)
                             {
-                                DataSetWriterDataType dataSetWriter = networkMessage.WriterGroupConfiguration.DataSetWriters
+                                DataSetWriterDataType? dataSetWriter = networkMessage.WriterGroupConfiguration.DataSetWriters
                                     .Find(x => x.DataSetWriterId == networkMessage.DataSetWriterId);
 
                                 if (dataSetWriter != null)
@@ -339,7 +338,13 @@ namespace Opc.Ua.PubSub.Transport
                     Utils.LogInfo("Messages in Queue" + this.messageQueue.Count);
                     try
                     {
-                        AsyncHelper.RunSync(() => m_publisherMqttClient!.PublishAsync(message));
+                        IMqttClient? publisherClient = m_publisherMqttClient;
+                        if (publisherClient == null || !publisherClient.IsConnected)
+                        {
+                            Utils.Trace("MQTT publisher client is not connected. Message will not be sent.");
+                            continue;
+                        }
+                        AsyncHelper.RunSync(() => publisherClient.PublishAsync(message));
                     }
                     catch (Exception ex)
                     {
@@ -383,7 +388,7 @@ namespace Opc.Ua.PubSub.Transport
                     return;
                 }
 
-                Uri connectionUri;
+                Uri? connectionUri = null;
                 m_urlScheme = null;
 
                 if (networkAddressUrlState.Url != null && Uri.TryCreate(networkAddressUrlState.Url, UriKind.Absolute, out connectionUri))
@@ -436,8 +441,8 @@ namespace Opc.Ua.PubSub.Transport
                 }
             }
 
-            MqttClient publisherClient = null;
-            MqttClient subscriberClient = null;
+            MqttClient? publisherClient = null;
+            MqttClient? subscriberClient = null;
 
             if (m_publisherMqttClientOptions == null)
             {
@@ -450,6 +455,12 @@ namespace Opc.Ua.PubSub.Transport
             //publisher initialization
             if (nrOfPublishers > 0)
             {
+                if (m_publisherMqttClientOptions == null)
+                {
+                    Utils.Trace(Utils.TraceMasks.Error, "Unable to create MQTT publisher options.");
+                    return;
+                }
+
                 publisherClient = (MqttClient)await MqttClientCreator.GetMqttClientAsync(
                     m_reconnectIntervalSeconds,
                     m_publisherMqttClientOptions,
@@ -476,11 +487,17 @@ namespace Opc.Ua.PubSub.Transport
                         }
 
 
-                        if (ExtensionObject.ToEncodeable(dataSetReader.TransportSettings) is BrokerDataSetReaderTransportDataType brokerTransportSettings && !topics.Contains(brokerTransportSettings.QueueName))
+                        if (ExtensionObject.ToEncodeable(dataSetReader.TransportSettings) is BrokerDataSetReaderTransportDataType brokerTransportSettings)
                         {
-                            topics.Add(brokerTransportSettings.QueueName);
 
-                            if (brokerTransportSettings.MetaDataQueueName != null)
+                            if (!String.IsNullOrEmpty(brokerTransportSettings.QueueName) &&
+                                !topics.Contains(brokerTransportSettings.QueueName))
+                            {
+                                topics.Add(brokerTransportSettings.QueueName);
+                            }
+
+                            if (!String.IsNullOrEmpty(brokerTransportSettings.MetaDataQueueName) &&
+                                !topics.Contains(brokerTransportSettings.MetaDataQueueName))
                             {
                                 topics.Add(brokerTransportSettings.MetaDataQueueName);
                             }
@@ -491,6 +508,15 @@ namespace Opc.Ua.PubSub.Transport
                 if (m_subscriberMqttClientOptions == null)
                 {
                     m_subscriberMqttClientOptions = GetMqttClientOptions();
+                }
+
+                if (m_subscriberMqttClientOptions == null)
+
+                {
+
+                    Utils.Trace(Utils.TraceMasks.Error, "Unable to create MQTT subscriber options.");
+                    return;
+
                 }
 
                 subscriberClient = (MqttClient)await MqttClientCreator.GetMqttClientAsync(
@@ -515,10 +541,10 @@ namespace Opc.Ua.PubSub.Transport
         /// </summary>
         protected override async Task InternalStop()
         {
-            IMqttClient publisherMqttClient = m_publisherMqttClient;
-            IMqttClient subscriberMqttClient = m_subscriberMqttClient;
+            IMqttClient? publisherMqttClient = m_publisherMqttClient;
+            IMqttClient? subscriberMqttClient = m_subscriberMqttClient;
 
-            void DisposeCerts(X509CertificateCollection certificates)
+            void DisposeCerts(X509CertificateCollection? certificates)
             {
                 if (certificates != null)
                 {
@@ -529,11 +555,11 @@ namespace Opc.Ua.PubSub.Transport
                     }
                 }
             }
-            async Task InternalStop(IMqttClient client)
+            async Task InternalStop(IMqttClient? client)
             {
                 if (client != null)
                 {
-                    X509CertificateCollection certificates = client.Options?.ChannelOptions?.TlsOptions?.ClientCertificatesProvider?.GetCertificates();
+                    X509CertificateCollection? certificates = client.Options?.ChannelOptions?.TlsOptions?.ClientCertificatesProvider?.GetCertificates();
                     if (client.IsConnected)
                     {
                         await client.DisconnectAsync().ContinueWith((e) =>
@@ -572,7 +598,7 @@ namespace Opc.Ua.PubSub.Transport
 
         #region Private Methods
 
-        private static bool MatchTopic(string pattern, string topic)
+        private static bool MatchTopic(string? pattern, string topic)
         {
             if (String.IsNullOrEmpty(pattern) || pattern == "#")
             {
@@ -605,6 +631,7 @@ namespace Opc.Ua.PubSub.Transport
         private Task ProcessMqttMessage(MqttApplicationMessageReceivedEventArgs eventArgs)
         {
             string topic = eventArgs.ApplicationMessage.Topic;
+            byte[] payload = eventArgs.ApplicationMessage.Payload.IsEmpty ? Array.Empty<byte>() : eventArgs.ApplicationMessage.Payload.ToArray();
 
             Utils.Trace("MQTTConnection - ProcessMqttMessage() received from topic={0}", topic);
 
@@ -621,8 +648,13 @@ namespace Opc.Ua.PubSub.Transport
                     ExtensionObject.ToEncodeable(dsReader.TransportSettings)
                        as BrokerDataSetReaderTransportDataType;
 
-                string queueName = brokerDataSetReaderTransportDataType.QueueName;
-                string metadataQueueName = brokerDataSetReaderTransportDataType.MetaDataQueueName;
+                if (brokerDataSetReaderTransportDataType == null)
+                {
+                    continue;
+                }
+
+                string? queueName = brokerDataSetReaderTransportDataType.QueueName;
+                string? metadataQueueName = brokerDataSetReaderTransportDataType.MetaDataQueueName;
 
                 if (!MatchTopic(queueName, topic))
                 {
@@ -647,7 +679,7 @@ namespace Opc.Ua.PubSub.Transport
                 // raise RawData received event
                 var rawDataReceivedEventArgs = new RawDataReceivedEventArgs()
                 {
-                    Message = eventArgs.ApplicationMessage.Payload.ToArray(),
+                    Message = payload,
                     Source = topic,
                     TransportProtocol = TransportProtocol,
                     MessageMapping = m_messageMapping,
@@ -665,12 +697,18 @@ namespace Opc.Ua.PubSub.Transport
                 }
 
                 // initialize the expected NetworkMessage
+                if (m_messageCreator == null)
+                {
+
+                    return Task.CompletedTask;
+
+                }
                 UaNetworkMessage networkMessage = m_messageCreator.CreateNewNetworkMessage();
 
                 // trigger message decoding
                 if (networkMessage != null)
                 {
-                    networkMessage.Decode(MessageContext, eventArgs.ApplicationMessage.Payload.ToArray(), dataSetReaders);
+                    networkMessage.Decode(MessageContext, payload, dataSetReaders);
 
                     // Handle the decoded message and raise the necessary event on UaPubSubApplication 
                     ProcessDecodedNetworkMessage(networkMessage, topic);
@@ -708,9 +746,9 @@ namespace Opc.Ua.PubSub.Transport
         /// Get appropriate IMqttClientOptions with which to connect to the MQTTBroker
         /// </summary>
         /// <returns></returns>
-        private MqttClientOptions GetMqttClientOptions()
+        private MqttClientOptions? GetMqttClientOptions()
         {
-            MqttClientOptions mqttOptions = null;
+            MqttClientOptions? mqttOptions = null;
             var mqttKeepAlive = TimeSpan.FromSeconds(GetWriterGroupsMaxKeepAlive() + m_maxKeepAliveIncrement);
 
             if (!(ExtensionObject.ToEncodeable(PubSubConnectionConfiguration.Address) is NetworkAddressUrlDataType networkAddressUrlState))
@@ -721,7 +759,7 @@ namespace Opc.Ua.PubSub.Transport
                 return null;
             }
 
-            Uri connectionUri = null;
+            Uri? connectionUri = null;
 
             if (networkAddressUrlState.Url != null &&
                 Uri.TryCreate(networkAddressUrlState.Url, UriKind.Absolute, out connectionUri))
@@ -775,13 +813,13 @@ namespace Opc.Ua.PubSub.Transport
                 // MQTTS mqttConnection.
                 if (connectionUri.Scheme == Utils.UriSchemeMqtts)
                 {
-                    MqttTlsOptions mqttTlsOptions =
+                    MqttTlsOptions? mqttTlsOptions =
                         ((MqttClientProtocolConfiguration)transportProtocolConfiguration).MqttTlsOptions;
 
                     var x509Certificate2s = new List<X509Certificate2>();
                     if (mqttTlsOptions?.Certificates != null)
                     {
-                        foreach (X509Certificate2 x509cert in mqttTlsOptions?.Certificates.X509Certificates)
+                        foreach (X509Certificate2 x509cert in mqttTlsOptions.Certificates.X509Certificates)
                         {
                             x509Certificate2s.Add(X509CertificateLoader.LoadCertificate(x509cert.RawData));
                         }
@@ -823,8 +861,11 @@ namespace Opc.Ua.PubSub.Transport
                     mqttOptions = mqttClientOptionsBuilder.Build();
 
                     // Create the certificate validator for broker certificates.
-                    m_certificateValidator = CreateCertificateValidator(mqttTlsOptions);
-                    m_certificateValidator.CertificateValidation += CertificateValidator_CertificateValidation;
+                    if (mqttTlsOptions != null)
+                    {
+                        m_certificateValidator = CreateCertificateValidator(mqttTlsOptions);
+                        m_certificateValidator.CertificateValidation += CertificateValidator_CertificateValidation;
+                    }
                     m_mqttClientTlsOptions = mqttOptions?.ChannelOptions?.TlsOptions;
                 }
                 // MQTT mqttConnection
@@ -852,7 +893,7 @@ namespace Opc.Ua.PubSub.Transport
                 }
                 else if (connectionUri.Scheme == "wss")
                 {
-                    MqttTlsOptions mqttTlsOptions =
+                    MqttTlsOptions? mqttTlsOptions =
                         ((MqttClientProtocolConfiguration)transportProtocolConfiguration).MqttTlsOptions;
 
                     var x509Certificate2s = new List<X509Certificate2>();
@@ -902,8 +943,11 @@ namespace Opc.Ua.PubSub.Transport
                     mqttOptions = mqttClientOptionsBuilder.Build();
 
                     // Create the certificate validator for broker certificates.
-                    m_certificateValidator = CreateCertificateValidator(mqttTlsOptions);
-                    m_certificateValidator.CertificateValidation += CertificateValidator_CertificateValidation;
+                    if (mqttTlsOptions != null)
+                    {
+                        m_certificateValidator = CreateCertificateValidator(mqttTlsOptions);
+                        m_certificateValidator.CertificateValidation += CertificateValidator_CertificateValidation;
+                    }
                     m_mqttClientTlsOptions = mqttOptions?.ChannelOptions?.TlsOptions;
                 }
                 else if (connectionUri.Scheme == "ws")
@@ -953,6 +997,16 @@ namespace Opc.Ua.PubSub.Transport
             certificateValidator.UpdateAsync(securityConfiguration).Wait();
 
             return certificateValidator;
+        }
+
+        private string GetPublisherIdAsString()
+        {
+            return PubSubConnectionConfiguration.PublisherId.Value?.ToString() ?? string.Empty;
+        }
+
+        private object GetPublisherIdValue()
+        {
+            return PubSubConnectionConfiguration.PublisherId.Value ?? string.Empty;
         }
 
         /// <summary>
@@ -1091,7 +1145,7 @@ namespace Opc.Ua.PubSub.Transport
                         writerGroupConfiguration.MessageSettings) is JsonWriterGroupMessageDataType jsonMessageSettings))
                 {
                     //Wrong configuration of writer group MessageSettings
-                    return null;
+                    return new List<UaNetworkMessage>();
                 }
 
                 //Create list of dataSet messages to be sent
@@ -1163,15 +1217,15 @@ namespace Opc.Ua.PubSub.Transport
                 foreach (List<Encoding.JsonDataSetMessage> dataSetMessagesToUse in dataSetMessagesList)
                 {
                     var jsonNetworkMessage = new Encoding.JsonNetworkMessage(writerGroupConfiguration, dataSetMessagesToUse);
-                    jsonNetworkMessage.SetNetworkMessageContentMask((JsonNetworkMessageContentMask)jsonMessageSettings?.NetworkMessageContentMask);
+                    jsonNetworkMessage.SetNetworkMessageContentMask((JsonNetworkMessageContentMask)jsonMessageSettings.NetworkMessageContentMask);
 
                     // Network message header
-                    jsonNetworkMessage.PublisherId = m_mqttConnection.PubSubConnectionConfiguration.PublisherId.Value.ToString();
+                    jsonNetworkMessage.PublisherId = m_mqttConnection.GetPublisherIdAsString();
                     jsonNetworkMessage.WriterGroupId = writerGroupConfiguration.WriterGroupId;
 
                     if ((jsonNetworkMessage.NetworkMessageContentMask & JsonNetworkMessageContentMask.SingleDataSetMessage) != 0)
                     {
-                        jsonNetworkMessage.DataSetClassId = dataSetMessagesToUse[0].DataSet?.DataSetMetaData?.DataSetClassId.ToString();
+                        jsonNetworkMessage.DataSetClassId = dataSetMessagesToUse[0].DataSet?.DataSetMetaData?.DataSetClassId.ToString() ?? string.Empty;
                     }
 
                     networkMessages.Add(jsonNetworkMessage);
@@ -1188,7 +1242,7 @@ namespace Opc.Ua.PubSub.Transport
                 // return UADP metadata network message
                 return new Encoding.JsonNetworkMessage(writerGroup, dataSetMetaData)
                 {
-                    PublisherId = m_mqttConnection.PubSubConnectionConfiguration.PublisherId.Value.ToString(),
+                    PublisherId = m_mqttConnection.GetPublisherIdAsString(),
                     DataSetWriterId = dataSetWriterId
                 };
             }
@@ -1225,7 +1279,7 @@ namespace Opc.Ua.PubSub.Transport
                         writerGroupConfiguration.MessageSettings) is UadpWriterGroupMessageDataType uadpMessageSettings))
                 {
                     //Wrong configuration of writer group MessageSettings
-                    return null;
+                    return new List<UaNetworkMessage>();
                 }
 
                 //Create list of dataSet messages to be sent
@@ -1285,10 +1339,10 @@ namespace Opc.Ua.PubSub.Transport
                 var uadpNetworkMessage =
                     new UadpNetworkMessage(writerGroupConfiguration, uadpDataSetMessages);
                 uadpNetworkMessage.SetNetworkMessageContentMask(
-                    (UadpNetworkMessageContentMask)uadpMessageSettings?.NetworkMessageContentMask);
+                    (UadpNetworkMessageContentMask)uadpMessageSettings.NetworkMessageContentMask);
 
                 // Network message header
-                uadpNetworkMessage.PublisherId = m_mqttConnection.PubSubConnectionConfiguration.PublisherId.Value;
+                uadpNetworkMessage.PublisherId = m_mqttConnection.GetPublisherIdValue();
                 uadpNetworkMessage.WriterGroupId = writerGroupConfiguration.WriterGroupId;
 
                 // Writer group header
@@ -1309,7 +1363,7 @@ namespace Opc.Ua.PubSub.Transport
                 // return UADP metadata network message
                 return new UadpNetworkMessage(writerGroup, dataSetMetaData)
                 {
-                    PublisherId = m_mqttConnection.PubSubConnectionConfiguration.PublisherId.Value,
+                    PublisherId = m_mqttConnection.GetPublisherIdValue(),
                     DataSetWriterId = dataSetWriterId
                 };
             }
@@ -1317,3 +1371,4 @@ namespace Opc.Ua.PubSub.Transport
         #endregion
     }
 }
+

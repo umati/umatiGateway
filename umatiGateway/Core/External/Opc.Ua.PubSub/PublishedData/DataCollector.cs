@@ -30,6 +30,8 @@
 using System;
 using System.Collections.Generic;
 
+#pragma warning disable CS0618
+
 namespace Opc.Ua.PubSub.PublishedData
 {
     /// <summary>
@@ -306,3 +308,5 @@ namespace Opc.Ua.PubSub.PublishedData
         #endregion
     }
 }
+
+#pragma warning enable CS0618
