@@ -1,7 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <umatiGatewayConfig version="2.0" logLevel="Debug">
 	<StartConfiguration startWebUI="True" startOPCConnection="False" startMqttProvider="False" startPubSubProvider="False"/>
-	<WebUI url="http://127.0.0.1:7079"></WebUI>
+	<WebUI url="http://127.0.0.1:8080"></WebUI>
+	<!-- <WebUI url="http://0.0.0.0:8080"></WebUI> -->
 	<!-- <OPCConnection serverendpoint="opc.tcp://opcua.umati.app:4840" authentication="None" user ="" password="" ReadExtraLibs="False"/> -->
 	<OPCConnection serverendpoint="opc.tcp://localhost:4840" authentication="None" user ="" password="" ReadExtraLibs="False" resolveBinariesOnly="false" certPath="" certPassword=""/>
 	<MqttProvider serverendpoint="mqtt://localhost:1883" user="company/client" password="" clientId="company/client" prefix="umati/v2" includeStructuredComponents="False" upperCaseRange="False" publishInterval="5000"
@@ -9,7 +10,15 @@
 		<PublishedNodes>
 			<!-- <PublishedNode type="Numeric" namespaceurl="http://example.com/FullMachineTool/" nodeId="66382" baseType="" /> -->
 			<PublishedNode type="Numeric" namespaceurl="http://example.com/BasicMachineTool/" nodeId="66382" baseType="" />
-			<!-- <PublishedNode type="Numeric" namespaceurl="http://example.com/StringIdExample/" nodeId="StringId" baseType="" /> -->
+			<!-- <PublishedNode type="String" namespaceurl="http://MyControledMachine-Namespace/UA" nodeId="MyControledMachine" baseType="" /> -->
+			<!-- <PublishedChildNodes type="Numeric" namespaceurl="http://opcfoundation.org/UA/Machinery/" nodeId="1001">
+				<Filter type="Whitelist">
+					<Conditions type="And">
+						<TypeIdCondition type="Numeric" namespaceurl="http://opcfoundation.org/UA/Woodworking/" nodeId="2"/>
+						<RelationCondition type="Numeric" namespaceurl="http://opcfoundation.org/UA/" nodeId="35" includeSubTypes="false"/>
+					</Conditions>
+				</Filter>
+			</PublishedChildNodes> -->
 		</PublishedNodes>
 		<CustomEncodings>
 			<CustomEncoding name="GMSResultDataTypeEncoding" active="False" />
@@ -24,6 +33,14 @@
 			<!-- <PublishedNode type="Numeric" namespaceurl="http://example.com/FullMachineTool/" nodeId="66382" baseType="" /> -->
 			<PublishedNode type="Numeric" namespaceurl="http://example.com/BasicMachineTool/" nodeId="66382" baseType="" />
 			<!-- <PublishedNode type="String" namespaceurl="http://example.com/StringIdExample/" nodeId="StringId" baseType="" /> -->
+			<!-- <PublishedChildNodes type="Numeric" namespaceurl="http://opcfoundation.org/UA/Machinery/" nodeId="1001">
+				<Filter type="Whitelist">
+					<Conditions type="And">
+						<TypeIdCondition type="Numeric" namespaceurl="http://opcfoundation.org/UA/Woodworking/" nodeId="2"/>
+						<RelationCondition type="Numeric" namespaceurl="http://opcfoundation.org/UA/" nodeId="35" includeSubTypes="false"/>
+					</Conditions>
+				</Filter>
+			</PublishedChildNodes> -->
 		</PublishedNodes>
 	</PubSubProvider>
 </umatiGatewayConfig>
