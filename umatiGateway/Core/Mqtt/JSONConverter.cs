@@ -1,9 +1,9 @@
 ﻿// SPDX-License-Identifier: Apache-2.0
 // Copyright (c) 2025 FVA GmbH - interop4x. All rights reserved.
+// Copyright (c) 2026 Verein Deutscher Werkzeugmaschinenfabriken e.V. . All rights reserved.
 using Newtonsoft.Json.Linq;
 using NLog.LayoutRenderers;
 using Opc.Ua;
-using Org.BouncyCastle.Utilities;
 using System.Xml;
 
 namespace umatiGateway.Core.Mqtt

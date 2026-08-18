@@ -36,6 +36,8 @@ using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Text;
 
+#pragma warning disable CS0618
+
 namespace Opc.Ua.PubSub.Transport
 {
     /// <summary>
@@ -281,3 +283,5 @@ namespace Opc.Ua.PubSub.Transport
         }
     }
 }
+
+#pragma warning enable CS0618

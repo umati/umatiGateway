@@ -50,8 +50,8 @@ namespace Opc.Ua.PubSub.Transport
         /// <returns></returns>
         internal static async Task<IMqttClient> GetMqttClientAsync(int reconnectInterval,
                                                                    MqttClientOptions mqttClientOptions,
-                                                                   Func<MqttApplicationMessageReceivedEventArgs, Task> receiveMessageHandler,
-                                                                   StringCollection topicFilter = null)
+                                                                   Func<MqttApplicationMessageReceivedEventArgs, Task>? receiveMessageHandler,
+                                                                   StringCollection? topicFilter = null)
         {
             IMqttClient mqttClient = s_mqttClientFactory.Value.CreateMqttClient();
 
