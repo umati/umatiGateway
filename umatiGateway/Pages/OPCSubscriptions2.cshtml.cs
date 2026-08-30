@@ -22,9 +22,13 @@ namespace UmatiGateway.Pages
 
         public JsonResult OnPostAddNodeMqttConfig([FromBody] OpcUaNode opcUaNode)
         {
-
+            NamespaceTable namespaceTable = new NamespaceTable();
+            if(this.app.OpcUaClient.TryGetNamespaceTable(out NamespaceTable namespaceTable1))
+            {
+                namespaceTable = namespaceTable1;
+            }
             NodeId nodeId = new NodeId(opcUaNode.NodeId);
-            string? namespaceUrl = this.app.OpcUaClient.GetNamespaceTable().GetString(nodeId.NamespaceIndex);
+            string? namespaceUrl = namespaceTable.GetString(nodeId.NamespaceIndex);
             string? identifier = nodeId.Identifier.ToString();
             if (namespaceUrl != null && identifier != null)
             {
@@ -39,8 +43,13 @@ namespace UmatiGateway.Pages
         }
         public JsonResult OnPostAddNodePubSubConfig([FromBody] OpcUaNode opcUaNode)
         {
+            NamespaceTable namespaceTable = new NamespaceTable();
+            if (this.app.OpcUaClient.TryGetNamespaceTable(out NamespaceTable namespaceTable1))
+            {
+                namespaceTable = namespaceTable1;
+            }
             NodeId nodeId = new NodeId(opcUaNode.NodeId);
-            string? namespaceUrl = this.app.OpcUaClient.GetNamespaceTable().GetString(nodeId.NamespaceIndex);
+            string? namespaceUrl = namespaceTable.GetString(nodeId.NamespaceIndex);
             string? identifier = nodeId.Identifier.ToString();
             if (namespaceUrl != null && identifier != null)
             {
@@ -60,53 +69,67 @@ namespace UmatiGateway.Pages
             {
                 try
                 {
-                    this.app.OpcUaClient.CheckSession();
-                    NodeId nodeId = new NodeId(opcUaNode.NodeId);
-                    BrowseResultCollection browseResultCollection = this.app.OpcUaClient.BrowseNode(nodeId, BrowseDirection.Forward, (uint)0xFF, ReferenceTypeIds.HierarchicalReferences, true);
-                    List<OpcUaNode> childNodes = new List<OpcUaNode>();
-                    foreach (BrowseResult browseResult in browseResultCollection)
+                    if (this.app.OpcUaClient.TryCheckSession(out Opc.Ua.Client.Session? checkedSession) && checkedSession != null)
                     {
-
-                        ReferenceDescriptionCollection referenceDescriptionCollection = browseResult.References;
-                        foreach (ReferenceDescription referenceDescription in referenceDescriptionCollection)
+                        NodeId nodeId = new NodeId(opcUaNode.NodeId);
+                        if (this.app.OpcUaClient.TryBrowseNode(nodeId, BrowseDirection.Forward, (uint)0xFF, ReferenceTypeIds.HierarchicalReferences, true, out BrowseResultCollection browseResultCollection))
                         {
-                            OpcUaNode childNode = new OpcUaNode();
-                            childNode.DisplayName = referenceDescription.DisplayName.Text;
-                            childNode.BrowseName = referenceDescription.BrowseName.ToString();
-                            childNode.NodeId = referenceDescription.NodeId.ToString();
-                            childNode.TypeId = referenceDescription.TypeId.ToString();
-                            childNode.NodeClass = referenceDescription.NodeClass.ToString();
+                            List<OpcUaNode> childNodes = new List<OpcUaNode>();
+                            foreach (BrowseResult browseResult in browseResultCollection)
+                            {
 
-                            NodeId childNodeId = new NodeId(referenceDescription.NodeId.Identifier, referenceDescription.NodeId.NamespaceIndex);
-                            Node? node = this.app.OpcUaClient.ReadNode(childNodeId);
-                            if (node != null)
-                            {
-                                if (node.Description != null)
+                                ReferenceDescriptionCollection referenceDescriptionCollection = browseResult.References;
+                                foreach (ReferenceDescription referenceDescription in referenceDescriptionCollection)
                                 {
-                                    childNode.Description = node.Description.ToString();
-                                }
-                                else
-                                {
-                                    childNode.Description = "";
-                                }
-                            }
-                            try
-                            {
-                                DataValue? value = this.app.OpcUaClient.ReadValue(childNodeId);
-                                if (value != null)
-                                {
-                                    childNode.Value = value.ToString();
-                                }
-                            }
-                            catch (Exception exception)
-                            {
-                                Console.WriteLine(exception);
-                            }
+                                    OpcUaNode childNode = new OpcUaNode();
+                                    childNode.DisplayName = referenceDescription.DisplayName.Text;
+                                    childNode.BrowseName = referenceDescription.BrowseName.ToString();
+                                    childNode.NodeId = referenceDescription.NodeId.ToString();
+                                    childNode.TypeId = referenceDescription.TypeId.ToString();
+                                    childNode.NodeClass = referenceDescription.NodeClass.ToString();
 
-                            childNodes.Add(childNode);
+                                    NodeId childNodeId = new NodeId(referenceDescription.NodeId.Identifier, referenceDescription.NodeId.NamespaceIndex);
+                                    Node? node = this.app.OpcUaClient.ReadNode(childNodeId);
+                                    if (node != null)
+                                    {
+                                        if (node.Description != null)
+                                        {
+                                            childNode.Description = node.Description.ToString();
+                                        }
+                                        else
+                                        {
+                                            childNode.Description = "";
+                                        }
+                                    }
+                                    try
+                                    {
+                                        DataValue? value = this.app.OpcUaClient.ReadValue(childNodeId);
+                                        if (value != null)
+                                        {
+                                            childNode.Value = value.ToString();
+                                        }
+                                    }
+                                    catch (Exception exception)
+                                    {
+                                        Console.WriteLine(exception);
+                                    }
+
+                                    childNodes.Add(childNode);
+                                }
+                            }
+                            return new JsonResult(childNodes.ToArray());
+                        }
+                        else
+                        {
+                            Console.WriteLine("Invalid Session");
+                            return new JsonResult(new List<OpcUaNode>());
                         }
                     }
-                    return new JsonResult(childNodes.ToArray());
+                    else
+                    {
+                        Console.WriteLine("Invalid Session");
+                        return new JsonResult(new List<OpcUaNode>());
+                    }
                 }
                 catch (OpcUaException opcUaException)
                 {

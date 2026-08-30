@@ -18,6 +18,11 @@ namespace umatiGateway.Core.Mqtt
         }
         public List<MachineNode> FilterMachineNodes(List<PublishedNode> publishedNodes)
         {
+            NamespaceTable namespaceTable = new NamespaceTable();
+            if(client.TryGetNamespaceTable(out NamespaceTable nameSpaceTable1))
+            {
+                namespaceTable = nameSpaceTable1;
+            }
             Dictionary<NodeId, MachineNode> filteredMachineNodes = new Dictionary<NodeId, MachineNode>();
             foreach (PublishedNode publishedConfigNode in publishedNodes)
             {
@@ -27,26 +32,31 @@ namespace umatiGateway.Core.Mqtt
                         NodeId? resolvedNodeId = this.ResolveNodeId(publishedChildNodes.Type, publishedChildNodes.NodeId, publishedChildNodes.NamespaceUrl, publishedChildNodes.BaseType);
                         if (resolvedNodeId != null)
                         {
-                            List<NodeId> childNodes = client.BrowseNodeIds(new BrowseDescriptionCollection { BrowseUtils.GetHierarchicalChildren(resolvedNodeId, (int)NodeClass.Object | (int)NodeClass.Variable) });
-                            //List<NodeId> childNodes = client.BrowseLocalNodeIds(resolvedNodeId, BrowseDirection.Forward, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true);
-                            List<NodeId> filteredNodes = this.MatchFilters(resolvedNodeId, childNodes, publishedChildNodes.Filter);
-                            foreach (NodeId child in filteredNodes)
+                            if (client.TryBrowseNodeIds(new BrowseDescriptionCollection { BrowseUtils.GetHierarchicalChildren(resolvedNodeId, (int)NodeClass.Object | (int)NodeClass.Variable) }, out List<NodeId> childNodes))
                             {
-                                if (!filteredMachineNodes.ContainsKey(child))
+                                List<NodeId> filteredNodes = this.MatchFilters(resolvedNodeId, childNodes, publishedChildNodes.Filter);
+                                foreach (NodeId child in filteredNodes)
                                 {
-                                    MachineNode childMachineNode = new MachineNode(publishedChildNodes.NodeId, publishedChildNodes.NamespaceUrl);
-                                    childMachineNode.NodeIdType = publishedChildNodes.Type;
-                                    childMachineNode.BaseType = publishedChildNodes.BaseType;
-                                    childMachineNode.PublishedNodeType = "PublishedChildNodes";
-                                    childMachineNode.ResolvedNodeId = child;
-                                    childMachineNode.NamespaceUrl = this.client.GetNamespaceTable().GetString(child.NamespaceIndex);
-                                    childMachineNode.NodeIdString = child.Identifier.ToString() ?? "";
-                                    filteredMachineNodes.Add(child, childMachineNode);
+                                    if (!filteredMachineNodes.ContainsKey(child))
+                                    {
+                                        MachineNode childMachineNode = new MachineNode(publishedChildNodes.NodeId, publishedChildNodes.NamespaceUrl);
+                                        childMachineNode.NodeIdType = publishedChildNodes.Type;
+                                        childMachineNode.BaseType = publishedChildNodes.BaseType;
+                                        childMachineNode.PublishedNodeType = "PublishedChildNodes";
+                                        childMachineNode.ResolvedNodeId = child;
+                                        childMachineNode.NamespaceUrl = namespaceTable.GetString(child.NamespaceIndex);
+                                        childMachineNode.NodeIdString = child.Identifier.ToString() ?? "";
+                                        filteredMachineNodes.Add(child, childMachineNode);
+                                    }
+                                    else
+                                    {
+                                        Logger.Info("NodeId {Child} already added to published Machines.", child);
+                                    }
                                 }
-                                else
-                                {
-                                    Logger.Info("NodeId {Child} already added to published Machines.", child);
-                                }
+                            }
+                            else
+                            {
+                                Logger.Error("Unable to browse NodeIds");
                             }
                         }
                         else
@@ -87,7 +97,15 @@ namespace umatiGateway.Core.Mqtt
             NodeId? relationTypeId = this.ResolveNodeId(relationCondition.Type, relationCondition.NodeId, relationCondition.NamespaceUrl, "");
             if (relationTypeId != null)
             {
-                return this.client.BrowseLocalNodeIds(parentNodeId, BrowseDirection.Forward, (int)NodeClass.Object | (int)NodeClass.Variable, relationTypeId, relationCondition.IncludeSubTypes);
+                if (this.client.TryBrowseLocalNodeIds(parentNodeId, BrowseDirection.Forward, (int)NodeClass.Object | (int)NodeClass.Variable, relationTypeId, relationCondition.IncludeSubTypes, out List<NodeId> localNodeIds))
+                {
+                    return localNodeIds;
+                }
+                else
+                {
+                    HandleOpcUaClientError();
+                    return new List<NodeId>();
+                }
             }
             else
             {
@@ -184,7 +202,15 @@ namespace umatiGateway.Core.Mqtt
             NodeId? typeId = this.ResolveNodeId(typeIdCondition.Type, typeIdCondition.NodeId, typeIdCondition.NamespaceUrl, "");
             if (typeId != null)
             {
-                return this.client.BrowseLocalNodeIdsWithTypeDefinition(parentNodeId, BrowseDirection.Forward, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true, typeId);
+                if(this.client.TryBrowseLocalNodeIdsWithTypeDefinition(parentNodeId, BrowseDirection.Forward, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true, typeId, out List<NodeId> localNodeIds))
+                {
+                    return localNodeIds;
+                }
+                else
+                {
+                    HandleOpcUaClientError();
+                    return new List<NodeId>();
+                }
             }
             else
             {
@@ -196,7 +222,12 @@ namespace umatiGateway.Core.Mqtt
         {
             NodeId? resolvedNodeId = null;
             Logger.Debug("Read Machine Node: {NodeIdType}\t{NodeId}\t{NamespaceUrl}\t{BaseType}", nodeIdType, nodeId, namespaceurl, baseType);
-            int namespaceIndex = client.GetNamespaceTable().GetIndex(namespaceurl);
+            NamespaceTable namespaceTable = new NamespaceTable();
+            if(client.TryGetNamespaceTable(out NamespaceTable namespaceTable1))
+            {
+                namespaceTable = namespaceTable1;
+            }
+            int namespaceIndex = namespaceTable.GetIndex(namespaceurl);
             if (nodeIdType == "Numeric")
             {
                 resolvedNodeId = new NodeId(Convert.ToUInt32(nodeId), (ushort)namespaceIndex);
@@ -213,6 +244,9 @@ namespace umatiGateway.Core.Mqtt
             }
             return resolvedNodeId;
         }
-
+        private void HandleOpcUaClientError()
+        {
+            Logger.Error("Unable to retrieve Data form OpcUaClient");
+        }
     }
 }

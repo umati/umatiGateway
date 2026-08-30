@@ -82,14 +82,23 @@ namespace umatiGateway.Core.PubSub
                     JsonEncodingConfiguration.jsonEncodingType = JsonEncodingType.Compact;
                     break;
             }
-            Session session = this.client.CheckSession();
-            session.FetchTypeTree(DataTypeIds.BaseDataType);
-            session.FetchTypeTree(ObjectTypeIds.BaseObjectType);
-            var typeSystem = new Opc.Ua.Client.ComplexTypes.ComplexTypeSystem(session);
-            typeSystem.LoadAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+            if (this.client.TryCheckSession(out Session? checkedSession) && checkedSession != null)
+            {
+                checkedSession.FetchTypeTree(DataTypeIds.BaseDataType);
+                checkedSession.FetchTypeTree(ObjectTypeIds.BaseObjectType);
+                var typeSystem = new Opc.Ua.Client.ComplexTypes.ComplexTypeSystem(checkedSession);
+                typeSystem.LoadAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+            }
+            else
+            {
+                Logger.Error("Invalid Session");
+            }
             referenceDescriptionResolver = new ReferenceDescriptionResolver(client);
             CreateSubscriptions();
-            client.SubscribeToDataChanges(subscriptionIds, updateDataValue);
+            if(!client.TrySubscribeToDataChanges(subscriptionIds, updateDataValue, out uint subscriptionId))
+            {
+                Logger.Error("Unable to Subscribe");
+            }
             this.AddStatusTopic();
             this.PrepareConnection();
             this.AddConnectionTopic();
@@ -302,6 +311,12 @@ namespace umatiGateway.Core.PubSub
                 PublishedData = publishedVariableDataTypeCollection,
             };
 
+            NamespaceTable namespaces = new NamespaceTable();
+            if(client.TryGetNamespaceTable(out NamespaceTable nameSpaceTable1))
+            {
+                namespaces = nameSpaceTable1;
+            }
+
             var publishedDataSet = new PublishedDataSetDataType
             {
                 Name = dataSetName,
@@ -315,7 +330,7 @@ namespace umatiGateway.Core.PubSub
                         MajorVersion = 1,
                         MinorVersion = 0
                     },
-                    Namespaces = client.GetNamespaceTable().ToArray(),
+                    Namespaces = namespaces.ToArray(),
                     StructureDataTypes = GetStructureDescriptions(hierarchicalNode),
                     EnumDataTypes = GetEnumDescriptions(hierarchicalNode),
                     SimpleDataTypes = GetSimpleTypeDescriptionCollection(hierarchicalNode),
@@ -408,6 +423,12 @@ namespace umatiGateway.Core.PubSub
                 PublishedData = publishedVariableDataTypeCollection,
             };
 
+            NamespaceTable namespaceTable = new NamespaceTable();
+
+            if(client.TryGetNamespaceTable(out NamespaceTable namespaceTable1))
+            {
+                namespaceTable = namespaceTable1;
+            }
             var publishedDataSet = new PublishedDataSetDataType
             {
                 Name = dataSetName,
@@ -421,7 +442,7 @@ namespace umatiGateway.Core.PubSub
                         MajorVersion = 1,
                         MinorVersion = 0
                     },
-                    Namespaces = client.GetNamespaceTable().ToArray(),
+                    Namespaces = namespaceTable.ToArray(),
                     Description = "MyDescription",
                 }
             };
@@ -513,7 +534,11 @@ namespace umatiGateway.Core.PubSub
             {
                 PublishedData = publishedVariableDataTypeCollection,
             };
-
+            NamespaceTable namespaceTable = new NamespaceTable();
+            if(client.TryGetNamespaceTable(out NamespaceTable namespaceTable1))
+            {
+                namespaceTable = namespaceTable1;
+            }
             var publishedDataSet = new PublishedDataSetDataType
             {
                 Name = dataSetName,
@@ -527,7 +552,7 @@ namespace umatiGateway.Core.PubSub
                         MajorVersion = 1,
                         MinorVersion = 0
                     },
-                    Namespaces = client.GetNamespaceTable().ToArray(),
+                    Namespaces = namespaceTable.ToArray(),
                     Description = "MyDescription",
                 }
             };
@@ -619,80 +644,86 @@ namespace umatiGateway.Core.PubSub
                         {
 
                             EnumFieldCollection enumFieldCollection = new EnumFieldCollection();
-                            BrowseResultCollection browseResultCollection = this.client.BrowseNode(dataType, BrowseDirection.Forward, (int)NodeClass.Variable, ReferenceTypeIds.HasProperty, true);
-                            foreach (BrowseResult browseResult in browseResultCollection)
+                            if (this.client.TryBrowseNode(dataType, BrowseDirection.Forward, (int)NodeClass.Variable, ReferenceTypeIds.HasProperty, true, out BrowseResultCollection browseResultCollection))
                             {
-                                ReferenceDescriptionCollection referenceDescriptionCollection = browseResult.References;
-                                foreach (ReferenceDescription referenceDescription in referenceDescriptionCollection)
+                                foreach (BrowseResult browseResult in browseResultCollection)
                                 {
-                                    if (referenceDescription.BrowseName == BrowseNames.EnumValues)
+                                    ReferenceDescriptionCollection referenceDescriptionCollection = browseResult.References;
+                                    foreach (ReferenceDescription referenceDescription in referenceDescriptionCollection)
                                     {
-                                        EnumValueType[] enumValues = new EnumValueType[0];
-                                        ExpandedNodeId enumValuesNodeIdExp = referenceDescription.NodeId;
-                                        NodeId enumValuesNodeId = new NodeId(enumValuesNodeIdExp.Identifier, enumValuesNodeIdExp.NamespaceIndex);
-                                        DataValue? dv = this.client.ReadValue(enumValuesNodeId);
-                                        if (dv != null)
+                                        if (referenceDescription.BrowseName == BrowseNames.EnumValues)
                                         {
-                                            if (dv.Value is ExtensionObject[] exArr)
+                                            EnumValueType[] enumValues = new EnumValueType[0];
+                                            ExpandedNodeId enumValuesNodeIdExp = referenceDescription.NodeId;
+                                            NodeId enumValuesNodeId = new NodeId(enumValuesNodeIdExp.Identifier, enumValuesNodeIdExp.NamespaceIndex);
+                                            DataValue? dv = this.client.ReadValue(enumValuesNodeId);
+                                            if (dv != null)
                                             {
-                                                enumValues = new EnumValueType[exArr.Length];
-                                                for (int i = 0; i < exArr.Length; i++)
-                                                    enumValues[i] = (EnumValueType)exArr[i].Body;
+                                                if (dv.Value is ExtensionObject[] exArr)
+                                                {
+                                                    enumValues = new EnumValueType[exArr.Length];
+                                                    for (int i = 0; i < exArr.Length; i++)
+                                                        enumValues[i] = (EnumValueType)exArr[i].Body;
+                                                }
+                                                else if (dv.Value is EnumValueType[] direct)
+                                                {
+                                                    enumValues = direct;
+                                                }
+                                                else
+                                                {
+                                                    throw new InvalidOperationException($"Unerwarteter Typ für EnumValues: {dv.Value?.GetType().FullName}");
+                                                }
                                             }
-                                            else if (dv.Value is EnumValueType[] direct)
-                                            {
-                                                enumValues = direct;
-                                            }
-                                            else
-                                            {
-                                                throw new InvalidOperationException($"Unerwarteter Typ für EnumValues: {dv.Value?.GetType().FullName}");
-                                            }
-                                        }
-                                        foreach (EnumValueType ev in enumValues)
-                                        {
-                                            enumFieldCollection.Add(new EnumField
-                                            {
-                                                Name = ev.DisplayName?.Text ?? $"V_{ev.Value}",
-                                                Value = ev.Value,
-                                                Description = ev.Description ?? LocalizedText.Null
-                                            });
-                                        }
-                                    }
-                                    else if (referenceDescription.BrowseName == BrowseNames.EnumStrings)
-                                    {
-                                        ExpandedNodeId enumStringsNodeIdExp = referenceDescription.NodeId;
-                                        NodeId enumStringsNodeId = new NodeId(enumStringsNodeIdExp.Identifier, enumStringsNodeIdExp.NamespaceIndex);
-
-                                        DataValue? dv = this.client.ReadValue(enumStringsNodeId);
-                                        if (dv != null)
-                                        {
-                                            LocalizedText[] ltArr = Array.Empty<LocalizedText>();
-
-                                            if (dv.Value is LocalizedText[] localizedTexts)
-                                            {
-                                                ltArr = localizedTexts;
-                                            }
-                                            else if (dv.Value is string[] strArr)
-                                            {
-                                                ltArr = strArr.Select(s => new LocalizedText(s)).ToArray();
-                                            }
-                                            else
-                                            {
-                                                throw new InvalidOperationException($"Unerwarteter Typ für EnumStrings: {dv.Value?.GetType().FullName}");
-                                            }
-
-                                            for (int i = 0; i < ltArr.Length; i++)
+                                            foreach (EnumValueType ev in enumValues)
                                             {
                                                 enumFieldCollection.Add(new EnumField
                                                 {
-                                                    Name = ltArr[i].Text ?? $"V_{i}",
-                                                    Value = (long)i,
-                                                    Description = LocalizedText.Null
+                                                    Name = ev.DisplayName?.Text ?? $"V_{ev.Value}",
+                                                    Value = ev.Value,
+                                                    Description = ev.Description ?? LocalizedText.Null
                                                 });
+                                            }
+                                        }
+                                        else if (referenceDescription.BrowseName == BrowseNames.EnumStrings)
+                                        {
+                                            ExpandedNodeId enumStringsNodeIdExp = referenceDescription.NodeId;
+                                            NodeId enumStringsNodeId = new NodeId(enumStringsNodeIdExp.Identifier, enumStringsNodeIdExp.NamespaceIndex);
+
+                                            DataValue? dv = this.client.ReadValue(enumStringsNodeId);
+                                            if (dv != null)
+                                            {
+                                                LocalizedText[] ltArr = Array.Empty<LocalizedText>();
+
+                                                if (dv.Value is LocalizedText[] localizedTexts)
+                                                {
+                                                    ltArr = localizedTexts;
+                                                }
+                                                else if (dv.Value is string[] strArr)
+                                                {
+                                                    ltArr = strArr.Select(s => new LocalizedText(s)).ToArray();
+                                                }
+                                                else
+                                                {
+                                                    throw new InvalidOperationException($"Unerwarteter Typ für EnumStrings: {dv.Value?.GetType().FullName}");
+                                                }
+
+                                                for (int i = 0; i < ltArr.Length; i++)
+                                                {
+                                                    enumFieldCollection.Add(new EnumField
+                                                    {
+                                                        Name = ltArr[i].Text ?? $"V_{i}",
+                                                        Value = (long)i,
+                                                        Description = LocalizedText.Null
+                                                    });
+                                                }
                                             }
                                         }
                                     }
                                 }
+                            }
+                            else
+                            {
+                                Logger.Error("Unable to browseNode {NodeId}", dataType);
                             }
                             EnumDefinition enumDefinition = new EnumDefinition { Fields = enumFieldCollection };
                             EnumDescription enumDescription = new EnumDescription
@@ -774,6 +805,12 @@ namespace umatiGateway.Core.PubSub
                 PublishedData = publishedVariableDataTypeCollection,
             };
 
+            NamespaceTable namespaceTable = new NamespaceTable();
+            if(client.TryGetNamespaceTable(out NamespaceTable nameSpaceTable1))
+            {
+                namespaceTable = nameSpaceTable1;
+            }
+
             var publishedDataSet = new PublishedDataSetDataType
             {
                 Name = dataSetName,
@@ -787,7 +824,7 @@ namespace umatiGateway.Core.PubSub
                         MajorVersion = 1,
                         MinorVersion = 0
                     },
-                    Namespaces = client.GetNamespaceTable().ToArray(),
+                    Namespaces = namespaceTable.ToArray(),
                     StructureDataTypes = GetStructureDescriptions(hierarchicalNode),
                     EnumDataTypes = GetEnumDescriptions(hierarchicalNode),
                     SimpleDataTypes = GetSimpleTypeDescriptionCollection(hierarchicalNode),
@@ -911,6 +948,10 @@ namespace umatiGateway.Core.PubSub
                 Connections = new PubSubConnectionDataTypeCollection { PubSubConnectionDataType }
             };
         }
+        private void HandleOpcClientError()
+        {
+            Logger.Error("Unable to retrieve Data from Opc Server.");
+        }
         private void CreateApp()
         {
             pubSubApp = UaPubSubApplication.Create(PubSubConfigurationDataType, pubSubDataStore);
@@ -967,72 +1008,98 @@ namespace umatiGateway.Core.PubSub
                 hierarchicalNode.Parent = parent;
                 if (hierarchicalNode.TypeDefinitionNodeId == null)
                 {
-                    hierarchicalNode.TypeDefinitionNodeId = client.BrowseTypeDefinition(nodeId);
-                }
-                List<NodeId> childNodeIds = client.BrowseLocalNodeIds(nodeId, BrowseDirection.Forward, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true);
-                foreach (NodeId childNodeId in childNodeIds)
-                {
-                    NodeId? childTypeDefinition = client.BrowseTypeDefinition(childNodeId);
-                    if (childTypeDefinition != null)
+                    if(client.TryBrowseTypeDefinition(nodeId, out NodeId? typeDefinitionNodeId))
                     {
-                        if (childTypeDefinition == VariableTypeIds.PropertyType)
+                        hierarchicalNode.TypeDefinitionNodeId = typeDefinitionNodeId;
+                    }
+                    else
+                    {
+                        HandleOpcClientError();
+                    }
+                }
+                if (client.TryBrowseLocalNodeIds(nodeId, BrowseDirection.Forward, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true, out List<NodeId> childNodeIds))
+                {
+                    foreach (NodeId childNodeId in childNodeIds)
+                    {
+                        if (client.TryBrowseTypeDefinition(childNodeId, out NodeId? childTypeDefinition))
                         {
-
-                            HierarchicalNode? childNode = ReadNodeIdAsHierarchicalNode(hierarchicalNode, childNodeId);
-                            if (childNode != null)
+                            if (childTypeDefinition != null)
                             {
-                                if (!hierarchicalNode.hierarchicalChilds.Keys.Contains(childNodeId))
+                                if (childTypeDefinition == VariableTypeIds.PropertyType)
                                 {
-                                    hierarchicalNode.hierarchicalChilds.Add(childNodeId, childNode);
+
+                                    HierarchicalNode? childNode = ReadNodeIdAsHierarchicalNode(hierarchicalNode, childNodeId);
+                                    if (childNode != null)
+                                    {
+                                        if (!hierarchicalNode.hierarchicalChilds.Keys.Contains(childNodeId))
+                                        {
+                                            hierarchicalNode.hierarchicalChilds.Add(childNodeId, childNode);
+                                        }
+                                        else
+                                        {
+                                            Logger.Warn("Double child NodeId {ChildNodeId} in HierarchicalNode {HierarchicalNodeId}", childNodeId, hierarchicalNode.NodeId);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Logger.Error("Unable to read HierarchicalNode");
+                                    }
                                 }
                                 else
                                 {
-                                    Logger.Warn("Double child NodeId {ChildNodeId} in HierarchicalNode {HierarchicalNodeId}", childNodeId, hierarchicalNode.NodeId);
+                                    HierarchicalNode? childNode = ReadNodeIdAsHierarchicalNode(hierarchicalNode, childNodeId);
+                                    if (childNode != null)
+                                    {
+                                        if (!hierarchicalNode.hierarchicalChilds.Keys.Contains(childNodeId))
+                                        {
+                                            hierarchicalNode.hierarchicalChilds.Add(childNodeId, childNode);
+                                        }
+                                        else
+                                        {
+                                            Logger.Warn("Double child NodeId {ChildNodeId} in HierarchicalNode {HierarchicalNodeId}", childNodeId, hierarchicalNode.NodeId);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Logger.Error("Unable to read HierarchicalNode");
+                                    }
                                 }
                             }
                             else
                             {
-                                Logger.Error("Unable to read HierarchicalNode");
+                                Logger.Error("No TypeDefinition for child NodeId {ChildNodeId}", childNodeId);
                             }
                         }
                         else
                         {
-                            HierarchicalNode? childNode = ReadNodeIdAsHierarchicalNode(hierarchicalNode, childNodeId);
-                            if (childNode != null)
-                            {
-                                if (!hierarchicalNode.hierarchicalChilds.Keys.Contains(childNodeId))
-                                {
-                                    hierarchicalNode.hierarchicalChilds.Add(childNodeId, childNode);
-                                }
-                                else
-                                {
-                                    Logger.Warn("Double child NodeId {ChildNodeId} in HierarchicalNode {HierarchicalNodeId}", childNodeId, hierarchicalNode.NodeId);
-                                }
-                            }
-                            else
-                            {
-                                Logger.Error("Unable to read HierarchicalNode");
-                            }
+                            HandleOpcClientError();
                         }
                     }
-                    else
+                    if (node is VariableNode variableNode)
                     {
-                        Logger.Error("No TypeDefinition for child NodeId {ChildNodeId}", childNodeId);
+                        if (this.client.TryCheckSession(out Session? checkedSession) && checkedSession != null)
+                        {
+                            FieldMetaData meta = new FieldMetaData
+                            {
+                                Name = variableNode.BrowseName.Name,
+                                Description = variableNode.Description,
+                                BuiltInType = (byte)TypeInfo.GetBuiltInType(variableNode.DataType, checkedSession.TypeTree),
+                                DataType = variableNode.DataType,
+                                ValueRank = variableNode.ValueRank,
+                                DataSetFieldId = new Uuid(Guid.NewGuid())
+                            };
+                            hierarchicalNode.fieldMetaData = meta;
+                        }
+                        else
+                        {
+                            Logger.Error("Invalid Session");
+                        }
+
                     }
                 }
-                if (node is VariableNode variableNode)
+                else
                 {
-                    Session session = app.OpcUaClient.CheckSession();
-                    FieldMetaData meta = new FieldMetaData
-                    {
-                        Name = variableNode.BrowseName.Name,
-                        Description = variableNode.Description,
-                        BuiltInType = (byte)TypeInfo.GetBuiltInType(variableNode.DataType, session.TypeTree),
-                        DataType = variableNode.DataType,
-                        ValueRank = variableNode.ValueRank,
-                        DataSetFieldId = new Uuid(Guid.NewGuid())
-                    };
-                    hierarchicalNode.fieldMetaData = meta;
+                    HandleOpcClientError();
                 }
             }
             else

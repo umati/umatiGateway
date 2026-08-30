@@ -1,10 +1,12 @@
-﻿using Opc.Ua;
+﻿using NLog;
+using Opc.Ua;
 using Opc.Ua.Client;
 
 namespace umatiGateway.Core.OPC
 {
     public class BrowseUtil
     {
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         private IOpcUaClient client;
         public BrowseUtil(IOpcUaClient client)
         {
@@ -15,36 +17,43 @@ namespace umatiGateway.Core.OPC
             List<NodeId> resultNodeIds = new List<NodeId>();
             int includedCount = included.Count;
             int excludedCount = 0;
-            Session session = this.client.CheckSession();
-            BrowseDescriptionCollection nodesToBrowse = new BrowseDescriptionCollection();
-            nodesToBrowse.AddRange(included);
-            if (excluded != null)
+            if (this.client.TryCheckSession(out Session? checkedSession) && checkedSession != null)
             {
-                excludedCount = excluded.Count;
-                nodesToBrowse.AddRange(excluded);
-            }
-            ResponseHeader responseHeader = session.Browse(null, null, 10000, nodesToBrowse, out BrowseResultCollection browseResults, out DiagnosticInfoCollection diagnosticInfos);
-            for (int i = 0; i < browseResults.Count; i++)
-            {
-                BrowseResult browseResult = browseResults[i];
-                ReferenceDescriptionCollection references = browseResult.References;
-                foreach (ReferenceDescription reference in references)
+                BrowseDescriptionCollection nodesToBrowse = new BrowseDescriptionCollection();
+                nodesToBrowse.AddRange(included);
+                if (excluded != null)
                 {
-                    NodeId nodeId = new NodeId(reference.NodeId.Identifier, reference.NodeId.NamespaceIndex);
-                    if (i < includedCount)
+                    excludedCount = excluded.Count;
+                    nodesToBrowse.AddRange(excluded);
+                }
+                ResponseHeader responseHeader = checkedSession.Browse(null, null, 10000, nodesToBrowse, out BrowseResultCollection browseResults, out DiagnosticInfoCollection diagnosticInfos);
+                for (int i = 0; i < browseResults.Count; i++)
+                {
+                    BrowseResult browseResult = browseResults[i];
+                    ReferenceDescriptionCollection references = browseResult.References;
+                    foreach (ReferenceDescription reference in references)
                     {
-                        resultNodeIds.Add(nodeId);
-                    }
-                    else
-                    {
-                        if (resultNodeIds.Contains(nodeId))
+                        NodeId nodeId = new NodeId(reference.NodeId.Identifier, reference.NodeId.NamespaceIndex);
+                        if (i < includedCount)
                         {
-                            resultNodeIds.Remove(nodeId);
+                            resultNodeIds.Add(nodeId);
+                        }
+                        else
+                        {
+                            if (resultNodeIds.Contains(nodeId))
+                            {
+                                resultNodeIds.Remove(nodeId);
+                            }
                         }
                     }
                 }
+                return resultNodeIds;
             }
-            return resultNodeIds;
+            else
+            {
+                Logger.Error("Invalid Session");
+                return resultNodeIds;
+            }
         }
         public NodeId? BrowseFirstNodeId(BrowseDescriptionCollection browseDescriptionCollection, BrowseDescriptionCollection? excluded = null)
         {
