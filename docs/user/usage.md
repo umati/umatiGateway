@@ -150,7 +150,9 @@ The default configuration file looks like:
 | →→→→type                               | Defines the type of the NodeId of the PublishedNode.                                        | Numeric \| String                                                            |
 | →→→→namespaceurl                       | Defines the nsu of the PublishedNode.                                                       | e.g., `http://example.com/BasicMachineTool/`                                 |
 | →→→→nodeId                             | Defines the id of the PublishedNode.                                                        | e.g., `61982` or `MyMachine` (`Numeric` or `String`)                         |
-| →→→→baseType                           | Alias name for the entry node _TypeDefintion_ that is used in the resulting JSON.           | e.g., `MachineToolType` or empty if no alias should be used.                 |
+| →→→→baseType                           | Overrides BrowseName and DisplayName of the entry node's forward HasTypeDefinition reference in PubSub metadata. | e.g., `MachineToolType` or empty to keep the original names. |
+
+For `PublishedChildNodes`, `baseType` applies to each selected entry node. It does not propagate to descendants. The reference's NodeId, BrowseName namespace index and DisplayName locale are preserved; topics and instance names are unchanged.
 
 ### Configuration via Web UI
 
