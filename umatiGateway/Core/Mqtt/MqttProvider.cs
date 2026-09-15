@@ -7,6 +7,7 @@ using Newtonsoft.Json.Linq;
 using Opc.Ua;
 using System.Reflection;
 using Opc.Ua.Client;
+using Opc.Ua.Client.ComplexTypes;
 using System.Timers;
 using System.Xml;
 using System.Collections.Concurrent;
@@ -28,6 +29,10 @@ namespace umatiGateway.Core.Mqtt
     public class MqttProvider : OpcUaEventListener
     {
         private readonly object _lockObject = new object();
+        private readonly object complexTypeLock = new object();
+        private Session? complexTypeSession;
+        private ComplexTypeSystem? complexTypeSystem;
+        private StructuredValueConverter StructuredValues => new StructuredValueConverter(jsonConverter, decode);
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         public List<MachineNode> MachineNodes { get; set; } = new List<MachineNode>();
         private MqttClientFactory mqttFactory = new MqttClientFactory();
@@ -1166,6 +1171,24 @@ namespace umatiGateway.Core.Mqtt
                     return jsonConverter.GetDefaultNullValue();
                 }
                 object value = dv.Value;
+                if (node.BrowseName.Name == "JobOrderList")
+                {
+                    Logger.Info("JobOrderList read: NodeId={NodeId}, DataType={DataType}, Status={Status}, CLRType={ClrType}, Count={Count}",
+                        nodeId, (node as VariableNode)?.DataType, dv.StatusCode,
+                        value?.GetType().FullName, (value as Array)?.Length);
+                    IEnumerable<ExtensionObject> structures = value is ExtensionObject single
+                        ? new[] { single } : (value as ExtensionObject[] ?? Array.Empty<ExtensionObject>());
+                    foreach (var type in structures.Where(item => item != null)
+                        .Select(item => new { item.TypeId, item.Encoding, BodyType = item.Body?.GetType().FullName }).Distinct())
+                    {
+                        Logger.Info("JobOrderList structure: NodeId={NodeId}, TypeId={TypeId}, Encoding={Encoding}, BodyType={BodyType}",
+                            nodeId, type.TypeId, type.Encoding, type.BodyType);
+                    }
+                }
+                if (StatusCode.IsBad(dv.StatusCode))
+                {
+                    AddError(nodeId, $"OPC UA Read returned {dv.StatusCode}.");
+                }
                 switch (value)
                 {
                     case null: return jsonConverter.GetDefaultNullValue();
@@ -1191,7 +1214,8 @@ namespace umatiGateway.Core.Mqtt
                     case uint uint32Value: return jsonConverter.Convert(uint32Value);
                     case ulong uint64Value: return jsonConverter.Convert(uint64Value);
                     //TODO investigate in this...
-                    case Variant variantValue: return variantValue.ToString();
+                    case Variant variantValue: return StructuredValues.Convert(variantValue);
+                    case Uuid uuidValue: return StructuredValues.Convert(uuidValue);
                     case XmlElement xmlElementValue: return jsonConverter.Convert(xmlElementValue);
                     case ExtensionObject extensionObjectValue:
                         JObject jobject = new JObject();
@@ -1237,11 +1261,13 @@ namespace umatiGateway.Core.Mqtt
                             }
                         }
                         return jArray;
-                    default: AddError(nodeId, $"Unimplemented Type for nodeId: {nodeId.ToString()}."); return "";
+                    case Array arrayValue: return StructuredValues.Convert(arrayValue);
+                    default: AddError(nodeId, $"Unimplemented Type {value.GetType()} for nodeId: {nodeId}."); return "";
                 }
             }
             catch (OpcUaException opcUaException)
             {
+                Logger.Error(opcUaException, "Unable to read/decode OPC UA value for NodeId={NodeId}", nodeId);
                 Exception? innerException = opcUaException.InnerException;
                 if (innerException != null && innerException is ServiceResultException)
                 {
@@ -1251,36 +1277,21 @@ namespace umatiGateway.Core.Mqtt
             }
             catch (Exception ex)
             {
+                Logger.Error(ex, "Unable to read/decode OPC UA value for NodeId={NodeId}", nodeId);
                 return ex.Message;
             }
         }
         /// <summary>
-        /// Decodes an IEncodeable DataType. This is only relevant for the build in DataTypes from
-        /// the UA Base namespace.
+        /// Converts SDK-decoded built-in and server-defined structures to gateway JSON.
         /// </summary>
         /// <param name="extensionObject">The extensionObject that is to be decoded.</param>
         /// <param name="nodeId">The nodeId for debug purposes.</param>
         /// <returns>An JObject representing the DataType.</returns>
         public JToken decodeEncodeable(ExtensionObject extensionObject, NodeId? nodeId)
         {
-            JObject jObject = new JObject();
-            if (extensionObject.Body is IEncodeable)
-            {
-                IEncodeable iEncodeable = (IEncodeable)extensionObject.Body;
-                switch (iEncodeable)
-                {
-                    case Argument argument: return jsonConverter.Convert(argument);
-                    case EUInformation euInformation: return jsonConverter.Convert(euInformation);
-                    case Opc.Ua.Range range: return jsonConverter.Convert(range);
-                    case EnumValueType enumValueType: return jsonConverter.Convert(enumValueType);
-                    default: AddError(nodeId, $"The type of the iEncodeable is not implemented {iEncodeable.GetType()}"); return new JObject();
-                }
-            }
-            else
-            {
-                AddError(nodeId, "The Encodeable Object is not of Type: IEncodeable");
-                return new JObject();
-            }
+            Logger.Debug("Decode encodeable: NodeId={NodeId}, TypeId={TypeId}, BodyType={BodyType}",
+                nodeId, extensionObject.TypeId, extensionObject.Body?.GetType().FullName);
+            return StructuredValues.Convert(extensionObject.Body);
         }
         /// <summary>
         /// Adds an error to the Error List.
@@ -1289,6 +1300,10 @@ namespace umatiGateway.Core.Mqtt
         /// <param name="message">The message related to the error.</param>
         private void AddError(NodeId? nodeId, string message)
         {
+            if (nodeId == null || !errors.TryGetValue(nodeId, out var existingErrors) || !existingErrors.Contains(message))
+            {
+                Logger.Warn("OPC UA to MQTT conversion: NodeId={NodeId}, Error={Error}", nodeId, message);
+            }
             if (nodeId != null)
             {
                 if (errors.ContainsKey(nodeId))
@@ -1316,39 +1331,15 @@ namespace umatiGateway.Core.Mqtt
         }
         public object decode(Variant variant)
         {
-            JObject jObject = new JObject();
-            object obj = variant.Value;
-            switch (obj)
-            {
-                case bool boolValue: return this.jsonConverter.Convert(boolValue);
-                case sbyte sByteValue: return this.jsonConverter.Convert(sByteValue);
-                case byte byteValue: return this.jsonConverter.Convert(byteValue);
-                case short shortValue: return this.jsonConverter.Convert(shortValue);
-                case ushort ushortValue: return this.jsonConverter.Convert(ushortValue);
-                case int intValue: return this.jsonConverter.Convert(intValue);
-                case uint uintValue: return this.jsonConverter.Convert(uintValue);
-                case long longValue: return this.jsonConverter.Convert(longValue);
-                case ulong ulongValue: return this.jsonConverter.Convert(ulongValue);
-                case float floatValue: return this.jsonConverter.Convert(floatValue);
-                case double doubleValue: return this.jsonConverter.Convert(doubleValue);
-                case string stringValue: return this.jsonConverter.Convert(stringValue);
-                case DateTime dateTimeValue: return this.jsonConverter.Convert(dateTimeValue);
-                case Guid guidValue: return this.jsonConverter.Convert(guidValue);
-                case byte[] byteStringValue: return this.jsonConverter.Convert(byteStringValue);
-                case XmlElement xmlElementValue: return this.jsonConverter.Convert(xmlElementValue);
-                case NodeId nodeIdValue: return this.jsonConverter.Convert(nodeIdValue);
-                case ExpandedNodeId expandedNodeIdValue: return this.jsonConverter.Convert(expandedNodeIdValue);
-                case StatusCode statusCodeValue: return this.jsonConverter.Convert(statusCodeValue);
-                case QualifiedName qualifiedNameValue: return this.jsonConverter.Convert(qualifiedNameValue);
-                case LocalizedText localizedTextValue: return this.jsonConverter.Convert(localizedTextValue);
-                case ExtensionObject extensionObject: return decode(extensionObject);
-                case DataValue dataValue: return this.jsonConverter.Convert(dataValue, this.decode((Variant)dataValue.Value));
-                case DiagnosticInfo diagnosticInfo: return this.jsonConverter.Convert(diagnosticInfo);
-                default: return jObject;
-            }
+            return StructuredValues.Convert(variant);
         }
         public JObject decode(ExtensionObject extensionObject)
         {
+            Logger.Debug("Decode ExtensionObject: TypeId={TypeId}, Encoding={Encoding}, BodyType={BodyType}, ByteLength={ByteLength}",
+                extensionObject.TypeId, extensionObject.Encoding, extensionObject.Body?.GetType().FullName,
+                (extensionObject.Body as byte[])?.Length);
+            if (extensionObject.Body is IEncodeable)
+                return (JObject)StructuredValues.Convert(extensionObject.Body);
             ICustomEncoding? customEncoding = customEncodingManager.GetActiveEncodingForNodeId(extensionObject.TypeId);
             if (customEncoding != null)
             {
@@ -1377,10 +1368,8 @@ namespace umatiGateway.Core.Mqtt
             bool success = dataTypes.TryGetValue(search, out Node? value);
             if (!success)
             {
-                if (value != null)
-                {
-                    jObject.Add("Error", "Unable to get TypeInformation.");
-                }
+                Logger.Debug("Missing DataType node for ExtensionObject: TypeId={TypeId}, DataType={DataType}",
+                    extensionObject.TypeId, dataType);
             }
             else
             {
@@ -1393,12 +1382,50 @@ namespace umatiGateway.Core.Mqtt
                     ExtensionObject dtd = dtn.DataTypeDefinition;
                     if (gdc != null)
                     {
-                        BinaryDecoder BinaryDecoder = new BinaryDecoder((byte[])extensionObject.Body, ServiceMessageContext.GlobalContext);
+                        using BinaryDecoder BinaryDecoder = new BinaryDecoder((byte[])extensionObject.Body, client.CheckSession().MessageContext);
                         jObject = decode(BinaryDecoder, gdc);
+                        if (BinaryDecoder.Position != ((byte[])extensionObject.Body).Length)
+                        {
+                            Logger.Warn("Incomplete ExtensionObject decoding: TypeId={TypeId}, Structure={Structure}, BytesRead={BytesRead}, ByteLength={ByteLength}",
+                                extensionObject.TypeId, gdc.Name, BinaryDecoder.Position, ((byte[])extensionObject.Body).Length);
+                        }
+                        return jObject;
+                    }
+                    else
+                    {
+                        Logger.Debug("Missing BSD structure for ExtensionObject: TypeId={TypeId}, DataType={DataType}, Namespace={Namespace}, BrowseName={BrowseName}",
+                            extensionObject.TypeId, dataType, generatedDataTypeDefinition.nameSpace, dtn.BrowseName.Name);
                     }
                 }
             }
-            return jObject;
+            return DecodeUsingServerType(extensionObject, dataType);
+        }
+
+        private JObject DecodeUsingServerType(ExtensionObject extensionObject, NodeId dataType)
+        {
+            Session session = client.CheckSession();
+            Type? systemType;
+            lock (complexTypeLock)
+            {
+                if (!ReferenceEquals(complexTypeSession, session))
+                {
+                    complexTypeSession = session;
+                    complexTypeSystem = new ComplexTypeSystem(session);
+                }
+                var typeId = NodeId.ToExpandedNodeId(dataType, session.NamespaceUris);
+                systemType = session.Factory.GetSystemType(typeId);
+                if (systemType == null)
+                {
+                    Logger.Info("Loading server structure definition: DataType={DataType}, EncodingId={EncodingId}", typeId, extensionObject.TypeId);
+                    systemType = complexTypeSystem!.LoadTypeAsync(typeId, throwOnError: true)
+                        .ConfigureAwait(false).GetAwaiter().GetResult();
+                    if (systemType != null)
+                        Logger.Info("Loaded server structure definition: DataType={DataType}, CLRType={ClrType}", typeId, systemType.FullName);
+                }
+            }
+            if (systemType == null)
+                throw new InvalidOperationException($"No BSD or server structure definition available for {extensionObject.TypeId} (DataType={dataType}).");
+            return StructuredValues.DecodeBinary(extensionObject, systemType, session.MessageContext);
         }
         public GeneratedDataClass? GetGeneratedDataClass(string namespaceurl, string browsename)
         {
@@ -1428,6 +1455,7 @@ namespace umatiGateway.Core.Mqtt
                             Logger.Trace("Decode: {FieldName} {FieldType}", field.Name, field.TypeName);
                             currentFieldName = field.Name;
                             currentFieldType = field.TypeName;
+                            int fieldStartPosition = BinaryDecoder.Position;
                             if (field.IsLengthField == true)
                             {
                                 if (lastFieldWasSwitchedOff)
@@ -1440,7 +1468,14 @@ namespace umatiGateway.Core.Mqtt
                                 {
                                     previousInt32 = 0;
                                 }
-                                if (field.TypeName == "ua:Variant")
+                                if (IsSdkIdentifierType(field.TypeName))
+                                {
+                                    JArray array = new JArray();
+                                    for (int i = 0; i < previousInt32; i++)
+                                        array.Add(ReadSdkIdentifier(BinaryDecoder, field));
+                                    jObject.Add(field.Name, array);
+                                }
+                                else if (field.TypeName == "ua:Variant")
                                 {
                                     Variant[] v = new Variant[previousInt32];
                                     JArray array = new JArray();
@@ -1545,6 +1580,11 @@ namespace umatiGateway.Core.Mqtt
                                     }
                                     jObject.Add(field.Name, array);
                                 }
+                                if (previousInt32 > 0 && BinaryDecoder.Position == fieldStartPosition)
+                                {
+                                    Logger.Warn("Structured array was not consumed: Structure={Structure}, Field={Field}, Type={Type}, Count={Count}, Offset={Offset}",
+                                        generatedStructure.Name, field.Name, field.TypeName, previousInt32, fieldStartPosition);
+                                }
                                 previousInt32 = 0;
                             }
                             else
@@ -1566,6 +1606,14 @@ namespace umatiGateway.Core.Mqtt
                                 else
                                 {
                                     lastFieldWasSwitchedOff = false;
+                                }
+
+                                // These built-ins have SDK wire encodings; in particular NodeId's
+                                // selector is packed into a byte, not a UInt32 BSD enumeration.
+                                if (IsSdkIdentifierType(field.TypeName))
+                                {
+                                    jObject.Add(field.Name, ReadSdkIdentifier(BinaryDecoder, field));
+                                    continue;
                                 }
 
                                 if (field.TypeName == "opc:Bit" && !field.HasLength)
@@ -1774,6 +1822,11 @@ namespace umatiGateway.Core.Mqtt
                                         Logger.Error("Could not find DataTypeDefinition for GeneratedDataClass: {GeneratedDataClass}", generatedDataClass);
                                     }
                                 }
+                                if (BinaryDecoder.Position == fieldStartPosition)
+                                {
+                                    Logger.Warn("Structured field was not consumed: Structure={Structure}, Field={Field}, Type={Type}, Offset={Offset}",
+                                        generatedStructure.Name, field.Name, field.TypeName, fieldStartPosition);
+                                }
                             }
                         }
                     }
@@ -1814,10 +1867,23 @@ namespace umatiGateway.Core.Mqtt
             }
             catch (Exception ex)
             {
+                Logger.Error(ex, "Structured value decoding failed: Structure={Structure}, Field={Field}, Type={Type}, Offset={Offset}",
+                    generatedDataClass?.Name, currentFieldName, currentFieldType, BinaryDecoder.Position);
                 jObject.Add($"Exception reading field:'{currentFieldName}' with type '{currentFieldType}'", ex.Message);
                 return jObject;
             }
         }
+
+        private static bool IsSdkIdentifierType(string typeName) =>
+            typeName is "ua:NodeId" or "ua:ExpandedNodeId" or "ua:QualifiedName";
+
+        private JToken ReadSdkIdentifier(BinaryDecoder decoder, GeneratedField field) => field.TypeName switch
+        {
+            "ua:NodeId" => jsonConverter.Convert(decoder.ReadNodeId(field.Name)),
+            "ua:ExpandedNodeId" => jsonConverter.Convert(decoder.ReadExpandedNodeId(field.Name)),
+            "ua:QualifiedName" => jsonConverter.Convert(decoder.ReadQualifiedName(field.Name)),
+            _ => throw new NotSupportedException($"Unsupported identifier type: {field.TypeName}")
+        };
 
         private string GetNameSpaceForIndex(ushort NamespaceIndex)
         {
