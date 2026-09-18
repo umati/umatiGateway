@@ -102,7 +102,7 @@ jobs:
     permissions:
       packages: write
       contents: read
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     services:
       registry:
         image: registry:3
@@ -180,7 +180,7 @@ jobs:
   release:
     permissions:
       contents: write
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     needs: [build-linux, build-windows, docker]
     if: startsWith(github.ref, 'refs/tags/')
     steps:
