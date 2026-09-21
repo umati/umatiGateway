@@ -148,6 +148,7 @@ namespace umatiGateway.Core.PubSub
                 HierarchicalNode? hierarchicalNode = ReadNodeIdAsHierarchicalNode(null, nodeId);
                 if (hierarchicalNode != null)
                 {
+                    hierarchicalNode.BaseType = machineNode.BaseType;
                     rootNodes.Add(nodeId, hierarchicalNode);
                     Subscribe(hierarchicalNode);
                 }

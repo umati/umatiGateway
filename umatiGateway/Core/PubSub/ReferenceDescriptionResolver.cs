@@ -71,6 +71,13 @@ namespace umatiGateway.Core.PubSub
                             }
 
                         }
+                        if (referenceDescription.IsForward
+                            && referenceDescription.ReferenceTypeId == ReferenceTypeIds.HasTypeDefinition
+                            && !string.IsNullOrEmpty(hierarchicalNode.BaseType))
+                        {
+                            referenceDescription.BrowseName = new QualifiedName(hierarchicalNode.BaseType, referenceDescription.BrowseName.NamespaceIndex);
+                            referenceDescription.DisplayName = new LocalizedText(referenceDescription.DisplayName.Locale, hierarchicalNode.BaseType);
+                        }
                         keyValuePair.Value = new Variant(referenceDescription);
                         keyValuePairs.Add(keyValuePair);
                     }

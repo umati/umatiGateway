@@ -13,6 +13,7 @@ namespace umatiGateway.Core.PubSub
         public LocalizedText DisplayName { get; set; } = "";
         public LocalizedText Description { get; set; } = "";
         public ExpandedNodeId TypeDefinitionNodeId { get; set; } = "";
+        public string BaseType { get; set; } = "";
 
         public FieldMetaData? fieldMetaData = null;
         public TypeDefinitionNode? TypeDefinitionNode { get; set; } = null;
