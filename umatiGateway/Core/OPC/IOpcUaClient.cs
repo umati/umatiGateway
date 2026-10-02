@@ -24,12 +24,12 @@ namespace umatiGateway.Core.OPC
         /// <exception cref="OpcUaException">Exception in Opc Ua Context.</exception>
         public void Disconnect();
         /// <summary>
-        /// Returns the TypeDefinition for a given NodeId.
+        /// Reads the Typedefinition for a given NodeId.
         /// </summary>
-        /// <param name="nodeId"> The nodeId for which the typeDefinition is browsed.</param>
-        /// <returns>The typeDefinition node Id for the nodeId or null if the node has no typedefinition.</returns>
-        /// <exception cref="OpcUaException">Exception in Opc Ua Context.</exception>
-        public NodeId? BrowseTypeDefinition(NodeId nodeId);
+        /// <param name="nodeId"> The NodeId for a that the Typedefinition is red.</param>
+        /// <param name="typeDefinition">The TypeDefinition for the given NodeId or null if there is no TypeDefinition for the given node.</param>
+        /// <returns>True if the Browse was successful or false if it was not successful.</returns>
+        public bool TryBrowseTypeDefinition(NodeId nodeId, out NodeId? typeDefinition);
         /// <summary>
         /// Returns a List of nodeIds matching the description.
         /// </summary>
@@ -38,8 +38,9 @@ namespace umatiGateway.Core.OPC
         /// <param name="nodeClass">The nodeclass for which is searched.</param>
         /// <param name="ReferenceTypeId">The node Id of the Reference for that is searched.</param>
         /// <param name="includeSubTypes"> A boolean that indicates if Subtypes of the ReferenceType should be included.</param>
-        /// <exception cref="OpcUaException">Exception in Opc Ua Context.</exception>
-        public List<NodeId> BrowseLocalNodeIds(NodeId nodeId, BrowseDirection browseDirection, uint nodeClass, NodeId ReferenceTypeId, bool includeSubTypes);
+        /// <param name="localNodeIds"> The browsed local NodeIds.</param>
+        /// <returns>True if the Browse was successful or false if it was not successful.</returns>
+        public bool TryBrowseLocalNodeIds(NodeId nodeId, BrowseDirection browseDirection, uint nodeClass, NodeId ReferenceTypeId, bool includeSubTypes, out List<NodeId> localNodeIds);
         /// <summary>
         /// Returns a List of NodeIds matching the parameters.
         /// </summary>
@@ -49,8 +50,9 @@ namespace umatiGateway.Core.OPC
         /// <param name="referenceTypeId">The nodeId of the References for that is searched.</param>
         /// <param name="includeSubTypes">A boolean that indicates if Subtypes of the ReferenceType should be searched as well.</param>
         /// <param name="typeDefinition">The typedfinition of the NodeIds that should be returned.</param>
-        /// <exception cref="OpcUaException">Exception in Opc Ua Context.</exception>
-        public List<NodeId> BrowseLocalNodeIdsWithTypeDefinition(NodeId nodeId, BrowseDirection browseDirection, uint nodeClass, NodeId referenceTypeId, bool includeSubTypes, NodeId typeDefinition);
+        /// <param name="localNodeIds"> The browsed local NodeIds.</param>
+        /// <returns>True if the Browse was successful or false if it was not successful.</returns>
+        public bool TryBrowseLocalNodeIdsWithTypeDefinition(NodeId nodeId, BrowseDirection browseDirection, uint nodeClass, NodeId referenceTypeId, bool includeSubTypes, NodeId typeDefinition, out List<NodeId> localNodeIds);
         /// <summary>
         /// Returns a List of NodeIds matching the parameters.
         /// </summary>
@@ -60,9 +62,9 @@ namespace umatiGateway.Core.OPC
         /// <param name="referenceTypeIds">The nodeId of the References for that is searched.</param>
         /// <param name="includeSubTypes">A boolean that indicates if Subtypes of the ReferenceType should be searched as well.</param>
         /// <param name="excludedReferenceTypeId">The nodeId of the Reference that should be excluded.</param>
-        /// <returns>Returns a List of NodeIds matching the parameters.</returns>
-        /// <exception cref="OpcUaException">Exception in Opc Ua Context.</exception>
-        public List<NodeId> BrowseLocalNodeIdsExcludeReference(NodeId rootNodeId, BrowseDirection browseDirection, uint nodeClassMask, NodeId referenceTypeIds, bool includeSubTypes, NodeId excludedReferenceTypeId);
+        /// <param name="localNodeIds"> The browsed local NodeIds.</param>
+        /// <returns>True if the Browse was successful or false if it was not successful.</returns>
+        public bool TryBrowseLocalNodeIdsExcludeReference(NodeId rootNodeId, BrowseDirection browseDirection, uint nodeClassMask, NodeId referenceTypeIds, bool includeSubTypes, NodeId excludedReferenceTypeId, out List<NodeId> localNodeIds);
         /// <summary>
         /// Browses the first local NodeId that matches the given criteria.
         /// </summary>
@@ -71,9 +73,9 @@ namespace umatiGateway.Core.OPC
         /// <param name="nodeClassMask">The node classes for which is searched.</param>
         /// <param name="referenceTypeIds">The nodeId of the References for that is searched.</param>
         /// <param name="includeSubTypes">A boolean that indicates if Subtypes of the ReferenceType should be searched as well.</param>
-        /// <returns>The first NodeId that matches the criteria or null if there is no match.</returns>
-        /// <exception cref="OpcUaException">Exception in Opc Ua Context.</exception>
-        public NodeId? BrowseLocalNodeId(NodeId rootNodeId, BrowseDirection browseDirection, uint nodeClassMask, NodeId referenceTypeIds, bool includeSubTypes);
+        /// <param name="localNodeId"> The browsed local NodeId.</param>
+        /// <returns>True if the Browse was successful or false if it was not successful.</returns>
+        public bool TryBrowseLocalNodeId(NodeId rootNodeId, BrowseDirection browseDirection, uint nodeClassMask, NodeId referenceTypeIds, bool includeSubTypes, out NodeId? localNodeId);
         /// <summary>
         /// Browses the first local NodeId that matches the given criteria.
         /// </summary>
@@ -83,31 +85,31 @@ namespace umatiGateway.Core.OPC
         /// <param name="referenceTypeIds">The nodeId of the References for that is searched.</param>
         /// <param name="includeSubTypes">A boolean that indicates if Subtypes of the ReferenceType should be searched as well.</param>
         /// <param name="browseName">The browsename that is searched for.</param>
-        /// <returns>The first NodeId that matches the criteria or null if there is no match.</returns>
-        /// <exception cref="OpcUaException">Exception in Opc Ua Context.</exception>
-        public NodeId? BrowseLocalNodeIdWithBrowseName(NodeId rootNodeId, BrowseDirection browseDirection, uint nodeClassMask, NodeId referenceTypeIds, bool includeSubTypes, QualifiedName browseName);
+        /// <param name="localNodeId"> The browsed local NodeId.</param>
+        /// <returns>True if the Browse was successful or false if it was not successful.</returns>
+        public bool TryBrowseLocalNodeIdWithBrowseName(NodeId rootNodeId, BrowseDirection browseDirection, uint nodeClassMask, NodeId referenceTypeIds, bool includeSubTypes, QualifiedName browseName, out NodeId? localNodeId);
         /// <summary>
         /// Gets the Optional And Mandatory Placeholders For TypeClass nodes.
         /// </summary>
         /// <param name="typeClassNodes">A List of TypeclassNodes for which the optional and Mandatory placeholders are retrieved.</param>
-        /// <returns>A List of Optional and Mandatory Placeholders for TypeClass nodes.</returns>
-        /// <exception cref="OpcUaException">Exception in Opc Ua Context.</exception>
-        public List<NodeId> GetOptionalAndMandatoryPlaceholdersForTypeClassNodes(List<TypeClassNode> typeClassNodes);
+        /// <param name="optionalMandatoryPlaceholders">A List of Optional and Mandatory Placeholders for TypeClass nodes.</param>
+        /// <returns>True if the Browse was successful or false if it was not successful.</returns>
+        public bool TryGetOptionalAndMandatoryPlaceholdersForTypeClassNodes(List<TypeClassNode> typeClassNodes, out List<NodeId> optionalMandatoryPlaceholders);
         /// <summary>
         /// Gets a List of the Optional and Mandatory Placeholders for a typedefinition.
         /// </summary>
         /// <param name="typeDefinition">The nodeId of the Typedefinition.</param>
-        /// <returns>A List containing the Optional and MandatoryPlaceholders for a typedefinition.</returns>
-        /// <exception cref="OpcUaException">Exception in Opc Ua Context.</exception>
-        public List<NodeId> GetOptionalAndMandatoryPlaceholders(NodeId typeDefinition);
+        /// <param name="optionalMandatoryPlaceholders">A List of Optional and Mandatory Placeholders for TypeClass node.</param>
+        /// <returns>True if the Browse was successful or false if it was not successful.</returns>
+        public bool TryGetOptionalAndMandatoryPlaceholders(NodeId typeDefinition, out List<NodeId> optionalMandatoryPlaceholders);
         /// <summary>
         /// Returns the TypeclassNodes for a given nodeId
         /// </summary>
         /// <param name="nodeId">The nodeId for that TypeClassnodes are generated.</param>
+        /// <param name="typeClassNodes">A List of Type Class nodes.</param>
         /// <param name="pathToChild">The path to the child.</param>
-        /// <returns>A List of Type Class nodes.</returns>
-        /// <exception cref="OpcUaException">Exception in Opc Ua Context.</exception>
-        public List<TypeClassNode> GetTypeClassNodesForNodeId(NodeId nodeId, RelativePathElementCollection? pathToChild = null);
+        /// <returns>True if the Browse was successful or false if it was not successful.</returns>
+        public bool TryGetTypeClassNodesForNodeId(NodeId nodeId, out List<TypeClassNode> typeClassNodes, RelativePathElementCollection? pathToChild = null);
         /// <summary>
         /// Reads a node with the given nodeId from the OpcUaServer.
         /// </summary>
@@ -128,9 +130,9 @@ namespace umatiGateway.Core.OPC
         /// event occurs.
         /// </summary>
         /// <param name="opcUaEventListener">The OpcUaEventlistemer to add.</param>
-        /// <exception cref="OpcUaException">Exception in Opc Ua Context.</exception>
+        /// <returns>True if the connection was successful, false otherwise.</returns>
         /// 
-        public void ConnectEvents(OpcUaEventListener opcUaEventListener);
+        public bool TryConnectEvents(OpcUaEventListener opcUaEventListener);
         /// <summary>
         /// Browses a nodeId on the server and returns the BrowseResults as an BrowseResultCollection.
         /// </summary>
@@ -139,9 +141,8 @@ namespace umatiGateway.Core.OPC
         /// <param name="nodeClassMask">Defines the nodeclasses that are returned.</param>
         /// <param name="referenceTypeIds">Defines the reference to follow.</param>
         /// <param name="includeSubTypes">Boolean that indicates if subtypes of the Relation should also be followed.</param>
-        /// <returns>The BrowseResultCollection as the result of the Browsing.</returns>
-        /// <exception cref="OpcUaException">Exception in Opc Ua Context.</exception>
-        public BrowseResultCollection BrowseNode(NodeId nodeId, BrowseDirection browseDirection, uint nodeClassMask, NodeId referenceTypeIds, bool includeSubTypes);
+        /// <returns>True if the browsing was successfull, False otherwise.</returns>
+        public bool TryBrowseNode(NodeId nodeId, BrowseDirection browseDirection, uint nodeClassMask, NodeId referenceTypeIds, bool includeSubTypes, out BrowseResultCollection browseResultColelction);
         /// <summary>
         /// Returns the Session Id of the session as a string. If the session was not initialized an empty string is returned.
         /// </summary>
@@ -161,17 +162,16 @@ namespace umatiGateway.Core.OPC
         /// <summary>
         /// Returns the NamespaceTable from the Server;
         /// </summary>
-        /// <returns>The Namespacetable of the OPC Ua Server.</returns>
-        /// <exception cref="OpcUaException">Exception in Opc Ua Context.</exception>
-        public NamespaceTable GetNamespaceTable();
+        /// <returns>True if the namespacetable could be retrieved from the server false if not.</returns>
+        public bool TryGetNamespaceTable(out NamespaceTable namespaceTable);
         /// <summary>
         /// Subscribes a List of NodeIds with a Subscription to the Opc Ua Server;
         /// </summary>
         /// <param name="nodeIds">The NodeIds that should be subscribed.</param>
         /// <param name="eventHandler">The Eventhandler that is called when the subscription triggers.</param>
-        /// <returns>The subscriptionId.</returns>
-        /// <exception cref="OpcUaException">Exception in Opc Ua Context.</exception>
-        public uint SubscribeToDataChanges(List<NodeId> nodeIds, MonitoredItemNotificationEventHandler eventHandler);
+        /// <param name="subscriptionId"> The subscriptionId.</param>
+        /// <returns>True if the subscription was successful. False otherwise.</returns>
+        public bool TrySubscribeToDataChanges(List<NodeId> nodeIds, MonitoredItemNotificationEventHandler eventHandler, out uint subscriptionId);
         /// <summary>
         /// Clears the subscriptions of the client.
         /// </summary>
@@ -181,13 +181,39 @@ namespace umatiGateway.Core.OPC
         /// </summary>
         /// <param name="nodeId">The typeNodeid for that the subtypes should be retrieved.</param>
         /// <param name="subTypeList">Possible sub types including the node type itself.</param>
-        /// <returns>A List of the Type with its subtypes.</returns>
-        /// <exception cref="OpcUaException">Exception in Opc Ua Context.</exception>
-        public List<NodeId> BrowseAllHierarchicalSubType(NodeId nodeId, List<NodeId> subTypeList);
-        public Session CheckSession();
-        public void AddOpcClientListener(IOpcClientListener opcClientListener);
+        /// <returns>True if the Browse was successful or false if it was not successful.</returns>
+        public bool TryBrowseAllHierarchicalSubType(NodeId nodeId, List<NodeId> subTypeList);
+        /// <summary>
+        /// Checks if the Session is still connected and returns it.
+        /// </summary>
+        /// <param name="session">The current Session.</param>
+        /// <returns>True if the Session is still connected. False otherwise.</returns>
+        public bool TryCheckSession(out Session? session);
+        /// <summary>
+        /// Internal Connection Task.
+        /// </summary>
+        /// <returns>True for success, false otherwise.</returns>
         public Task<bool> ConnectAsync();
-        public List<NodeId> BrowseNodeIds(BrowseDescriptionCollection included, BrowseDescriptionCollection? excluded = null);
-        public NodeId? BrowseFirstNodeId(BrowseDescriptionCollection included, BrowseDescriptionCollection? excluded = null);
+        /// <summary>
+        /// Browses NodeIds matching the included BrowseDescriptionCollection, excluding nodes matching the excluded BrowseDescriptionCollection.
+        /// </summary>
+        /// <param name="included">BrowseDescriptions that should be browsed for include.</param>
+        /// <param name="browsedNodeIds">The browsed NodeIds.</param>
+        /// <param name="excluded">BrowseDescriptions that should be browsed for exclude.</param>
+        /// <returns>True if the Browse was successful or false if it was not successful.</returns>
+        public bool TryBrowseNodeIds(BrowseDescriptionCollection included, out List<NodeId> browsedNodeIds, BrowseDescriptionCollection? excluded = null);
+        /// <summary>
+        /// Browses the First NodeId matching the included BrowseDescriptionCollection, excluding nodes matching the excluded BrowseDescriptionCollection.
+        /// </summary>
+        /// <param name="included">BrowseDescriptions that should be browsed for include.</param>
+        /// <param name="browsedNodeId">The first browsed NodeId.</param>
+        /// <param name="excluded">BrowseDescriptions that should be browsed for exclude.</param>
+        /// <returns>True if the Browse was successful or false if it was not successful.</returns>
+        public bool TryBrowseFirstNodeId(BrowseDescriptionCollection included, out NodeId? browsedNodeId, BrowseDescriptionCollection? excluded = null);
+        /// <summary>
+        /// Adds a Listener to the OpcClient.
+        /// </summary>
+        /// <param name="opcClientListener">The listener that is to be added.</param>
+        public void AddOpcClientListener(IOpcClientListener opcClientListener);
     }
 }
