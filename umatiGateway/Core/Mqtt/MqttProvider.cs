@@ -239,11 +239,15 @@ namespace umatiGateway.Core.Mqtt
                 string servercertificatePath = this.app.ActiveConfiguration.MqttProviderConfig.ServerCertificatePath;
                 string customCertificatePath = this.app.ActiveConfiguration.MqttProviderConfig.CustomCaCertificatePath;
 
-                // Zertifikat speichern, falls nicht vorhanden
-                if (servercertificatePath != null && !File.Exists(servercertificatePath))
+                // Zertifikat nur speichern, wenn ein Pfad konfiguriert wurde.
+                if (string.IsNullOrWhiteSpace(servercertificatePath))
+                {
+                    Logger.Warn("Server certificate path is not configured. Skipping saving the server certificate to disk.");
+                }
+                else if (!File.Exists(servercertificatePath))
                 {
                     Logger.Info("Saving server certificate to disk.");
-                    File.WriteAllBytes(this.app.ActiveConfiguration.MqttProviderConfig.ServerCertificatePath, serverCertificate.Export(X509ContentType.Cert));
+                    File.WriteAllBytes(servercertificatePath, serverCertificate.Export(X509ContentType.Cert));
                 }
 
                 // Schritt 1: Standardmäßige Zertifikatsvalidierung
@@ -271,9 +275,13 @@ namespace umatiGateway.Core.Mqtt
                 }
 
                 // Schritt 2: Validierung mit benutzerdefinierter CA (falls vorhanden)
-                if (customCertificatePath != null && File.Exists(customCertificatePath))
+                if (string.IsNullOrWhiteSpace(customCertificatePath))
                 {
-                    var customCaCertificate = new X509Certificate2(File.ReadAllBytes(this.app.ActiveConfiguration.MqttProviderConfig.CustomCaCertificatePath));
+                    Logger.Warn("Custom CA certificate path is not configured. Skipping custom CA validation.");
+                }
+                else if (File.Exists(customCertificatePath))
+                {
+                    var customCaCertificate = new X509Certificate2(File.ReadAllBytes(customCertificatePath));
                     using var customChain = new X509Chain();
                     customChain.ChainPolicy.ExtraStore.Add(customCaCertificate);
                     customChain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
@@ -299,7 +307,7 @@ namespace umatiGateway.Core.Mqtt
                 }
                 else
                 {
-                    Logger.Warn("Custom CA certificate not found.");
+                    Logger.Warn("Custom CA certificate not found at configured path: {CustomCaCertificatePath}", customCertificatePath);
                 }
 
                 return false;
