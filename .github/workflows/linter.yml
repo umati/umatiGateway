@@ -33,7 +33,7 @@ jobs:
           persist-credentials: true
 
       - name: Super-linter
-        uses: super-linter/super-linter@v8.7.0
+        uses: super-linter/super-linter@v9.0.0
         env:
           # To report GitHub Actions status checks
           #RUN_LOCAL: true
