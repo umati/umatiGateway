@@ -5,6 +5,12 @@ VisualStudioVersion = 17.10.34916.146
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "umatiGateway", "umatiGateway\umatiGateway.csproj", "{CB8A1238-6E85-4F08-8B8D-540878FC8AE5}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0AB3BF05-4346-4AA6-1389-037BE0695223}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "unit", "unit", "{9D556B49-86D1-93A7-9596-FFAAB74EC556}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "umatiGateway.Tests", "tests\unit\umatiGateway.Tests.csproj", "{D82DCBA8-E799-4B83-8A9C-8B874C2627D9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,9 +21,17 @@ Global
 		{CB8A1238-6E85-4F08-8B8D-540878FC8AE5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CB8A1238-6E85-4F08-8B8D-540878FC8AE5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CB8A1238-6E85-4F08-8B8D-540878FC8AE5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D82DCBA8-E799-4B83-8A9C-8B874C2627D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D82DCBA8-E799-4B83-8A9C-8B874C2627D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D82DCBA8-E799-4B83-8A9C-8B874C2627D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D82DCBA8-E799-4B83-8A9C-8B874C2627D9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{9D556B49-86D1-93A7-9596-FFAAB74EC556} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{D82DCBA8-E799-4B83-8A9C-8B874C2627D9} = {9D556B49-86D1-93A7-9596-FFAAB74EC556}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6A56442A-3D0E-477A-99B4-D20ED92CDAD7}

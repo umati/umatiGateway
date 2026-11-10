@@ -131,6 +131,36 @@ namespace umatiGateway.Core.OPC
                 throw new OpcUaException($"Failed to read Node with NodeId: {nodeId}", ex);
             }
         }
+
+        public OpcUaMethodCallResult CallMethod(NodeId objectId, NodeId methodId, IList<Variant> inputArguments)
+        {
+            Session activeSession = CheckSession();
+            Logger.Info("Sending OPC UA Call request: Session={SessionId}, ObjectId={ObjectId}, MethodId={MethodId}, InputCount={InputCount}", activeSession.SessionId, objectId, methodId, inputArguments.Count);
+            for (int index = 0; index < inputArguments.Count; index++)
+            {
+                Variant argument = inputArguments[index];
+                Logger.Info("OPC UA Call input[{Index}]: BuiltInType={BuiltInType}, CLRType={ClrType}, Value={Value}", index, Opc.Ua.TypeInfo.Construct(argument.Value).BuiltInType, argument.Value?.GetType().FullName ?? "null", argument.Value);
+            }
+            var request = new CallMethodRequest
+            {
+                ObjectId = objectId,
+                MethodId = methodId,
+                InputArguments = new VariantCollection(inputArguments)
+            };
+
+            activeSession.Call(
+                null,
+                new CallMethodRequestCollection { request },
+                out CallMethodResultCollection results,
+                out DiagnosticInfoCollection _);
+
+            CallMethodResult result = results[0];
+            return new OpcUaMethodCallResult
+            {
+                StatusCode = result.StatusCode,
+                OutputArguments = result.OutputArguments?.ToList() ?? new List<Variant>()
+            };
+        }
         public void ConnectEvents(OpcUaEventListener opcUaEventListener)
         {
             Session session = this.CheckSession();

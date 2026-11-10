@@ -4,7 +4,9 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NLog;
+using Opc.Ua;
 using umatiGateway.Core.Configuration;
+using UaStatusCodes = Opc.Ua.StatusCodes;
 
 namespace umatiGateway.Core.PubSub
 {
@@ -14,11 +16,13 @@ namespace umatiGateway.Core.PubSub
         private const string RequestDirection = "/action-request/";
         private const string ResponseDirection = "/action-response/";
         private readonly IActionMqttTransport transport;
+        private readonly IActionExecutor executor;
         private readonly Func<DateTimeOffset> utcNow;
 
-        public ActionHandler(IActionMqttTransport transport, Func<DateTimeOffset>? utcNow = null)
+        public ActionHandler(IActionMqttTransport transport, IActionExecutor executor, Func<DateTimeOffset>? utcNow = null)
         {
             this.transport = transport;
+            this.executor = executor;
             this.utcNow = utcNow ?? (() => DateTimeOffset.UtcNow);
         }
 
@@ -59,12 +63,6 @@ namespace umatiGateway.Core.PubSub
             Logger.Info("Received MQTT action request on {Topic}: {Payload}", topic, payload);
             Console.WriteLine($"Received MQTT action request on {topic}: {payload}");
 
-            if (!TryDeserializeRequest(payload, out ActionRequest? request, out string error))
-            {
-                Logger.Warn("Ignoring invalid MQTT action request on {Topic}: {Error}", topic, error);
-                return;
-            }
-
             string? responseTopic = CreateResponseTopic(topic);
             if (responseTopic == null)
             {
@@ -72,14 +70,33 @@ namespace umatiGateway.Core.PubSub
                 return;
             }
 
+            if (!TryReadCorrelation(payload, out JObject? json, out string? correlationId))
+            {
+                Logger.Warn("Ignoring MQTT action request without a valid CorrelationId on {Topic}.", topic);
+                return;
+            }
+
+            ushort actionTargetId = ReadActionTargetId(json!);
+            ActionExecutionResult executionResult;
+            ActionRequest? request = null;
+            if (!TryDeserializeRequest(json!, out request, out string error))
+            {
+                Logger.Warn("Rejecting invalid MQTT action request on {Topic}: {Error}", topic, error);
+                executionResult = new ActionExecutionResult { StatusCode = UaStatusCodes.BadInvalidArgument };
+            }
+            else
+            {
+                executionResult = await executor.ExecuteAsync(request!).ConfigureAwait(false);
+            }
+
             var response = new ActionResponse
             {
-                CorrelationId = request.CorrelationId,
-                ActionTargetId = request.ActionTargetId,
+                CorrelationId = correlationId!,
+                ActionTargetId = actionTargetId,
                 Timestamp = utcNow(),
-                StatusCode = 0,
+                StatusCode = executionResult.StatusCode,
                 ActionState = 2,
-                OutputArguments = new JArray()
+                OutputArguments = executionResult.OutputArguments
             };
 
             string responsePayload = JsonConvert.SerializeObject(response, Formatting.Indented);
@@ -101,12 +118,33 @@ namespace umatiGateway.Core.PubSub
                 requestTopic.AsSpan(directionIndex + RequestDirection.Length));
         }
 
-        private static bool TryDeserializeRequest(string payload, out ActionRequest? request, out string error)
+        private static bool TryReadCorrelation(string payload, out JObject? json, out string? correlationId)
+        {
+            json = null;
+            correlationId = null;
+            try
+            {
+                json = JObject.Parse(payload);
+                correlationId = json.Value<string>(nameof(ActionRequest.CorrelationId));
+                return Guid.TryParse(correlationId, out _);
+            }
+            catch (JsonException)
+            {
+                return false;
+            }
+        }
+
+        private static ushort ReadActionTargetId(JObject json)
+        {
+            long? value = json.Value<long?>(nameof(ActionRequest.ActionTargetId));
+            return value is >= ushort.MinValue and <= ushort.MaxValue ? (ushort)value.Value : (ushort)0;
+        }
+
+        private static bool TryDeserializeRequest(JObject json, out ActionRequest? request, out string error)
         {
             request = null;
             try
             {
-                JObject json = JObject.Parse(payload);
                 if (json[nameof(ActionRequest.ActionTargetId)]?.Type != JTokenType.Integer)
                 {
                     error = "ActionTargetId is missing or is not a UInt16.";
@@ -117,13 +155,6 @@ namespace umatiGateway.Core.PubSub
                 if (actionTargetId < ushort.MinValue || actionTargetId > ushort.MaxValue)
                 {
                     error = "ActionTargetId is outside the UInt16 range.";
-                    return false;
-                }
-
-                string? correlationId = json.Value<string>(nameof(ActionRequest.CorrelationId));
-                if (!Guid.TryParse(correlationId, out _))
-                {
-                    error = "CorrelationId is missing or is not a GUID.";
                     return false;
                 }
 
@@ -158,11 +189,6 @@ namespace umatiGateway.Core.PubSub
                 return true;
             }
             catch (JsonException ex)
-            {
-                error = ex.Message;
-                return false;
-            }
-            catch (FormatException ex)
             {
                 error = ex.Message;
                 return false;

@@ -11,7 +11,7 @@ namespace umatiGateway.Core.PubSub
         public ushort ActionTargetId { get; set; }
         public string ObjectId { get; set; } = "";
         public string MethodId { get; set; } = "";
-        public JArray InputArguments { get; set; } = new JArray();
+        public List<ActionArgumentValue> InputArguments { get; set; } = new();
     }
 
     public sealed class ActionResponse
@@ -21,7 +21,7 @@ namespace umatiGateway.Core.PubSub
         public DateTimeOffset Timestamp { get; set; }
         public uint StatusCode { get; set; }
         public uint ActionState { get; set; }
-        public JArray OutputArguments { get; set; } = new JArray();
+        public List<ActionArgumentValue> OutputArguments { get; set; } = new();
     }
 
     public sealed class ActionMetadata
@@ -44,5 +44,19 @@ namespace umatiGateway.Core.PubSub
         public string Name { get; set; } = "";
         public string DataType { get; set; } = "";
         public int ValueRank { get; set; }
+    }
+
+    public sealed class ActionArgumentValue
+    {
+        public string Name { get; set; } = "";
+        public string DataType { get; set; } = "";
+        public int ValueRank { get; set; }
+        public JToken? Value { get; set; }
+    }
+
+    public sealed class ActionExecutionResult
+    {
+        public uint StatusCode { get; set; }
+        public List<ActionArgumentValue> OutputArguments { get; set; } = new();
     }
 }

@@ -113,6 +113,10 @@ Required fields:
 - `MethodId` (ExpandedNodeId string of the method).
 - `InputArguments` (array of argument values and their metadata).
 
+Each input argument contains `Name`, `DataType`, `ValueRank`, and `Value`. Arguments are matched by name and reordered according to the advertised method signature before the OPC UA call. Missing, duplicate, additional, or type-incompatible arguments are rejected.
+
+`ActionTargetId` is authoritative. `ObjectId` and `MethodId` shall exactly match the retained Action MetaData entry for that target. This prevents requests from invoking methods that were not published by the gateway.
+
 Example:
 
 ```json
@@ -140,6 +144,8 @@ Required fields:
 Optional fields:
 
 - `OutputArguments` (array of output argument values, ordered as in the method definition).
+
+The gateway sends exactly one final response with `ActionState` set to `Done`. `StatusCode` is the status returned by the OPC UA Call service. Requests rejected before the call return an appropriate OPC UA Bad status. Method calls are never retried automatically because they can have side effects.
 
 Example:
 

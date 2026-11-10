@@ -43,15 +43,18 @@ namespace umatiGateway.Core.PubSub
         private List<Replacement> topicReplacements = new List<Replacement>();
         private List<Replacement> metaTopicReplacements = new List<Replacement>();
         private readonly ActionHandler actionHandler;
+        private readonly ActionRegistry actionRegistry = new();
         private readonly BlockingCollection<(MonitoredItem, MonitoredItemNotificationEventArgs)> notificationqueue = new BlockingCollection<(MonitoredItem, MonitoredItemNotificationEventArgs)>();
         public List<MachineNode> MachineNodes { get; set; } = new List<MachineNode>();
 
-        public PubSubProvider(UmatiGatewayApp app, IActionMqttTransport? actionTransport = null)
+        public PubSubProvider(UmatiGatewayApp app, IActionMqttTransport? actionTransport = null, IActionExecutor? actionExecutor = null)
         {
             this.app = app;
             this.client = app.OpcUaClient;
             this.referenceDescriptionResolver = new ReferenceDescriptionResolver(client);
-            this.actionHandler = new ActionHandler(actionTransport ?? new MqttActionTransport());
+            this.actionHandler = new ActionHandler(
+                actionTransport ?? new MqttActionTransport(),
+                actionExecutor ?? new OpcUaActionExecutor(client, actionRegistry));
             this.StartWorker();
         }
         public void Connect()
@@ -92,6 +95,7 @@ namespace umatiGateway.Core.PubSub
             typeSystem.LoadAsync().ConfigureAwait(false).GetAwaiter().GetResult();
             referenceDescriptionResolver = new ReferenceDescriptionResolver(client);
             CreateSubscriptions();
+            actionRegistry.Rebuild(EnumerateActionMetadata());
             client.SubscribeToDataChanges(subscriptionIds, updateDataValue);
             this.AddStatusTopic();
             this.PrepareConnection();
@@ -262,6 +266,33 @@ namespace umatiGateway.Core.PubSub
             foreach (HierarchicalNode rootNode in rootNodes.Values)
             {
                 PublishActionMetadata(rootNode);
+            }
+        }
+
+        private IEnumerable<ActionMetadata> EnumerateActionMetadata()
+        {
+            foreach (HierarchicalNode rootNode in rootNodes.Values)
+            {
+                foreach (ActionMetadata metadata in EnumerateActionMetadata(rootNode))
+                {
+                    yield return metadata;
+                }
+            }
+        }
+
+        private static IEnumerable<ActionMetadata> EnumerateActionMetadata(HierarchicalNode node)
+        {
+            if (node.ActionMetadata != null)
+            {
+                yield return node.ActionMetadata;
+            }
+
+            foreach (HierarchicalNode childNode in node.hierarchicalChilds.Values)
+            {
+                foreach (ActionMetadata metadata in EnumerateActionMetadata(childNode))
+                {
+                    yield return metadata;
+                }
             }
         }
 
@@ -1100,7 +1131,7 @@ namespace umatiGateway.Core.PubSub
                 Node? methodNode = client.ReadNode(methodId);
                 metadata.ActionTargets.Add(new ActionTargetMetadata
                 {
-                    ActionTargetId = checked((ushort)(index + 1)),
+                    ActionTargetId = 0,
                     Name = methodNode?.BrowseName.Name ?? methodId.ToString(),
                     ObjectId = ToExpandedNodeIdString(actionTargetId),
                     MethodId = ToExpandedNodeIdString(methodId),
