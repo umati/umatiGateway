@@ -228,7 +228,7 @@ _Events_ are also mapped to a _DataSet_. Because _Events_ may have no _BrowsePat
 This mapping use the connection topic with the `WriterGroups.DataSetWriters.QueueName` need to define the topic trees for the DataSet and DataSetMetaData.
 That means a client need to check the connection before it can "connect" to a machine.
 
-In context of the umati Dashboard the following topic Strutuce must be used because of access restiction but because of the Connection Topic in other use cases (or on other brokers) other topic structure can be used.
+In the context of the umati Dashboard, the following topic structure must be used because of access restrictions. In other use cases or on other brokers, a different topic structure can be used because of the Connection Topic.
 
 The generic topic structure for OPC UA is:
 
@@ -247,7 +247,7 @@ The mapping is based on the structure but deviates from it if necessary e.g., fo
 | `<UNS>`                             | The location of the device in the ISA-95 common data model |
 | `[<WriterGroup>[/<DataSetWriter>]]` | PathToTheNode                                              |
 
-The `<UNS>` the be create as following sturucture `Enterprise:Site:Area:Line:Cell`.
+The `<UNS>` shall use the following structure: `Enterprise:Site:Area:Line:Cell`.
 
 The PathToTheNode is the Path from the _0:Objects_ node to the _Node_ that is connected to the _DataSet_.
 Generally, only hierarchical references are used. If a node occurs in two places, the message should be sent to both topics.
