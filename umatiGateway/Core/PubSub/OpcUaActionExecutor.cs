@@ -163,7 +163,7 @@ namespace umatiGateway.Core.PubSub
                 return $"Array(ElementType={elementType}, Length={array.Length})";
             }
 
-            return value.ToString() ?? value.GetType().FullName ?? "unknown";
+            return $"Value(Type={value.GetType().FullName ?? "unknown"})";
         }
     }
 }
