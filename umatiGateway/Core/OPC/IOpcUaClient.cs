@@ -123,7 +123,6 @@ namespace umatiGateway.Core.OPC
         /// <returns>The Datavalue for the nodeId or null if there is no DataValue.</returns>
         /// <exception cref="OpcUaException">Exception in Opc Ua Context.</exception>
         public DataValue? ReadValue(NodeId nodeId);
-        public OpcUaMethodCallResult CallMethod(NodeId objectId, NodeId methodId, IList<Variant> inputArguments);
         /// <summary>
         /// Connects an Opc Ua Eventlistener to the current OpcUaServer that is called when an
         /// event occurs.
@@ -190,11 +189,5 @@ namespace umatiGateway.Core.OPC
         public Task<bool> ConnectAsync();
         public List<NodeId> BrowseNodeIds(BrowseDescriptionCollection included, BrowseDescriptionCollection? excluded = null);
         public NodeId? BrowseFirstNodeId(BrowseDescriptionCollection included, BrowseDescriptionCollection? excluded = null);
-    }
-
-    public sealed class OpcUaMethodCallResult
-    {
-        public StatusCode StatusCode { get; set; }
-        public IList<Variant> OutputArguments { get; set; } = new List<Variant>();
     }
 }

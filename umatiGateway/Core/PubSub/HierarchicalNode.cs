@@ -18,7 +18,6 @@ namespace umatiGateway.Core.PubSub
         public FieldMetaData? fieldMetaData = null;
         public TypeDefinitionNode? TypeDefinitionNode { get; set; } = null;
         public NodeClass? NodeClass { get; set; } = null;
-        public ActionMetadata? ActionMetadata { get; set; }
 
         public Dictionary<NodeId, HierarchicalNode> hierarchicalChilds = new Dictionary<NodeId, HierarchicalNode>();
         public HierarchicalNode(NodeId nodeId, ExpandedNodeId typeId, QualifiedName browseName)

@@ -61,8 +61,6 @@ namespace umatiGateway.Core.OPC
             IOpcUaClient client = app.OpcUaClient;
             //Read Local Bsd Files First
             string folderPath = "./BsdFiles";
-            if (!Directory.Exists(folderPath))
-                folderPath = Path.Combine(AppContext.BaseDirectory, "BsdFiles");
 
             if (Directory.Exists(folderPath))
             {

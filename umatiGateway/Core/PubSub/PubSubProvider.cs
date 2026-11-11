@@ -6,7 +6,6 @@ using Opc.Ua;
 using Opc.Ua.Client;
 using Opc.Ua.PubSub;
 using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using umatiGateway.Core.Configuration;
 using umatiGateway.Core.External.Opc.Ua.PubSub.Encoding;
@@ -42,19 +41,14 @@ namespace umatiGateway.Core.PubSub
         private Dictionary<string, string> topics = new Dictionary<string, string>();
         private List<Replacement> topicReplacements = new List<Replacement>();
         private List<Replacement> metaTopicReplacements = new List<Replacement>();
-        private readonly ActionHandler actionHandler;
-        private readonly ActionRegistry actionRegistry = new();
         private readonly BlockingCollection<(MonitoredItem, MonitoredItemNotificationEventArgs)> notificationqueue = new BlockingCollection<(MonitoredItem, MonitoredItemNotificationEventArgs)>();
         public List<MachineNode> MachineNodes { get; set; } = new List<MachineNode>();
 
-        public PubSubProvider(UmatiGatewayApp app, IActionMqttTransport? actionTransport = null, IActionExecutor? actionExecutor = null)
+        public PubSubProvider(UmatiGatewayApp app)
         {
             this.app = app;
             this.client = app.OpcUaClient;
             this.referenceDescriptionResolver = new ReferenceDescriptionResolver(client);
-            this.actionHandler = new ActionHandler(
-                actionTransport ?? new MqttActionTransport(),
-                actionExecutor ?? new OpcUaActionExecutor(client, actionRegistry));
             this.StartWorker();
         }
         public void Connect()
@@ -95,15 +89,12 @@ namespace umatiGateway.Core.PubSub
             typeSystem.LoadAsync().ConfigureAwait(false).GetAwaiter().GetResult();
             referenceDescriptionResolver = new ReferenceDescriptionResolver(client);
             CreateSubscriptions();
-            actionRegistry.Rebuild(EnumerateActionMetadata());
             client.SubscribeToDataChanges(subscriptionIds, updateDataValue);
             this.AddStatusTopic();
             this.PrepareConnection();
             this.AddConnectionTopic();
             AddVirtualNodeIdsToStore();
             CreateApp();
-            this.actionHandler.StartAsync(this.app.ActiveConfiguration.PubSubProviderConfig).GetAwaiter().GetResult();
-            PublishActionMetadata();
 
 
         }
@@ -119,7 +110,6 @@ namespace umatiGateway.Core.PubSub
         public void Disconnect()
         {
             Logger.Info("Disconnecting");
-            this.actionHandler.StopAsync().GetAwaiter().GetResult();
             if (pubSubApp != null)
             {
                 this.pubSubApp.Stop();
@@ -259,57 +249,6 @@ namespace umatiGateway.Core.PubSub
                 parentNode = parentNode.Parent;
             }
             return browsePath;
-        }
-
-        private void PublishActionMetadata()
-        {
-            foreach (HierarchicalNode rootNode in rootNodes.Values)
-            {
-                PublishActionMetadata(rootNode);
-            }
-        }
-
-        private IEnumerable<ActionMetadata> EnumerateActionMetadata()
-        {
-            foreach (HierarchicalNode rootNode in rootNodes.Values)
-            {
-                foreach (ActionMetadata metadata in EnumerateActionMetadata(rootNode))
-                {
-                    yield return metadata;
-                }
-            }
-        }
-
-        private static IEnumerable<ActionMetadata> EnumerateActionMetadata(HierarchicalNode node)
-        {
-            if (node.ActionMetadata != null)
-            {
-                yield return node.ActionMetadata;
-            }
-
-            foreach (HierarchicalNode childNode in node.hierarchicalChilds.Values)
-            {
-                foreach (ActionMetadata metadata in EnumerateActionMetadata(childNode))
-                {
-                    yield return metadata;
-                }
-            }
-        }
-
-        private void PublishActionMetadata(HierarchicalNode hierarchicalNode)
-        {
-            if (hierarchicalNode.ActionMetadata != null)
-            {
-                string metadataTopic = ActionHandler.CreateMetadataTopic(
-                    app.ActiveConfiguration.PubSubProviderConfig,
-                    GetBrowsePath(hierarchicalNode));
-                actionHandler.PublishMetadataAsync(metadataTopic, hierarchicalNode.ActionMetadata).GetAwaiter().GetResult();
-            }
-
-            foreach (HierarchicalNode childNode in hierarchicalNode.hierarchicalChilds.Values)
-            {
-                PublishActionMetadata(childNode);
-            }
         }
 
         public void createDataSetAndWritersForObject(HierarchicalNode hierarchicalNode)
@@ -1031,10 +970,6 @@ namespace umatiGateway.Core.PubSub
                 {
                     hierarchicalNode.TypeDefinitionNodeId = client.BrowseTypeDefinition(nodeId);
                 }
-                if (node.NodeClass == NodeClass.Object)
-                {
-                    hierarchicalNode.ActionMetadata = ReadActionMetadata(nodeId);
-                }
                 List<NodeId> childNodeIds = client.BrowseLocalNodeIds(nodeId, BrowseDirection.Forward, (int)NodeClass.Object | (int)NodeClass.Variable, ReferenceTypeIds.HierarchicalReferences, true);
                 foreach (NodeId childNodeId in childNodeIds)
                 {
@@ -1106,103 +1041,6 @@ namespace umatiGateway.Core.PubSub
                 Logger.Error("Unable to read Node for NodeId {NodeId}", nodeId);
             }
             return hierarchicalNode;
-        }
-
-        private ActionMetadata? ReadActionMetadata(NodeId actionTargetId)
-        {
-            List<NodeId> methodIds = client.BrowseLocalNodeIds(
-                actionTargetId,
-                BrowseDirection.Forward,
-                (uint)NodeClass.Method,
-                ReferenceTypeIds.HasComponent,
-                true);
-
-            if (methodIds.Count == 0)
-            {
-                return null;
-            }
-
-            var metadata = new ActionMetadata();
-            methodIds.Sort((left, right) => string.CompareOrdinal(ToExpandedNodeIdString(left), ToExpandedNodeIdString(right)));
-
-            for (int index = 0; index < methodIds.Count; index++)
-            {
-                NodeId methodId = methodIds[index];
-                Node? methodNode = client.ReadNode(methodId);
-                metadata.ActionTargets.Add(new ActionTargetMetadata
-                {
-                    ActionTargetId = 0,
-                    Name = methodNode?.BrowseName.Name ?? methodId.ToString(),
-                    ObjectId = ToExpandedNodeIdString(actionTargetId),
-                    MethodId = ToExpandedNodeIdString(methodId),
-                    InputArguments = ReadMethodArguments(methodId, BrowseNames.InputArguments),
-                    OutputArguments = ReadMethodArguments(methodId, BrowseNames.OutputArguments)
-                });
-            }
-
-            return metadata;
-        }
-
-        private List<ActionArgumentMetadata> ReadMethodArguments(NodeId methodId, QualifiedName browseName)
-        {
-            NodeId? argumentNodeId = client.BrowseLocalNodeIdWithBrowseName(
-                methodId,
-                BrowseDirection.Forward,
-                (uint)NodeClass.Variable,
-                ReferenceTypeIds.HasProperty,
-                true,
-                browseName);
-
-            if (argumentNodeId == null)
-            {
-                return new List<ActionArgumentMetadata>();
-            }
-
-            DataValue? value = client.ReadValue(argumentNodeId);
-            if (value?.Value is not IEnumerable values)
-            {
-                return new List<ActionArgumentMetadata>();
-            }
-
-            var arguments = new List<ActionArgumentMetadata>();
-            foreach (object? item in values)
-            {
-                Argument? argument = item as Argument;
-                if (item is ExtensionObject extensionObject)
-                {
-                    argument = ExtensionObject.ToEncodeable(extensionObject) as Argument;
-                }
-
-                if (argument == null)
-                {
-                    continue;
-                }
-
-                arguments.Add(new ActionArgumentMetadata
-                {
-                    Name = argument.Name,
-                    DataType = GetActionDataTypeName(argument.DataType),
-                    ValueRank = argument.ValueRank
-                });
-            }
-
-            return arguments;
-        }
-
-        private string GetActionDataTypeName(NodeId dataTypeId)
-        {
-            BuiltInType builtInType = TypeInfo.GetBuiltInType(dataTypeId, client.CheckSession().TypeTree);
-            if (builtInType != BuiltInType.Null && builtInType != BuiltInType.ExtensionObject)
-            {
-                return builtInType.ToString();
-            }
-
-            return ToExpandedNodeIdString(dataTypeId);
-        }
-
-        private string ToExpandedNodeIdString(NodeId nodeId)
-        {
-            return NodeId.ToExpandedNodeId(nodeId, client.GetNamespaceTable()).ToString();
         }
     }
     public class Replacement
