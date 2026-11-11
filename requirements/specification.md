@@ -89,20 +89,17 @@ A field can also contain properties but no other variables, even though the _Add
 ## Mapping of Method (OPC UA Actions)
 
 The umati Gateway uses an additional PubSub message type to call OPC UA methods through the broker.
-Actions are request/response messages and are always correlated using a `RequestId`.
+Actions are request/response messages and are always correlated using a `CorrelationId`.
 
 ### Action Topics
 
-Actions follow the same topic structure as data and metadata. The `<MqttMessageType>` is `action` and is extended with a direction segment:
+Action requests and responses use dedicated MQTT message types:
 
-`<Prefix>/<Encoding>/action/<Direction>/<PublisherId>/[<UNS>]/[<WriterGroup>[/<DataSetWriter>]]`
+`<Prefix>/<Encoding>/action-request/<Responder>/<WriterGroup>`
 
-| Key           | Description                                                |
-| ------------- | ---------------------------------------------------------- |
-| `<Direction>` | `request` for method calls, `response` for method results. |
+`<Prefix>/<Encoding>/action-response/<Responder>/<WriterGroup>`
 
-The `[<WriterGroup>[/<DataSetWriter>]]` portion uses the same `PathToTheNode` rules as in the data topic structure.
-The topic shall point to the target object (owning the method) and the method identifiers are provided in the payload.
+The responder and writer group are derived from the first two segments of the configured client path. Machine names and object paths are not appended. The concrete object and method are selected by the payload.
 
 ### Action Request Payload
 
@@ -110,21 +107,25 @@ An action request calls a method on the target object.
 
 Required fields:
 
-- `ActionTargetId` (ExpandedNodeId string of the target object).
-- `RequestId` (string, GUID) for correlating request/response.
-- `Timestamp` (ISO 8601 string).
-- `Payload` (array of input argument values, ordered as in the method definition).
-- `ActionState` (UInt32, initial state for the request).
+- `ActionTargetId` (UInt16 identifying the action target advertised in Action MetaData).
+- `CorrelationId` (string, GUID) for correlating request/response.
+- `ObjectId` (ExpandedNodeId string of the object that owns the method).
+- `MethodId` (ExpandedNodeId string of the method).
+- `InputArguments` (array of argument values and their metadata).
+
+Each input argument contains `Name`, `DataType`, `ValueRank`, and `Value`. Arguments are matched by name and reordered according to the advertised method signature before the OPC UA call. Missing, duplicate, additional, or type-incompatible arguments are rejected.
+
+`ActionTargetId` is authoritative. `ObjectId` and `MethodId` shall exactly match the retained Action MetaData entry for that target. This prevents requests from invoking methods that were not published by the gateway.
 
 Example:
 
 ```json
 {
-  "ActionTargetId": "nsu=http://opcfoundation.org/UA/Machinery/;i=1001",
-  "RequestId": "3c6f5c8e-2b5a-4c49-98dd-0df6d9e1a0a1",
-  "Timestamp": "2023-08-22T10:15:30.000Z",
-  "Payload": ["Reset"],
-  "ActionState": 0
+  "CorrelationId": "3c6f5c8e-2b5a-4c49-98dd-0df6d9e1a0a1",
+  "ActionTargetId": 1,
+  "ObjectId": "nsu=http://opcfoundation.org/UA/Machinery/;i=1001",
+  "MethodId": "nsu=http://opcfoundation.org/UA/Machinery/;i=7001",
+  "InputArguments": []
 }
 ```
 
@@ -134,44 +135,55 @@ The response message returns the status of the method call.
 
 Required fields:
 
-- `ActionTargetId` (ExpandedNodeId string of the target object).
-- `RequestId` (string, GUID) to correlate with the request.
+- `ActionTargetId` (UInt16 identifying the action target advertised in Action MetaData).
+- `CorrelationId` (string, GUID) to correlate with the request.
 - `Timestamp` (ISO 8601 string).
 - `StatusCode` (UInt32 as in OPC UA).
 - `ActionState` (UInt32, final state of the action).
 
 Optional fields:
 
-- `Payload` (array of output argument values, ordered as in the method definition).
+- `OutputArguments` (array of output argument values, ordered as in the method definition).
+
+The gateway sends exactly one final response with `ActionState` set to `Done`. `StatusCode` is the status returned by the OPC UA Call service. Requests rejected before the call return an appropriate OPC UA Bad status. Method calls are never retried automatically because they can have side effects.
 
 Example:
 
 ```json
 {
-  "ActionTargetId": "nsu=http://opcfoundation.org/UA/Machinery/;i=1001",
-  "RequestId": "3c6f5c8e-2b5a-4c49-98dd-0df6d9e1a0a1",
+  "CorrelationId": "3c6f5c8e-2b5a-4c49-98dd-0df6d9e1a0a1",
+  "ActionTargetId": 1,
   "Timestamp": "2023-08-22T10:15:30.250Z",
   "StatusCode": 0,
   "ActionState": 2,
-  "Payload": []
+  "OutputArguments": []
 }
 ```
 
 ### Action MetaData
 
-Action MetaData describes the available actions (methods) and their signatures.
-It uses the same `PathToTheNode` rules as data topics and points to the target object.
+Action MetaData describes all available actions (methods) and their signatures for one target object.
+It uses the dedicated `action-metadata` message type and points to the target object.
+The `<Responder>` identifies the gateway that accepts the corresponding action requests.
+For the umati Gateway, the configured client name is used as the responder.
+`<WriterGroup>/<DataSetWriter>` uses the same `PathToTheNode` rules as data topics.
 
 Topic format:
 
-`<Prefix>/<Encoding>/action/metadata/<PublisherId>/[<UNS>]/[<WriterGroup>[/<DataSetWriter>]]`
+`<Prefix>/<Encoding>/action-metadata/<Responder>/<WriterGroup>/<DataSetWriter>`
 
 Required fields:
 
-- `ActionTargetId` (ExpandedNodeId string of the target object).
-- `MethodId` (ExpandedNodeId string of the method).
-- `InputArguments` (array of argument definitions with name, data type, and value rank).
-- `OutputArguments` (array of argument definitions with name, data type, and value rank).
+- `ActionTargets` (array containing all methods of the target object).
+  - `ActionTargetId` (UInt16 identifier used by action requests and responses).
+  - `Name` (BrowseName of the OPC UA method).
+  - `ObjectId` (ExpandedNodeId string of the object that owns the method).
+  - `MethodId` (ExpandedNodeId string of the OPC UA method).
+  - `InputArguments` (array of argument definitions with name, data type, and value rank).
+  - `OutputArguments` (array of argument definitions with name, data type, and value rank).
+
+Exactly one Action MetaData message is published per target object. This keeps discovery atomic and prevents methods of the same object from replacing each other on the shared object topic.
+Action MetaData messages shall be published with the MQTT retain flag so that new subscribers immediately receive the current method description.
 
 Optional fields:
 None.
@@ -180,16 +192,30 @@ Example:
 
 ```json
 {
-  "ActionTargetId": "nsu=http://opcfoundation.org/UA/Machinery/;i=1001",
-  "MethodId": "nsu=http://opcfoundation.org/UA/Machinery/;i=7001",
-  "InputArguments": [
+  "ActionTargets": [
     {
-      "Name": "Command",
-      "DataType": "String",
-      "ValueRank": -1
+      "ActionTargetId": 1,
+      "Name": "Reset",
+      "ObjectId": "nsu=http://opcfoundation.org/UA/Machinery/;i=1001",
+      "MethodId": "nsu=http://opcfoundation.org/UA/Machinery/;i=7001",
+      "InputArguments": [
+        {
+          "Name": "Command",
+          "DataType": "String",
+          "ValueRank": -1
+        }
+      ],
+      "OutputArguments": []
+    },
+    {
+      "ActionTargetId": 2,
+      "Name": "Start",
+      "ObjectId": "nsu=http://opcfoundation.org/UA/Machinery/;i=1001",
+      "MethodId": "nsu=http://opcfoundation.org/UA/Machinery/;i=7002",
+      "InputArguments": [],
+      "OutputArguments": []
     }
-  ],
-  "OutputArguments": []
+  ]
 }
 ```
 
@@ -202,7 +228,7 @@ _Events_ are also mapped to a _DataSet_. Because _Events_ may have no _BrowsePat
 This mapping use the connection topic with the `WriterGroups.DataSetWriters.QueueName` need to define the topic trees for the DataSet and DataSetMetaData.
 That means a client need to check the connection before it can "connect" to a machine.
 
-In context of the umati Dashboard the following topic Strutuce must be used because of access restiction but because of the Connection Topic in other use cases (or on other brokers) other topic structure can be used.
+In the context of the umati Dashboard, the following topic structure must be used because of access restrictions. In other use cases or on other brokers, a different topic structure can be used because of the Connection Topic.
 
 The generic topic structure for OPC UA is:
 
@@ -221,7 +247,7 @@ The mapping is based on the structure but deviates from it if necessary e.g., fo
 | `<UNS>`                             | The location of the device in the ISA-95 common data model |
 | `[<WriterGroup>[/<DataSetWriter>]]` | PathToTheNode                                              |
 
-The `<UNS>` the be create as following sturucture `Enterprise:Site:Area:Line:Cell`.
+The `<UNS>` shall use the following structure: `Enterprise:Site:Area:Line:Cell`.
 
 The PathToTheNode is the Path from the _0:Objects_ node to the _Node_ that is connected to the _DataSet_.
 Generally, only hierarchical references are used. If a node occurs in two places, the message should be sent to both topics.
