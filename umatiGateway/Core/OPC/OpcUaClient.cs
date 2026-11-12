@@ -1,11 +1,15 @@
 ﻿// SPDX-License-Identifier: Apache-2.0
 // Copyright (c) 2025 FVA GmbH - interop4x. All rights reserved.
+// Copyright (c) 2026 Verein Deutscher Werkzeugmaschinenfabriken e.V. . All rights reserved.
 
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using NLog;
 using Opc.Ua;
 using Opc.Ua.Client;
+
+#pragma warning disable CS0618
 
 namespace umatiGateway.Core.OPC
 {
@@ -379,7 +383,7 @@ namespace umatiGateway.Core.OPC
                 UserIdentity userIdentity = new UserIdentity();
                 if (!string.IsNullOrWhiteSpace(this.app.ActiveConfiguration.OPCConnection.UserName))
                 {
-                    userIdentity = new UserIdentity(this.app.ActiveConfiguration.OPCConnection.UserName, this.app.ActiveConfiguration.OPCConnection.Password);
+                    userIdentity = new UserIdentity(this.app.ActiveConfiguration.OPCConnection.UserName, Encoding.UTF8.GetBytes(this.app.ActiveConfiguration.OPCConnection.Password ?? string.Empty));
                 }
                 if (!string.IsNullOrWhiteSpace(this.app.ActiveConfiguration.OPCConnection.CertificatePath))
                 {
@@ -498,7 +502,7 @@ namespace umatiGateway.Core.OPC
                     UserIdentity userIdentity = new UserIdentity();
                     if (!string.IsNullOrWhiteSpace(this.app.ActiveConfiguration.OPCConnection.UserName))
                     {
-                        userIdentity = new UserIdentity(this.app.ActiveConfiguration.OPCConnection.UserName, this.app.ActiveConfiguration.OPCConnection.Password);
+                        userIdentity = new UserIdentity(this.app.ActiveConfiguration.OPCConnection.UserName, Encoding.UTF8.GetBytes(this.app.ActiveConfiguration.OPCConnection.Password ?? string.Empty));
                     }
 
                     // Create the session
@@ -991,3 +995,6 @@ namespace umatiGateway.Core.OPC
         }
     }
 }
+
+
+#pragma warning enable CS0618

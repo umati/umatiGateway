@@ -34,6 +34,8 @@ using System.Xml;
 using System.Linq;
 using System.Globalization;
 
+#pragma warning disable CS0618
+
 namespace Opc.Ua.PubSub.Encoding
 {
     /// <summary>
@@ -887,3 +889,5 @@ namespace Opc.Ua.PubSub.Encoding
 
     }
 }
+
+#pragma warning enable CS0618

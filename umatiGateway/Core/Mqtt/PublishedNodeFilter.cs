@@ -1,6 +1,9 @@
-﻿using NLog;
+﻿// SPDX-License-Identifier: Apache-2.0
+// Copyright (c) 2025 FVA GmbH - interop4x. All rights reserved.
+// Copyright (c) 2026 Verein Deutscher Werkzeugmaschinenfabriken e.V. . All rights reserved.
+
+using NLog;
 using Opc.Ua;
-using Org.BouncyCastle.Asn1.Ocsp;
 using umatiGateway.Core.Configuration;
 using umatiGateway.Core.OPC;
 

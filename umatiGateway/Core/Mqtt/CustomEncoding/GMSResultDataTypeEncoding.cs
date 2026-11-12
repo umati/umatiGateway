@@ -1,14 +1,14 @@
 ﻿// SPDX-License-Identifier: Apache-2.0
 // Copyright (c) 2025 FVA GmbH - interop4x. All rights reserved.
+// Copyright (c) 2026 Verein Deutscher Werkzeugmaschinenfabriken e.V. . All rights reserved.
 using Newtonsoft.Json.Linq;
 using Opc.Ua;
-using Org.BouncyCastle.Asn1.X509.Qualified;
 
 namespace umatiGateway.Core.Mqtt.CustomEncoding
 {
     public class GMSResultDataTypeEncoding : ICustomEncoding
     {
-        private static ExpandedNodeId GMSResultEncodingId = new ExpandedNodeId(new NodeId(5008), "http://opcfoundation.org/UA/Machinery/Result/");
+        private static readonly ExpandedNodeId GMSResultEncodingId = new ExpandedNodeId(new NodeId(5008), "http://opcfoundation.org/UA/Machinery/Result/");
         public string FullFieldName { get => "GMSResultDataTypeEncoding"; }
         public ExpandedNodeId NodeId { get => GMSResultEncodingId; }
         public GMSResultDataTypeEncoding()

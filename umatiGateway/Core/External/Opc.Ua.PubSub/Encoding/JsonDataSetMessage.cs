@@ -590,7 +590,11 @@ namespace Opc.Ua.PubSub.Encoding
 
         private static Variant NormalizeVariantForJsonEncoding(Variant variant)
         {
-            NormalizeObjectGraphForJsonEncoding(variant.Value, new HashSet<object>(ReferenceEqualityComparer.Instance), 0);
+            NormalizeObjectGraphForJsonEncoding(
+                variant.Value,
+                new HashSet<object>(System.Collections.Generic.ReferenceEqualityComparer.Instance),
+                0);
+
             return variant;
         }
 
