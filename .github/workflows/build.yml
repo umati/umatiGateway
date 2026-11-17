@@ -13,91 +13,6 @@ on:
 permissions: read-all
 
 jobs:
-  build-linux:
-    permissions:
-      packages: write
-      contents: read
-    strategy:
-      matrix:
-        os: [ubuntu-22.04, ubuntu-22.04-arm, ubuntu-24.04, ubuntu-24.04-arm]
-        build_type: [Debug, Release]
-      fail-fast: false
-    runs-on: ${{ matrix.os }}
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v7
-        with:
-          path: umatiGateway
-          persist-credentials: false
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v6
-        with:
-          dotnet-version: "10.0"
-
-      - name: Restore dependencies
-        run: |
-          cd umatiGateway
-          dotnet restore
-
-      - name: Install deb packaging tool
-        run: |
-          cd umatiGateway/umatiGateway
-          dotnet tool install --global dotnet-deb
-          export PATH="$PATH:/home/runner/.dotnet/tools"
-          dotnet deb install
-
-      - name: build and package
-        run: |
-          cd umatiGateway/umatiGateway
-          dotnet deb --configuration ${{ matrix.build_type }} --output ../umati-gateway.deb
-
-      - name: Upload Debian Package
-        uses: actions/upload-artifact@v7
-        with:
-          name: umatiGateway-${{ matrix.os }}-${{ matrix.build_type }}
-          path: umatiGateway/umati-gateway.deb
-
-  build-windows:
-    permissions:
-      packages: write
-      contents: read
-    strategy:
-      matrix:
-        os: [windows-2022, windows-2025]
-        build_type: [Debug, Release]
-      fail-fast: false
-    runs-on: ${{ matrix.os }}
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-
-      - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v6
-        with:
-          dotnet-version: "10.0"
-
-      - name: Restore Dependencies
-        run: dotnet restore umatiGateway.sln
-
-      - name: Build Application
-        run: dotnet build umatiGateway.sln --configuration ${{ matrix.build_type }}
-
-      - name: Run Tests
-        run: dotnet test umatiGateway.sln --configuration ${{ matrix.build_type }}
-
-      - name: Publish Application
-        run: dotnet publish umatiGateway/umatiGateway.csproj --self-contained true --runtime win-x64 --configuration ${{ matrix.build_type }} --output ./publish
-
-      - name: Upload Published Artifacts
-        uses: actions/upload-artifact@v7
-        with:
-          name: umatiGateway-${{ matrix.os }}-${{ matrix.build_type }}
-          path: ./publish
-
   docker:
     permissions:
       packages: write
@@ -159,7 +74,7 @@ jobs:
         if: github.event_name == 'pull_request'
         with:
           context: ./umatiGateway
-          file: "./umatiGateway/umatiGateway/Dockerfile"
+          file: "./Dockerfile"
           platforms: linux/amd64,linux/arm64
           push: true
           tags: localhost:5000/umati/umatigateway:${{ steps.meta.outputs.version }}
@@ -176,45 +91,3 @@ jobs:
           pip install -r requirements.txt
           ./waitForContainer.sh
           python -m unittest discover test_mqtt_sampleserver
-
-  release:
-    permissions:
-      contents: write
-    runs-on: ubuntu-24.04
-    needs: [build-linux, build-windows, docker]
-    if: startsWith(github.ref, 'refs/tags/')
-    steps:
-      - name: Download artifacts
-        uses: dawidd6/action-download-artifact@v28
-        with:
-          github_token: ${{secrets.GITHUB_TOKEN}}
-          workflow: build.yml
-          workflow_conclusion: success
-          repo: ${{ github.repository }}
-          commit: ${{ github.event.pull_request.head.sha || github.sha }}
-          if_no_artifact_found: fail
-          skip_unpack: true
-      - name: Display structure of downloaded files
-        run: |
-          #!/bin/bash
-          ls -R .
-      - name: Unzip DEBs
-        run: |
-          for zip in umatiGateway-ubuntu-*.zip; do
-            [ -f "$zip" ] || continue
-            unzip -p "$zip" > "${zip%.zip}.deb" && rm "$zip"
-          done
-      - name: Generate checksums
-        run: |
-          #!/bin/bash
-          sha256sum ./*.deb ./*.zip > SHA256-checksums
-          cat SHA256-checksums
-      - name: Release
-        uses: softprops/action-gh-release@v3.0.4
-        with:
-          generate_release_notes: true
-          fail_on_unmatched_files: true
-          files: |
-            ./*.deb
-            ./umatiGateway-windows-*.zip
-            ./SHA256-checksums
