@@ -147,7 +147,7 @@ jobs:
         #if: github.event_name != 'pull_request'
         with:
           context: ./umatiGateway
-          file: "./umatiGateway/umatiGateway/Dockerfile"
+          file: "./Dockerfile"
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
