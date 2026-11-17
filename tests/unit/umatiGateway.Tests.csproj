@@ -12,4 +12,7 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" PrivateAssets="all" />
     <ProjectReference Include="../../umatiGateway/umatiGateway.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="../../umatiGateway/mappings/*.json" Link="mappings/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>

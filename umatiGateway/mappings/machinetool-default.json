@@ -1,0 +1,377 @@
+{
+  "description": "Default mapping of an OPC UA MachineTool instance (OPC 40001-1 Machinery, OPC 40501-1 MachineTool, OPC 40001-4 Energy) to the umati 2.0 MachineTool-DataModel 0.13.1. Input paths are browse paths (browse names only, '/'-separated) relative to the machine instance object found in the Machines folder; they are resolved by name over hierarchical references, independent of namespace indices. Elements whose (non-optional) inputs cannot be resolved on a machine are omitted from that machine's manifest ('not supported').",
+  "modelVersion": "0.13.1",
+  "profiles": [
+    "Core",
+    "IdentificationExtended",
+    "Production",
+    "Channel",
+    "Spindle",
+    "Energy"
+  ],
+  "elements": [
+    {
+      "path": "Identification.Manufacturer",
+      "inputs": {
+        "v": "Identification/Manufacturer"
+      },
+      "transform": "text",
+      "timestampSource": "source"
+    },
+    {
+      "path": "Identification.SerialNumber",
+      "inputs": {
+        "v": "Identification/SerialNumber"
+      },
+      "transform": "text",
+      "timestampSource": "source"
+    },
+    {
+      "path": "Identification.ProductInstanceUri",
+      "inputs": {
+        "v": "Identification/ProductInstanceUri"
+      },
+      "transform": "text",
+      "timestampSource": "source"
+    },
+    {
+      "path": "Identification.Model",
+      "inputs": {
+        "v": "Identification/Model"
+      },
+      "transform": "text",
+      "timestampSource": "source"
+    },
+    {
+      "path": "Identification.ProductCode",
+      "inputs": {
+        "v": "Identification/ProductCode"
+      },
+      "transform": "text",
+      "timestampSource": "source"
+    },
+    {
+      "path": "Identification.SoftwareRevision",
+      "inputs": {
+        "v": "Identification/SoftwareRevision"
+      },
+      "transform": "text",
+      "timestampSource": "source"
+    },
+    {
+      "path": "Identification.YearOfConstruction",
+      "inputs": {
+        "v": "Identification/YearOfConstruction"
+      },
+      "transform": "integer",
+      "timestampSource": "source"
+    },
+    {
+      "path": "Identification.DeviceClass",
+      "inputs": {
+        "v": "Identification/DeviceClass"
+      },
+      "transform": "text",
+      "timestampSource": "source"
+    },
+    {
+      "path": "Identification.Location",
+      "inputs": {
+        "v": "Identification/Location"
+      },
+      "transform": "text",
+      "timestampSource": "source"
+    },
+    {
+      "path": "Connection.Heartbeat",
+      "special": "heartbeat",
+      "timestampSource": "adapter"
+    },
+    {
+      "path": "Connection.State",
+      "special": "connectionState",
+      "timestampSource": "adapter"
+    },
+    {
+      "path": "State.Status",
+      "inputs": {
+        "item": "MachineryBuildingBlocks/MachineryItemState/CurrentState/Number",
+        "mode": "MachineryBuildingBlocks/MachineryOperationMode/CurrentState/Number"
+      },
+      "transform": "enumObject",
+      "params": {
+        "fields": {
+          "MachineryItemState": {
+            "input": "item",
+            "map": {
+              "0": "NotAvailable",
+              "1": "OutOfService",
+              "2": "NotExecuting",
+              "3": "Executing"
+            }
+          },
+          "MachineryOperationMode": {
+            "input": "mode",
+            "map": {
+              "0": "None",
+              "1": "Maintenance",
+              "2": "Setup",
+              "3": "Processing"
+            }
+          }
+        }
+      },
+      "timestampSource": "source"
+    },
+    {
+      "path": "State.FeedOverride",
+      "inputs": {
+        "v": "Monitoring/MachineTool/FeedOverride"
+      },
+      "transform": "scale",
+      "params": {
+        "factor": 0.01
+      },
+      "unit": "one",
+      "timestampSource": "source",
+      "note": "OPC UA: percent (100 = 100 %), data model: ratio (1.0 = 100 %)"
+    },
+    {
+      "path": "Channel.<n>.ChannelState",
+      "instances": {
+        "group": "Channel",
+        "under": "Monitoring",
+        "pattern": "^Channel(\\d+)$"
+      },
+      "inputs": {
+        "v": "Monitoring/Channel<n>/ChannelState"
+      },
+      "transform": "enumMap",
+      "params": {
+        "map": {
+          "0": "Active",
+          "1": "Interrupted",
+          "2": "Reset"
+        }
+      },
+      "correlationId": true,
+      "timestampSource": "source",
+      "note": "OPC 40501-1 ChannelStateEnumeration; one element per Monitoring/Channel<n> object"
+    },
+    {
+      "path": "Channel.<n>.FeedOverride",
+      "instances": {
+        "group": "Channel",
+        "under": "Monitoring",
+        "pattern": "^Channel(\\d+)$"
+      },
+      "inputs": {
+        "v": "Monitoring/Channel<n>/FeedOverride"
+      },
+      "transform": "scale",
+      "params": {
+        "factor": 0.01
+      },
+      "unit": "one",
+      "timestampSource": "source",
+      "note": "OPC UA: percent (100 = 100 %), data model: ratio (1.0 = 100 %)"
+    },
+    {
+      "path": "Channel.<n>.Name",
+      "instances": {
+        "group": "Channel",
+        "under": "Monitoring",
+        "pattern": "^Channel(\\d+)$"
+      },
+      "inputs": {
+        "v": "Monitoring/Channel<n>/Name"
+      },
+      "transform": "text",
+      "timestampSource": "source"
+    },
+    {
+      "path": "Spindle.<n>.IsRotating",
+      "instances": {
+        "group": "Spindle",
+        "under": "Monitoring",
+        "pattern": "^Spind(?:el|le)(\\d+)$"
+      },
+      "inputs": {
+        "v": "Monitoring/Spindel<n>/IsRotating|Monitoring/Spindle<n>/IsRotating"
+      },
+      "transform": "boolean",
+      "timestampSource": "source"
+    },
+    {
+      "path": "Spindle.<n>.Override",
+      "instances": {
+        "group": "Spindle",
+        "under": "Monitoring",
+        "pattern": "^Spind(?:el|le)(\\d+)$"
+      },
+      "inputs": {
+        "v": "Monitoring/Spindel<n>/Override|Monitoring/Spindle<n>/Override"
+      },
+      "transform": "scale",
+      "params": {
+        "factor": 0.01
+      },
+      "unit": "one",
+      "timestampSource": "source"
+    },
+    {
+      "path": "Spindle.<n>.IsUsedAsAxis",
+      "instances": {
+        "group": "Spindle",
+        "under": "Monitoring",
+        "pattern": "^Spind(?:el|le)(\\d+)$"
+      },
+      "inputs": {
+        "v": "Monitoring/Spindel<n>/IsUsedAsAxis|Monitoring/Spindle<n>/IsUsedAsAxis"
+      },
+      "transform": "boolean",
+      "timestampSource": "source"
+    },
+    {
+      "path": "Spindle.<n>.Name",
+      "instances": {
+        "group": "Spindle",
+        "under": "Monitoring",
+        "pattern": "^Spind(?:el|le)(\\d+)$"
+      },
+      "inputs": {
+        "v": "Monitoring/Spindel<n>/Name|Monitoring/Spindle<n>/Name"
+      },
+      "transform": "text",
+      "timestampSource": "source"
+    },
+    {
+      "path": "OperationCounters.PowerOnDuration",
+      "inputs": {
+        "v": "MachineryBuildingBlocks/OperationCounters/PowerOnDuration|Monitoring/MachineTool/PowerOnDuration"
+      },
+      "transform": "scale",
+      "params": {
+        "factor": 0.001
+      },
+      "unit": "second",
+      "timestampSource": "source",
+      "note": "OPC UA Duration is in milliseconds"
+    },
+    {
+      "path": "Notification.ActiveAlerts",
+      "constant": [],
+      "timestampSource": "adapter",
+      "note": "The sample server has no alarm source (Notification object is empty): always an empty list"
+    },
+    {
+      "path": "Production.ActiveProgram",
+      "inputs": {
+        "program": "Production/ActiveProgram/Name"
+      },
+      "transform": "text",
+      "correlationId": true,
+      "timestampSource": "source"
+    },
+    {
+      "path": "Production.ProgramExecution",
+      "special": "programExecution",
+      "inputs": {
+        "state": "Production/ActiveProgram/State/CurrentState/Number",
+        "program": "Production/ActiveProgram/Name",
+        "electricity": "Monitoring/Consumption/Electricity/Main/AcActiveEnergyTotalImportHp",
+        "compressedAir": "Monitoring/Consumption/CompressedAir/Main/NeEnergyImportHp"
+      },
+      "params": {
+        "stateMap": {
+          "1": "Running",
+          "2": "Ended",
+          "3": "Interrupted",
+          "4": "Aborted"
+        }
+      },
+      "correlationId": true,
+      "timestampSource": "source",
+      "events": [
+        "Production.ProgramExecutionStarted",
+        "Production.ProgramExecutionInterrupted",
+        "Production.ProgramExecutionResumed",
+        "Production.ProgramExecutionEnded",
+        "Production.ProgramExecutionAborted"
+      ],
+      "optionalInputs": [
+        "electricity",
+        "compressedAir",
+        "program"
+      ]
+    },
+    {
+      "path": "Consumption.Electricity.Main.AcActivePowerTotal",
+      "inputs": {
+        "p": "Monitoring/Consumption/Electricity/Main/AcActivePowerPe"
+      },
+      "transform": "structSum",
+      "unit": "watt",
+      "timestampSource": "source",
+      "note": "sum of phases L1..L3"
+    },
+    {
+      "path": "Consumption.Electricity.Main.AcActiveEnergyTotalImportHp",
+      "inputs": {
+        "v": "Monitoring/Consumption/Electricity/Main/AcActiveEnergyTotalImportHp"
+      },
+      "transform": "number",
+      "unit": "wattHour",
+      "timestampSource": "source"
+    },
+    {
+      "path": "Consumption.CompressedAir.Main.VolumeFlowRate",
+      "inputs": {
+        "v": "Monitoring/Consumption/CompressedAir/Main/VolumeFlowRate"
+      },
+      "transform": "number",
+      "unit": "cubicMetrePerSecond",
+      "timestampSource": "source"
+    },
+    {
+      "path": "Consumption.CompressedAir.Main.Pressure",
+      "inputs": {
+        "v": "Monitoring/Consumption/CompressedAir/Main/Pressure"
+      },
+      "transform": "number",
+      "unit": "pascal",
+      "timestampSource": "source"
+    },
+    {
+      "path": "Consumption.CompressedAir.Main.Temperature",
+      "inputs": {
+        "v": "Monitoring/Consumption/CompressedAir/Main/Temperature"
+      },
+      "transform": "scale",
+      "params": {
+        "offset": -273.15
+      },
+      "unit": "degreeCelsius",
+      "timestampSource": "source",
+      "note": "OPC UA: Kelvin, data model: degC"
+    },
+    {
+      "path": "Consumption.CompressedAir.Main.NeEnergyImportHp",
+      "inputs": {
+        "v": "Monitoring/Consumption/CompressedAir/Main/NeEnergyImportHp"
+      },
+      "transform": "number",
+      "unit": "wattHour",
+      "timestampSource": "source"
+    },
+    {
+      "path": "Consumption.CompressedAir.Main.NeEnergyExportHp",
+      "inputs": {
+        "v": "Monitoring/Consumption/CompressedAir/Main/NeEnergyExportHp"
+      },
+      "transform": "number",
+      "unit": "wattHour",
+      "timestampSource": "source"
+    }
+  ]
+}

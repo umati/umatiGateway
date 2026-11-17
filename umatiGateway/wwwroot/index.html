@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>umati Gateway</title>
+<style>
+  :root {
+    --bg:#f5f6f8; --panel:#fff; --line:#dfe3e8; --text:#1d2433; --muted:#667085; --accent:#0b6bcb; --accent-bg:#e7f1fc;
+    --ok:#1a8f4c; --warn:#b7791f; --bad:#c62828; --flash:#fff3bf; --code:#f2f4f7;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#12151b; --panel:#1b1f27; --line:#2c323d; --text:#e6e9ef; --muted:#9aa4b2; --accent:#5aa9ff; --accent-bg:#1b2a3f;
+            --ok:#4cc27f; --warn:#e0b04a; --bad:#ef6b6b; --flash:#4a3f12; --code:#232832; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--text); }
+  header { display:flex; align-items:center; gap:16px; padding:10px 18px; background:var(--panel); border-bottom:1px solid var(--line); flex-wrap:wrap; }
+  header h1 { font-size:17px; margin:0; font-weight:650; }
+  header h1 small { font-weight:400; color:var(--muted); margin-left:6px; }
+  .badges { display:flex; gap:8px; flex-wrap:wrap; margin-left:auto; }
+  .badge { padding:2px 10px; border-radius:99px; border:1px solid var(--line); font-size:12.5px; background:var(--bg); }
+  .dot { display:inline-block; width:9px; height:9px; border-radius:50%; background:var(--muted); margin-right:6px; vertical-align:baseline; }
+  .dot.ok { background:var(--ok); } .dot.warn { background:var(--warn); } .dot.bad { background:var(--bad); }
+  main { display:grid; grid-template-columns:320px 1fr; gap:14px; padding:14px 18px; align-items:start; }
+  @media (max-width:900px) { main { grid-template-columns:1fr; } }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:10px; }
+  .card > h2 { font-size:13px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); margin:0; padding:10px 14px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center; }
+  .pad { padding:12px 14px; }
+  label { display:block; font-size:12px; color:var(--muted); margin:8px 0 2px; }
+  input[type=text], input[type=password], input[type=number], select {
+    width:100%; padding:6px 8px; border:1px solid var(--line); border-radius:6px; background:var(--bg); color:var(--text); font:inherit; }
+  input[type=checkbox] { vertical-align:middle; }
+  button { font:inherit; padding:6px 12px; border-radius:6px; border:1px solid var(--line); background:var(--panel); color:var(--text); cursor:pointer; }
+  button:hover { border-color:var(--accent); }
+  button.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
+  button.small { padding:2px 8px; font-size:12px; }
+  .row { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+  details > summary { cursor:pointer; padding:10px 14px; font-size:13px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); list-style:none; }
+  details[open] > summary { border-bottom:1px solid var(--line); }
+  details > summary::before { content:"▸ "; } details[open] > summary::before { content:"▾ "; }
+  #machines { list-style:none; margin:0; padding:6px; max-height:56vh; overflow:auto; }
+  #machines li { padding:7px 9px; border-radius:7px; cursor:pointer; display:flex; align-items:center; gap:6px; }
+  #machines li:hover { background:var(--bg); }
+  #machines li.sel { background:var(--accent-bg); }
+  #machines .nm { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  #machines .ty { color:var(--muted); font-size:12px; }
+  .tag { font-size:11px; padding:0 6px; border-radius:99px; border:1px solid var(--line); color:var(--muted); }
+  .tag.core { color:var(--ok); border-color:var(--ok); }
+  .empty { color:var(--muted); padding:18px 14px; }
+  .tabs { display:flex; gap:2px; padding:0 10px; border-bottom:1px solid var(--line); flex-wrap:wrap; }
+  .tabs button { border:none; border-bottom:2px solid transparent; border-radius:0; background:none; padding:10px 12px; color:var(--muted); }
+  .tabs button.on { color:var(--accent); border-bottom-color:var(--accent); }
+  table { border-collapse:collapse; width:100%; }
+  th, td { text-align:left; padding:5px 10px; border-bottom:1px solid var(--line); vertical-align:top; font-size:13px; }
+  th { color:var(--muted); font-weight:500; font-size:12px; }
+  td.path { font-family:ui-monospace,Consolas,monospace; font-size:12.5px; word-break:break-all; }
+  td.val { font-family:ui-monospace,Consolas,monospace; font-size:12.5px; max-width:380px; word-break:break-word; }
+  td.dim { color:var(--muted); font-size:12px; white-space:nowrap; }
+  tr.grp td { background:var(--bg); font-weight:600; font-size:12px; color:var(--muted); }
+  tr.flash td { animation:flash 1.2s ease-out; }
+  @keyframes flash { from { background:var(--flash); } to { background:transparent; } }
+  pre, code { font-family:ui-monospace,Consolas,monospace; font-size:12.5px; }
+  pre { background:var(--code); padding:10px 12px; border-radius:7px; overflow:auto; margin:6px 0; max-height:420px; white-space:pre-wrap; word-break:break-word; }
+  .kv { display:grid; grid-template-columns:160px 1fr; gap:3px 12px; font-size:13px; }
+  .kv div:nth-child(odd) { color:var(--muted); }
+  .link { display:flex; gap:8px; align-items:center; padding:4px 0; }
+  .link code { flex:1; word-break:break-all; background:var(--code); padding:3px 7px; border-radius:5px; }
+  #console { font-family:ui-monospace,Consolas,monospace; font-size:12px; height:300px; overflow:auto; background:var(--code); border-radius:7px; padding:6px 8px; }
+  #console div { white-space:pre-wrap; word-break:break-all; border-bottom:1px dotted var(--line); padding:1px 0; }
+  #console .t { color:var(--accent); } #console .r { color:var(--ok); } #console .e { color:var(--warn); }
+  .msg { padding:8px 12px; border-radius:7px; background:var(--accent-bg); margin-bottom:10px; font-size:13px; }
+  .msg.bad { background:color-mix(in srgb,var(--bad) 15%,var(--panel)); }
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; } @media (max-width:1100px) { .grid2 { grid-template-columns:1fr; } }
+  .hint { color:var(--muted); font-size:12px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>umati Gateway <small>MachineTool-DataModel · OPC UA → REST + MQTT</small></h1>
+  <div class="badges">
+    <span class="badge"><span class="dot" id="dOpc"></span><span id="tOpc">OPC UA …</span></span>
+    <span class="badge"><span class="dot" id="dMqtt"></span><span id="tMqtt">MQTT …</span></span>
+    <span class="badge" id="tCount">0 machines</span>
+  </div>
+</header>
+
+<main>
+  <div>
+    <div class="card" style="margin-bottom:14px">
+      <details id="cfgBox" open>
+        <summary>Connection</summary>
+        <div class="pad">
+          <label>OPC UA server endpoint</label>
+          <input type="text" id="cfgEndpoint" placeholder="opc.tcp://host:4840/UA">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div><label>User (optional)</label><input type="text" id="cfgUser" autocomplete="off"></div>
+            <div><label>Password</label><input type="password" id="cfgPass" autocomplete="new-password" placeholder="(unchanged)"></div>
+          </div>
+          <label>Machines folder (below Objects)</label>
+          <input type="text" id="cfgFolder" placeholder="Machines">
+          <label>MQTT broker URL <span class="hint">(mqtt://, mqtts://, ws://)</span></label>
+          <input type="text" id="cfgMqtt" placeholder="mqtt://localhost:1883">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div><label>Topic prefix (optional)</label><input type="text" id="cfgPrefix" placeholder="umati"></div>
+            <div><label>Machine id from</label>
+              <select id="cfgIdSrc"><option>ProductInstanceUri</option><option>SerialNumber</option><option>BrowseName</option></select></div>
+          </div>
+          <label><input type="checkbox" id="cfgMqttOn"> publish to MQTT</label>
+          <label><input type="checkbox" id="cfgSec"> use OPC UA security (most secure endpoint)</label>
+          <div class="row">
+            <button class="primary" id="btnApply">Apply &amp; connect</button>
+            <button id="btnDisc">Disconnect</button>
+            <button id="btnScan">Rescan</button>
+          </div>
+          <div class="hint" style="margin-top:8px" id="cfgMsg"></div>
+        </div>
+      </details>
+    </div>
+
+    <div class="card">
+      <h2>Machines <span class="hint" id="mFolder"></span></h2>
+      <ul id="machines"></ul>
+      <div class="empty" id="mEmpty">Not connected.</div>
+    </div>
+  </div>
+
+  <div>
+    <div id="notice"></div>
+    <div class="card" id="detail">
+      <div class="empty">Select a machine on the left.</div>
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <h2>Live messages <span>
+        <label style="display:inline;margin-right:10px"><input type="checkbox" id="cOnlySel" checked> only selected machine</label>
+        <label style="display:inline;margin-right:10px"><input type="checkbox" id="cHb"> heartbeats</label>
+        <button class="small" id="cPause">Pause</button> <button class="small" id="cClear">Clear</button></span></h2>
+      <div class="pad">
+        <div class="hint" style="margin-bottom:6px">Everything the gateway publishes, exactly as sent to the MQTT broker (topic, retain flag, payload). Works with or without a reachable broker.</div>
+        <div id="console"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const enc = encodeURIComponent;
+let machines = [];          // summaries
+let selected = null;        // machine summary (detail)
+let tab = "values";
+let values = {};            // path -> envelope of the selected machine
+let events = [];            // events of the selected machine (newest first)
+let paused = false;
+let cfgLoaded = false;
+
+async function api(path, opts) {
+  const r = await fetch(path, opts);
+  const txt = await r.text();
+  let body; try { body = JSON.parse(txt); } catch { body = txt; }
+  return { ok: r.ok, status: r.status, body };
+}
+const fmt = (v) => v === null ? "null" : typeof v === "object" ? JSON.stringify(v) : String(v);
+
+// ------------------------------------------------------------------ status + config
+async function refreshStatus() {
+  const { ok, body } = await api("/api/status");
+  if (!ok) { $("tOpc").textContent = "gateway not reachable"; $("dOpc").className = "dot bad"; return; }
+  const o = body.opcUa, m = body.mqtt;
+  $("tOpc").textContent = `OPC UA ${o.state}` + (o.server ? ` · ${o.server}` : "");
+  $("dOpc").className = "dot " + (o.state === "Connected" ? "ok" : o.state === "Connecting" ? "warn" : o.state === "Error" ? "bad" : "");
+  $("tMqtt").textContent = m.enabled ? `MQTT ${m.connected}/${m.clients} clients → ${m.url}` : "MQTT off";
+  $("dMqtt").className = "dot " + (!m.enabled ? "" : m.clients > 0 && m.connected === m.clients ? "ok" : m.clients === 0 ? "warn" : "bad");
+  $("tCount").textContent = `${body.machineCount} machine${body.machineCount === 1 ? "" : "s"}`;
+  $("mFolder").textContent = o.state === "Connected" ? `/${o.machinesFolder}` : "";
+  let note = "";
+  if (o.state === "Error" && o.message) note = `<div class="msg bad">OPC UA: ${esc(o.message)}</div>`;
+  else if (o.state === "Connected" && o.message) note = `<div class="msg bad">${esc(o.message)}</div>`;
+  const f = Object.entries(body.failures || {});
+  if (f.length) note += `<div class="msg bad">Could not start: ${f.map(([k, v]) => esc(k) + " – " + esc(v)).join("; ")}</div>`;
+  $("notice").innerHTML = note;
+  $("mEmpty").style.display = machines.length ? "none" : "block";
+  $("mEmpty").textContent = o.state === "Connected" ? (o.machinesFolderFound ? "No machines in the folder." : "Machines folder not found.") : o.state === "Connecting" ? "Connecting …" : "Not connected.";
+}
+
+async function loadConfig() {
+  const { body } = await api("/api/config");
+  $("cfgEndpoint").value = body.opcUaEndpoint || "";
+  $("cfgUser").value = body.opcUaUser || "";
+  $("cfgFolder").value = body.machinesFolder || "Machines";
+  $("cfgMqtt").value = body.mqttUrl || "";
+  $("cfgPrefix").value = body.topicPrefix || "";
+  $("cfgIdSrc").value = body.machineIdSource || "ProductInstanceUri";
+  $("cfgMqttOn").checked = !!body.mqttEnabled;
+  $("cfgSec").checked = !!body.opcUaUseSecurity;
+  cfgLoaded = true;
+}
+
+$("btnApply").onclick = async () => {
+  const payload = {
+    opcUaEndpoint: $("cfgEndpoint").value, opcUaUser: $("cfgUser").value, opcUaUseSecurity: $("cfgSec").checked,
+    machinesFolder: $("cfgFolder").value, mqttEnabled: $("cfgMqttOn").checked, mqttUrl: $("cfgMqtt").value,
+    topicPrefix: $("cfgPrefix").value, machineIdSource: $("cfgIdSrc").value, connect: true,
+  };
+  if ($("cfgPass").value) payload.opcUaPassword = $("cfgPass").value;
+  const r = await api("/api/config", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+  $("cfgMsg").textContent = r.ok ? "Applied – reconnecting …" : "Error: " + fmt(r.body.error || r.body);
+  $("cfgPass").value = ""; selected = null; renderDetail(); setTimeout(refreshAll, 1500);
+};
+$("btnDisc").onclick = async () => { await api("/api/disconnect", { method: "POST" }); $("cfgMsg").textContent = "Disconnected."; selected = null; renderDetail(); setTimeout(refreshAll, 500); };
+$("btnScan").onclick = async () => { await api("/api/rescan", { method: "POST" }); $("cfgMsg").textContent = "Rescanning the Machines folder …"; setTimeout(refreshAll, 1500); };
+
+// ------------------------------------------------------------------ machine list
+async function refreshMachines() {
+  const { ok, body } = await api("/api/machines");
+  if (!ok) return;
+  machines = body;
+  const ul = $("machines"); ul.innerHTML = "";
+  for (const m of machines) {
+    const li = document.createElement("li");
+    li.className = selected && selected.id === m.id ? "sel" : "";
+    li.innerHTML = `<span class="dot ${m.connectionState === "Connected" ? "ok" : "bad"}"></span>
+      <span class="nm" title="${esc(m.productInstanceUri || m.name)}">${esc(m.name)}<br><span class="ty">${esc(m.type || "")}</span></span>
+      ${m.coreComplete ? '<span class="tag core" title="all mandatory Core elements available">Core</span>' : '<span class="tag" title="missing: ' + esc((m.missingCore || []).join(", ")) + '">partial</span>'}`;
+    li.onclick = () => selectMachine(m.id);
+    ul.appendChild(li);
+  }
+  $("mEmpty").style.display = machines.length ? "none" : "block";
+}
+
+async function selectMachine(id) {
+  const { ok, body } = await api("/api/machines/" + enc(id));
+  if (!ok) return;
+  selected = body;
+  const [v, e] = await Promise.all([api(selected.links.values), api(selected.links.events + "?limit=50")]);
+  values = v.ok ? v.body : {}; events = e.ok ? e.body : [];
+  tab = "values";
+  renderDetail(); refreshMachines();
+}
+
+// ------------------------------------------------------------------ detail
+function renderDetail() {
+  const d = $("detail");
+  if (!selected) { d.innerHTML = '<div class="empty">Select a machine on the left.</div>'; return; }
+  const m = selected;
+  d.innerHTML = `
+    <div class="pad" style="border-bottom:1px solid var(--line)">
+      <div style="font-size:17px;font-weight:650">${esc(m.displayName)} <span class="tag">${esc(m.type || "")}</span>
+        ${m.coreComplete ? '<span class="tag core">Core complete</span>' : '<span class="tag">missing Core: ' + esc(m.missingCore.join(", ")) + '</span>'}</div>
+      <div class="hint">${esc(m.productInstanceUri || "no ProductInstanceUri")} · ${m.elementCount} elements · profiles: ${esc((m.profiles || []).join(", "))}</div>
+    </div>
+    <div class="tabs">
+      ${["values", "events", "manifest", "api"].map((t) => `<button data-t="${t}" class="${t === tab ? "on" : ""}">${{ values: "Values", events: "Events", manifest: "Manifest", api: "REST & MQTT" }[t]}</button>`).join("")}
+    </div>
+    <div id="tabBody"></div>`;
+  d.querySelectorAll(".tabs button").forEach((b) => (b.onclick = () => { tab = b.dataset.t; renderDetail(); }));
+  renderTab();
+}
+
+function renderTab() {
+  const body = $("tabBody"); if (!body || !selected) return;
+  if (tab === "values") renderValues(body);
+  else if (tab === "events") renderEvents(body);
+  else if (tab === "manifest") renderManifest(body);
+  else renderApi(body);
+}
+
+function rowFor(path, env) {
+  const unit = env.unit ? " " + env.unit : "";
+  return `<td class="path">${esc(path)}</td><td class="val">${esc(fmt(env.value))}${esc(unit)}</td>
+          <td class="dim">${esc(env.timestamp)}${env.correlationId ? '<br>corr ' + esc(env.correlationId.slice(0, 8)) : ""}</td>`;
+}
+
+function renderValues(body) {
+  const paths = Object.keys(values);
+  const groups = {};
+  for (const p of paths) (groups[p.split(".")[0]] ||= []).push(p);
+  let html = '<table><thead><tr><th>Path</th><th>Value</th><th>Timestamp (UTC)</th></tr></thead><tbody>';
+  for (const g of Object.keys(groups)) {
+    html += `<tr class="grp"><td colspan="3">${esc(g)}</td></tr>`;
+    for (const p of groups[g]) html += `<tr data-p="${esc(p)}">${rowFor(p, values[p])}</tr>`;
+  }
+  body.innerHTML = html + "</tbody></table>";
+}
+
+function updateValue(path, env, flash = true) {
+  values[path] = env;
+  if (tab !== "values") return;
+  const tr = document.querySelector(`#tabBody tr[data-p="${CSS.escape(path)}"]`);
+  if (!tr) { renderTab(); return; }
+  tr.innerHTML = rowFor(path, env);
+  if (flash) { tr.classList.remove("flash"); void tr.offsetWidth; tr.classList.add("flash"); }
+}
+
+function renderEvents(body) {
+  if (!events.length) { body.innerHTML = '<div class="empty">No events yet. Program execution events (Started / Interrupted / Resumed / Ended / Aborted) appear here when the machine changes its program state.</div>'; return; }
+  body.innerHTML = '<table><thead><tr><th>Event</th><th>Timestamp (UTC)</th><th>Value</th></tr></thead><tbody>' +
+    events.map((e) => `<tr><td class="path">${esc(e.event)}</td><td class="dim">${esc(e.timestamp)}</td><td class="val">${esc(JSON.stringify(e.value))}</td></tr>`).join("") + "</tbody></table>";
+}
+
+async function renderManifest(body) {
+  const r = await api(selected.links.manifest);
+  body.innerHTML = `<div class="pad"><pre>${esc(JSON.stringify(r.body, null, 2))}</pre></div>`;
+}
+
+function renderApi(body) {
+  const m = selected, origin = location.origin;
+  const link = (u) => `<div class="link"><code>GET ${esc(u)}</code><button class="small" data-try="${esc(u)}">Try</button></div>`;
+  const first = Object.keys(values).find((p) => p.startsWith("State.")) || Object.keys(values)[0] || "State.Status";
+  body.innerHTML = `
+  <div class="pad">
+    <div class="grid2">
+      <div>
+        <b>REST</b> <span class="hint">machine id is percent-encoded; the browse name <code>${esc(m.name)}</code> works too</span>
+        ${link(m.links.self)}${link(m.links.manifest)}${link(m.links.values)}
+        ${link(m.links.values + "/" + first)}
+        ${link(m.links.values + "/Consumption")}
+        ${link(m.links.events)}
+        ${link("/api/machines/" + enc(m.name) + "/values")}
+        <div class="link"><code>GET ${esc(m.links.stream)} <span class="hint">(server-sent events)</span></code></div>
+        <div class="hint" style="margin-top:6px">Value paths use the data-model path (<code>Group.Element</code>); a group prefix returns everything below it.</div>
+      </div>
+      <div>
+        <b>MQTT</b> <span class="hint">broker ${esc(location.hostname)}:1883 in the default docker setup</span>
+        <div class="link"><code>${esc(m.mqtt.subscribe)}</code></div>
+        <div class="link"><code>${esc(m.mqtt.manifest)}</code></div>
+        <div class="hint">Topic = {prefix/}{machine id}/{path with . → /}. Values are retained, events are not.</div>
+        <pre>mosquitto_sub -h localhost -t '${esc(m.mqtt.subscribe)}' -v</pre>
+        <pre>mosquitto_sub -h localhost -t '${esc(m.mqtt.topicRoot)}/Consumption/+/Main/#' -v</pre>
+      </div>
+    </div>
+    <b>Try a request</b>
+    <div style="display:flex;gap:8px;margin:6px 0"><input type="text" id="tryUrl" value="${esc(m.links.values + "/" + first)}"><button class="primary" id="tryGo">GET</button></div>
+    <pre id="tryOut">Click “Try” on a link above or press GET.</pre>
+
+    <details style="margin-top:8px"><summary style="padding-left:0">All elements of this machine (${m.elements.length})</summary>
+    <table><thead><tr><th>Path</th><th>MQTT topic</th><th>Unit</th></tr></thead><tbody>
+    ${m.elements.map((e) => `<tr><td class="path">${esc(e.path)}</td><td class="path">${esc(e.topic)}</td><td class="dim">${esc(e.unit || "")}</td></tr>`).join("")}
+    </tbody></table>
+    ${m.events.length ? "<p class='hint'>Event topics: " + m.events.map((e) => "<code>" + esc(e.topic) + "</code>").join(" ") + "</p>" : ""}
+    ${m.unsupportedElements.length ? "<p class='hint'>Not supported by this machine (not in its manifest): " + esc(m.unsupportedElements.join(", ")) + "</p>" : ""}
+    </details>
+  </div>`;
+  const go = async (u) => {
+    $("tryUrl").value = u;
+    const r = await api(u);
+    $("tryOut").textContent = `HTTP ${r.status}\n` + (typeof r.body === "string" ? r.body : JSON.stringify(r.body, null, 2));
+  };
+  body.querySelectorAll("[data-try]").forEach((b) => (b.onclick = () => go(b.dataset.try)));
+  $("tryGo").onclick = () => go($("tryUrl").value);
+}
+
+// ------------------------------------------------------------------ live stream
+const con = $("console");
+function logLine(m) {
+  if (paused) return;
+  if ($("cOnlySel").checked && (!selected || m.machine !== selected.id)) return;
+  if (m.kind === "heartbeat" && !$("cHb").checked) return;
+  const div = document.createElement("div");
+  const t = m.time.slice(11, 23);
+  div.innerHTML = `<span class="hint">${t}</span> <span class="${m.kind === "event" ? "e" : "t"}">${esc(m.topic)}</span> ` +
+    `<span class="${m.retain ? "r" : "hint"}">${m.retain ? "[retained]" : "[" + (m.kind === "event" ? "event" : "live") + "]"}</span> ${esc(JSON.stringify(m.payload))}`;
+  con.appendChild(div);
+  while (con.childElementCount > 400) con.removeChild(con.firstChild);
+  con.scrollTop = con.scrollHeight;
+}
+$("cPause").onclick = () => { paused = !paused; $("cPause").textContent = paused ? "Resume" : "Pause"; };
+$("cClear").onclick = () => (con.innerHTML = "");
+
+function startStream() {
+  const es = new EventSource("/api/stream?replay=0");
+  es.onmessage = (ev) => {
+    const m = JSON.parse(ev.data);
+    logLine(m);
+    if (!selected || m.machine !== selected.id) return;
+    if (m.kind === "event") {
+      events.unshift({ event: m.path, timestamp: m.payload.timestamp, value: m.payload.value });
+      events = events.slice(0, 100);
+      if (tab === "events") renderTab();
+    } else if (m.kind === "value" || m.kind === "state" || m.kind === "heartbeat") {
+      updateValue(m.path, m.payload, m.kind !== "heartbeat");
+    }
+  };
+  es.onerror = () => { /* the browser reconnects by itself */ };
+}
+
+// ------------------------------------------------------------------ boot
+async function refreshAll() { await refreshStatus(); await refreshMachines(); await refreshStatus(); }
+(async () => {
+  await loadConfig();
+  await refreshAll();
+  startStream();
+  setInterval(refreshAll, 4000);
+})();
+</script>
+</body>
+</html>
