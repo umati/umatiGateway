@@ -3,7 +3,7 @@ name: build
 
 on:
   push:
-    branches: [main, develop, hackthon]
+    branches: [main, develop, hackathon]
     # Publish semver tags as releases.
     tags: ["v*.*.*"]
   pull_request:
