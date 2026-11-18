@@ -801,7 +801,12 @@ namespace Opc.Ua.PubSub.Transport
                             o.WithAllowUntrustedCertificates(mqttTlsOptions?.AllowUntrustedCertificates ?? false);
                             o.WithIgnoreCertificateChainErrors(mqttTlsOptions?.IgnoreCertificateChainErrors ?? false);
                             o.WithIgnoreCertificateRevocationErrors(mqttTlsOptions?.IgnoreRevocationListErrors ?? false);
-                            //o.WithCertificateValidationHandler(ValidateBrokerCertificate);
+                            if (mqttTlsOptions?.AllowUntrustedCertificates == true)
+                            {
+                                // MQTTnet's allow/ignore flags are not sufficient for every transport;
+                                // explicitly override the platform TLS certificate check after opt-in.
+                                o.WithCertificateValidationHandler(_ => true);
+                            }
                         });
 
                     // Set user credentials.
@@ -880,7 +885,12 @@ namespace Opc.Ua.PubSub.Transport
                             o.WithAllowUntrustedCertificates(mqttTlsOptions?.AllowUntrustedCertificates ?? false);
                             o.WithIgnoreCertificateChainErrors(mqttTlsOptions?.IgnoreCertificateChainErrors ?? false);
                             o.WithIgnoreCertificateRevocationErrors(mqttTlsOptions?.IgnoreRevocationListErrors ?? false);
-                            //o.WithCertificateValidationHandler(ValidateBrokerCertificate);
+                            if (mqttTlsOptions?.AllowUntrustedCertificates == true)
+                            {
+                                // Keep WSS behavior consistent with the action MQTT transport: the
+                                // explicit opt-in must also override ClientWebSocket certificate checks.
+                                o.WithCertificateValidationHandler(_ => true);
+                            }
                         });
 
                     // Set user credentials.
