@@ -132,15 +132,15 @@ namespace Opc.Ua.PubSub.Transport
                 }
                 else
                 {
-                    Utils.Trace("MQTT client {0} connect attempt returned {0}", mqttClient?.Options?.ClientId, result?.ResultCode);
+                    Utils.Trace("MQTT client {0} connect attempt returned {1}", mqttClient?.Options?.ClientId, result?.ResultCode);
                 }
             }
             catch (Exception e)
             {
-                Utils.Trace("MQTT client {0} connect attempt returned {1} will try to reconnect in {2} seconds",
+                Utils.Trace("MQTT client {0} connect attempt failed and will retry in {1} seconds. Exception: {2}",
                     mqttClient?.Options?.ClientId,
-                    e.Message,
-                    reconnectInterval);
+                    reconnectInterval,
+                    e.ToString());
             }
         }
     }
